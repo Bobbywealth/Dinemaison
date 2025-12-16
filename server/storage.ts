@@ -34,6 +34,8 @@ import {
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: Partial<User> & { id: string }): Promise<User>;
+  getUserStripeCustomerId(userId: string): Promise<string | null>;
+  setUserStripeCustomerId(userId: string, customerId: string): Promise<void>;
   
   getUserRole(userId: string): Promise<UserRole | undefined>;
   setUserRole(userId: string, role: string): Promise<UserRole>;
@@ -110,6 +112,18 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return result;
+  }
+
+  async getUserStripeCustomerId(userId: string): Promise<string | null> {
+    const user = await this.getUser(userId);
+    return user?.stripeCustomerId || null;
+  }
+
+  async setUserStripeCustomerId(userId: string, customerId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ stripeCustomerId: customerId, updatedAt: new Date() })
+      .where(eq(users.id, userId));
   }
 
   async getUserRole(userId: string): Promise<UserRole | undefined> {

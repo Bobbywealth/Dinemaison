@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { insertBookingSchema, insertChefProfileSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";
 import { isAuthenticated, authStorage } from "./replit_integrations/auth";
+import { stripeService } from "./stripeService";
+import { getStripePublishableKey } from "./stripeClient";
 
 function getUserId(req: Request): string | null {
   const user = req.user as any;
@@ -274,6 +276,282 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching markets:", error);
       res.status(500).json({ message: "Failed to fetch markets" });
+    }
+  });
+
+  app.get("/api/stripe/publishable-key", async (req: Request, res: Response) => {
+    try {
+      const key = await getStripePublishableKey();
+      res.json({ publishableKey: key });
+    } catch (error) {
+      console.error("Error fetching Stripe key:", error);
+      res.status(500).json({ message: "Failed to fetch Stripe key" });
+    }
+  });
+
+  app.post("/api/bookings/:id/checkout", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const booking = await storage.getBookingById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      if (booking.customerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      if (booking.paymentStatus === "paid") {
+        return res.status(400).json({ message: "Booking already paid" });
+      }
+
+      const chef = await storage.getChefById(booking.chefId);
+      if (!chef) {
+        return res.status(404).json({ message: "Chef not found" });
+      }
+
+      const user = await authStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let customerId = await storage.getUserStripeCustomerId(userId);
+      if (!customerId) {
+        const customer = await stripeService.createCustomer(
+          user.email || '',
+          userId,
+          `${user.firstName || ''} ${user.lastName || ''}`.trim()
+        );
+        await storage.setUserStripeCustomerId(userId, customer.id);
+        customerId = customer.id;
+      }
+
+      const baseUrl = process.env.APP_URL || 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+
+      const session = await stripeService.createBookingCheckoutSession(
+        customerId,
+        booking,
+        chef,
+        `${baseUrl}/dashboard?payment=success&booking=${booking.id}`,
+        `${baseUrl}/dashboard?payment=cancelled&booking=${booking.id}`
+      );
+
+      await storage.updateBooking(booking.id, {
+        stripePaymentIntentId: session.payment_intent as string,
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  app.post("/api/bookings/:id/cancel", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const booking = await storage.getBookingById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      const isCustomer = booking.customerId === userId;
+      const chefProfile = await storage.getChefByUserId(userId);
+      const isChef = chefProfile && chefProfile.id === booking.chefId;
+      const userRole = await storage.getUserRole(userId);
+      const isAdmin = userRole?.role === "admin";
+      const adminOverride = req.body.adminOverride && isAdmin;
+
+      if (!isCustomer && !isChef && !isAdmin) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const eventDate = new Date(booking.eventDate);
+      const now = new Date();
+      const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+      let refundAmount = 0;
+      let refundPercentage = 0;
+      const total = parseFloat(booking.total);
+      const serviceFee = parseFloat(booking.serviceFee || "0");
+
+      if (adminOverride) {
+        refundPercentage = req.body.refundPercentage || 100;
+        refundAmount = (total * refundPercentage) / 100;
+      } else if (hoursUntilEvent >= 48) {
+        refundPercentage = 100;
+        refundAmount = total - serviceFee;
+      } else if (hoursUntilEvent >= 24) {
+        refundPercentage = 50;
+        refundAmount = (total - serviceFee) * 0.5;
+      } else {
+        refundPercentage = 0;
+        refundAmount = 0;
+      }
+
+      if (booking.paymentStatus === "paid" && booking.stripePaymentIntentId && refundAmount > 0) {
+        try {
+          await stripeService.refundPayment(
+            booking.stripePaymentIntentId,
+            refundAmount,
+            'requested_by_customer'
+          );
+        } catch (refundError) {
+          console.error("Refund failed:", refundError);
+        }
+      }
+
+      const updated = await storage.updateBooking(booking.id, {
+        status: "cancelled",
+        paymentStatus: refundAmount > 0 ? "refunded" : booking.paymentStatus,
+      });
+
+      res.json({ 
+        booking: updated, 
+        refundAmount, 
+        refundPercentage,
+        message: refundAmount > 0 
+          ? `Booking cancelled. $${refundAmount.toFixed(2)} refunded (${refundPercentage}%).`
+          : "Booking cancelled. No refund issued due to cancellation policy."
+      });
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      res.status(500).json({ message: "Failed to cancel booking" });
+    }
+  });
+
+  app.post("/api/chef/stripe-connect/onboard", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+
+      const user = await authStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let accountId = profile.stripeConnectAccountId;
+      
+      if (!accountId) {
+        const account = await stripeService.createConnectedAccount(
+          user.email || '',
+          profile.id,
+          user.firstName || '',
+          user.lastName || ''
+        );
+        accountId = account.id;
+        await storage.updateChefProfile(profile.id, { stripeConnectAccountId: accountId });
+      }
+
+      const baseUrl = process.env.APP_URL || 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+
+      const accountLink = await stripeService.createAccountLink(
+        accountId,
+        `${baseUrl}/dashboard?stripe=refresh`,
+        `${baseUrl}/dashboard?stripe=success`
+      );
+
+      res.json({ url: accountLink.url });
+    } catch (error) {
+      console.error("Error creating Stripe Connect account:", error);
+      res.status(500).json({ message: "Failed to setup payment account" });
+    }
+  });
+
+  app.get("/api/chef/stripe-connect/status", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+
+      if (!profile.stripeConnectAccountId) {
+        return res.json({ connected: false, onboarded: false });
+      }
+
+      const account = await stripeService.getAccountStatus(profile.stripeConnectAccountId);
+      const onboarded = account.charges_enabled && account.payouts_enabled;
+
+      if (onboarded !== profile.stripeConnectOnboarded) {
+        await storage.updateChefProfile(profile.id, { stripeConnectOnboarded: onboarded });
+      }
+
+      res.json({ 
+        connected: true, 
+        onboarded,
+        chargesEnabled: account.charges_enabled,
+        payoutsEnabled: account.payouts_enabled,
+      });
+    } catch (error) {
+      console.error("Error fetching Stripe Connect status:", error);
+      res.status(500).json({ message: "Failed to fetch payment account status" });
+    }
+  });
+
+  app.post("/api/admin/bookings/:id/payout", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const booking = await storage.getBookingById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      if (booking.status !== "completed") {
+        return res.status(400).json({ message: "Booking must be completed to issue payout" });
+      }
+      if (booking.payoutStatus === "paid") {
+        return res.status(400).json({ message: "Payout already issued" });
+      }
+
+      const chef = await storage.getChefById(booking.chefId);
+      if (!chef || !chef.stripeConnectAccountId) {
+        return res.status(400).json({ message: "Chef has not set up payment account" });
+      }
+
+      const payoutAmount = await stripeService.calculateChefPayout(booking, chef);
+
+      const transfer = await stripeService.createTransfer(
+        payoutAmount,
+        chef.stripeConnectAccountId,
+        booking.id,
+        `Payout for booking ${booking.id}`
+      );
+
+      await storage.updateBooking(booking.id, {
+        chefPayout: payoutAmount.toFixed(2),
+        payoutStatus: "paid",
+      });
+
+      res.json({ 
+        success: true, 
+        payoutAmount, 
+        transferId: transfer.id 
+      });
+    } catch (error) {
+      console.error("Error issuing payout:", error);
+      res.status(500).json({ message: "Failed to issue payout" });
     }
   });
 

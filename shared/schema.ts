@@ -26,6 +26,8 @@ export const chefProfiles = pgTable("chef_profiles", {
   isCertified: boolean("is_certified").default(false),
   isActive: boolean("is_active").default(true),
   commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).default("15"),
+  stripeConnectAccountId: varchar("stripe_connect_account_id"),
+  stripeConnectOnboarded: boolean("stripe_connect_onboarded").default(false),
   completedBookings: integer("completed_bookings").default(0),
   averageRating: decimal("average_rating", { precision: 3, scale: 2 }).default("0"),
   totalReviews: integer("total_reviews").default(0),
