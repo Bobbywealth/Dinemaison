@@ -415,6 +415,117 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async getRevenueAnalytics(period: string): Promise<{ name: string; revenue: number; bookings: number }[]> {
+    const now = new Date();
+    let data: { name: string; revenue: number; bookings: number }[] = [];
+
+    if (period === "daily") {
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dayStart = new Date(date.setHours(0, 0, 0, 0));
+        const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+
+        const dayBookings = await db
+          .select()
+          .from(bookings)
+          .where(
+            and(
+              gte(bookings.eventDate, dayStart),
+              lte(bookings.eventDate, dayEnd)
+            )
+          );
+
+        let revenue = 0;
+        let bookingCount = 0;
+        for (const b of dayBookings) {
+          if (b.status === "completed") {
+            revenue += parseFloat(b.total || "0");
+            bookingCount++;
+          } else if (b.status === "cancelled") {
+            revenue -= parseFloat(b.total || "0");
+          }
+        }
+
+        data.push({
+          name: dayStart.toLocaleDateString("en-US", { weekday: "short" }),
+          revenue: Math.round(revenue * 100) / 100,
+          bookings: bookingCount,
+        });
+      }
+    } else if (period === "monthly") {
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() - i);
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const monthBookings = await db
+          .select()
+          .from(bookings)
+          .where(
+            and(
+              gte(bookings.eventDate, monthStart),
+              lte(bookings.eventDate, monthEnd)
+            )
+          );
+
+        let revenue = 0;
+        let bookingCount = 0;
+        for (const b of monthBookings) {
+          if (b.status === "completed") {
+            revenue += parseFloat(b.total || "0");
+            bookingCount++;
+          } else if (b.status === "cancelled") {
+            revenue -= parseFloat(b.total || "0");
+          }
+        }
+
+        data.push({
+          name: monthStart.toLocaleDateString("en-US", { month: "short" }),
+          revenue: Math.round(revenue * 100) / 100,
+          bookings: bookingCount,
+        });
+      }
+    } else {
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dayStart = new Date(date.setHours(0, 0, 0, 0));
+        const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+
+        const dayBookings = await db
+          .select()
+          .from(bookings)
+          .where(
+            and(
+              gte(bookings.eventDate, dayStart),
+              lte(bookings.eventDate, dayEnd)
+            )
+          );
+
+        let revenue = 0;
+        let bookingCount = 0;
+        for (const b of dayBookings) {
+          if (b.status === "completed") {
+            revenue += parseFloat(b.total || "0");
+            bookingCount++;
+          } else if (b.status === "cancelled") {
+            revenue -= parseFloat(b.total || "0");
+          }
+        }
+
+        data.push({
+          name: dayStart.toLocaleDateString("en-US", { weekday: "short" }),
+          revenue: Math.round(revenue * 100) / 100,
+          bookings: bookingCount,
+        });
+      }
+    }
+
+    return data;
+  }
+
   async getPlatformSetting(key: string): Promise<PlatformSetting | undefined> {
     const [setting] = await db
       .select()

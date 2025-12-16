@@ -573,6 +573,25 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/analytics/revenue", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const period = (req.query.period as string) || "weekly";
+      const revenueData = await storage.getRevenueAnalytics(period);
+      res.json(revenueData);
+    } catch (error) {
+      console.error("Error fetching revenue analytics:", error);
+      res.status(500).json({ message: "Failed to fetch revenue analytics" });
+    }
+  });
+
   app.get("/api/admin/verifications/pending", isAuthenticated, async (req: Request, res: Response) => {
     const userId = getUserId(req);
     if (!userId) {

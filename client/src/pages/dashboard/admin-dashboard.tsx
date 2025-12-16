@@ -79,7 +79,8 @@ import {
   Bar,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  ReferenceLine
 } from "recharts";
 
 const statusColors: Record<string, string> = {
@@ -105,6 +106,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChef, setSelectedChef] = useState<ChefProfile | null>(null);
   const [userFilter, setUserFilter] = useState<string>("all");
+  const [revenuePeriod, setRevenuePeriod] = useState<string>("weekly");
 
   const { data: stats, isLoading: statsLoading } = useQuery<{
     totalUsers: number;
@@ -143,8 +145,15 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/payouts/pending"],
   });
 
-  const { data: revenueData } = useQuery<any[]>({
-    queryKey: ["/api/admin/analytics/revenue"],
+  const { data: revenueData } = useQuery<{ name: string; revenue: number; bookings: number }[]>({
+    queryKey: ["/api/admin/analytics/revenue", revenuePeriod],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/analytics/revenue?period=${revenuePeriod}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch revenue data");
+      return res.json();
+    },
   });
 
   const approveVerification = useMutation({
@@ -213,9 +222,9 @@ export default function AdminDashboard() {
 
   const mockRevenueData = [
     { name: "Mon", revenue: 2400, bookings: 4 },
-    { name: "Tue", revenue: 1398, bookings: 3 },
+    { name: "Tue", revenue: -800, bookings: 0 },
     { name: "Wed", revenue: 3800, bookings: 6 },
-    { name: "Thu", revenue: 2908, bookings: 5 },
+    { name: "Thu", revenue: -1200, bookings: 0 },
     { name: "Fri", revenue: 4800, bookings: 8 },
     { name: "Sat", revenue: 6800, bookings: 12 },
     { name: "Sun", revenue: 5200, bookings: 9 },
@@ -361,14 +370,40 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
                   <CardTitle className="text-base">Revenue Overview</CardTitle>
-                  <CardDescription>Weekly booking revenue</CardDescription>
+                  <CardDescription>
+                    {revenuePeriod === "daily" ? "Last 7 days" : revenuePeriod === "monthly" ? "Last 6 months" : "Weekly"} booking revenue
+                  </CardDescription>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex items-center gap-1 text-emerald-600">
-                    <ArrowUpRight className="h-4 w-4" />
-                    +12.5%
-                  </span>
-                  <span className="text-muted-foreground">vs last week</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-md overflow-hidden border border-border">
+                    <Button 
+                      variant={revenuePeriod === "daily" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="rounded-none text-xs px-3"
+                      onClick={() => setRevenuePeriod("daily")}
+                      data-testid="button-revenue-daily"
+                    >
+                      Daily
+                    </Button>
+                    <Button 
+                      variant={revenuePeriod === "weekly" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="rounded-none text-xs px-3 border-x border-border"
+                      onClick={() => setRevenuePeriod("weekly")}
+                      data-testid="button-revenue-weekly"
+                    >
+                      Weekly
+                    </Button>
+                    <Button 
+                      variant={revenuePeriod === "monthly" ? "default" : "ghost"} 
+                      size="sm" 
+                      className="rounded-none text-xs px-3"
+                      onClick={() => setRevenuePeriod("monthly")}
+                      data-testid="button-revenue-monthly"
+                    >
+                      Monthly
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardHeader>
@@ -378,18 +413,50 @@ export default function AdminDashboard() {
                   <BarChart data={revenueData || mockRevenueData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                    <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      domain={['auto', 'auto']}
+                      tickFormatter={(value: number) => value < 0 ? `-$${Math.abs(value)}` : `$${value}`}
+                    />
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
                       }}
-                      formatter={(value: number) => [`$${value}`, 'Revenue']}
+                      formatter={(value: number) => {
+                        if (value < 0) {
+                          return [`-$${Math.abs(value).toLocaleString()}`, 'Loss'];
+                        }
+                        return [`$${value.toLocaleString()}`, 'Revenue'];
+                      }}
                     />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <ReferenceLine y={0} stroke="hsl(var(--border))" strokeWidth={1} />
+                    <Bar 
+                      dataKey="revenue" 
+                      radius={[4, 4, 0, 0]}
+                      fill="hsl(var(--primary))"
+                    >
+                      {(revenueData || mockRevenueData).map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.revenue < 0 ? '#ef4444' : 'hsl(var(--primary))'}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="flex items-center justify-center gap-4 mt-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm bg-primary" />
+                  <span className="text-muted-foreground">Revenue</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm bg-red-500" />
+                  <span className="text-muted-foreground">Refunds/Loss</span>
+                </div>
               </div>
             </CardContent>
           </Card>
