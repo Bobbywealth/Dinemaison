@@ -1,7 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBookingSchema, insertChefProfileSchema, insertReviewSchema } from "@shared/schema";
+import { db } from "./db";
+import { insertBookingSchema, insertChefProfileSchema, insertReviewSchema, users, type User } from "@shared/schema";
 import { z } from "zod";
 import { isAuthenticated, authStorage } from "./replit_integrations/auth";
 import { stripeService } from "./stripeService";
@@ -1016,6 +1017,326 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching customer reviews:", error);
       res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  // Activity Feed
+  app.get("/api/admin/activity-feed", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const activities = await storage.getActivityFeed(limit);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activity feed:", error);
+      res.status(500).json({ message: "Failed to fetch activity feed" });
+    }
+  });
+
+  // User Growth Analytics
+  app.get("/api/admin/analytics/user-growth", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const period = (req.query.period as string) || "daily";
+      const data = await storage.getUserGrowthAnalytics(period);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching user growth:", error);
+      res.status(500).json({ message: "Failed to fetch user growth" });
+    }
+  });
+
+  // Chef Performance Analytics
+  app.get("/api/admin/analytics/chef-performance", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const data = await storage.getChefPerformanceAnalytics();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching chef performance:", error);
+      res.status(500).json({ message: "Failed to fetch chef performance" });
+    }
+  });
+
+  // Platform Metrics
+  app.get("/api/admin/analytics/metrics", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const metrics = await storage.getPlatformMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching platform metrics:", error);
+      res.status(500).json({ message: "Failed to fetch metrics" });
+    }
+  });
+
+  // All Reviews (for moderation)
+  app.get("/api/admin/reviews", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const reviews = await storage.getAllReviews();
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  // Update Review (moderation)
+  app.patch("/api/admin/reviews/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const updated = await storage.updateReview(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating review:", error);
+      res.status(500).json({ message: "Failed to update review" });
+    }
+  });
+
+  // Markets Management
+  app.get("/api/admin/markets", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const allMarkets = await storage.getMarkets();
+      res.json(allMarkets);
+    } catch (error) {
+      console.error("Error fetching markets:", error);
+      res.status(500).json({ message: "Failed to fetch markets" });
+    }
+  });
+
+  app.post("/api/admin/markets", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const market = await storage.createMarket(req.body);
+      res.json(market);
+    } catch (error) {
+      console.error("Error creating market:", error);
+      res.status(500).json({ message: "Failed to create market" });
+    }
+  });
+
+  app.patch("/api/admin/markets/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const updated = await storage.updateMarket(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating market:", error);
+      res.status(500).json({ message: "Failed to update market" });
+    }
+  });
+
+  app.delete("/api/admin/markets/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      await storage.deleteMarket(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting market:", error);
+      res.status(500).json({ message: "Failed to delete market" });
+    }
+  });
+
+  // Platform Settings
+  app.get("/api/admin/settings", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const settings = await storage.getAllPlatformSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.post("/api/admin/settings", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const { key, value } = req.body;
+      const setting = await storage.setPlatformSetting(key, value);
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating setting:", error);
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  // Transaction History
+  app.get("/api/admin/transactions", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const type = req.query.type as string;
+      const transactions = await storage.getTransactionHistory({ type });
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
+  // Payout History
+  app.get("/api/admin/payouts/history", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const payouts = await storage.getPayoutHistory();
+      res.json(payouts);
+    } catch (error) {
+      console.error("Error fetching payout history:", error);
+      res.status(500).json({ message: "Failed to fetch payout history" });
+    }
+  });
+
+  // User Details
+  app.get("/api/admin/users/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const userDetails = await storage.getUserWithDetails(req.params.id);
+      res.json(userDetails);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      res.status(500).json({ message: "Failed to fetch user details" });
+    }
+  });
+
+  // Chef Onboarding Pipeline
+  app.get("/api/admin/chefs/pipeline", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    try {
+      const pipeline = await storage.getChefOnboardingPipeline();
+      res.json(pipeline);
+    } catch (error) {
+      console.error("Error fetching chef pipeline:", error);
+      res.status(500).json({ message: "Failed to fetch chef pipeline" });
+    }
+  });
+
+  // CSV Export endpoint
+  app.get("/api/admin/export/:type", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+    
+    try {
+      const exportType = req.params.type;
+      let data: any[] = [];
+      let filename = "";
+      
+      switch (exportType) {
+        case "bookings":
+          const bookingsList = await storage.getBookings({});
+          data = bookingsList.map(b => ({
+            id: b.id,
+            date: b.eventDate,
+            status: b.status,
+            guestCount: b.guestCount,
+            subtotal: b.subtotal,
+            serviceFee: b.serviceFee,
+            total: b.total,
+            paymentStatus: b.paymentStatus,
+            payoutStatus: b.payoutStatus,
+          }));
+          filename = "bookings-export.csv";
+          break;
+        case "transactions":
+          data = await storage.getTransactionHistory({});
+          filename = "transactions-export.csv";
+          break;
+        case "users":
+          const usersList = await db.select().from(users);
+          const rolesList = await storage.getAllUserRoles();
+          data = usersList.map(u => {
+            const userRole = rolesList.find(r => r.userId === u.id);
+            return {
+              id: u.id,
+              email: u.email,
+              firstName: u.firstName,
+              lastName: u.lastName,
+              role: userRole?.role || "customer",
+              createdAt: u.createdAt,
+            };
+          });
+          filename = "users-export.csv";
+          break;
+        case "revenue":
+          const revenueData = await storage.getRevenueAnalytics("monthly");
+          data = revenueData;
+          filename = "revenue-export.csv";
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid export type" });
+      }
+      
+      if (data.length === 0) {
+        return res.status(200).json({ csv: "", filename });
+      }
+      
+      const headers = Object.keys(data[0]);
+      const csvRows = [headers.join(",")];
+      for (const row of data) {
+        const values = headers.map(h => {
+          const val = row[h];
+          if (val === null || val === undefined) return "";
+          if (typeof val === "string" && val.includes(",")) return `"${val}"`;
+          return String(val);
+        });
+        csvRows.push(values.join(","));
+      }
+      
+      res.json({ csv: csvRows.join("\n"), filename });
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Failed to export data" });
     }
   });
 

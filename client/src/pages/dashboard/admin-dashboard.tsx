@@ -63,7 +63,21 @@ import {
   Wallet,
   Send,
   MoreHorizontal,
-  RefreshCw
+  RefreshCw,
+  Star,
+  MessageSquare,
+  MapPin,
+  Settings,
+  Download,
+  Plus,
+  Trash2,
+  EyeOff,
+  Flag,
+  History,
+  Percent,
+  Target,
+  TrendingDown,
+  UserPlus
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { useState } from "react";
@@ -156,11 +170,49 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: activityFeed } = useQuery<any[]>({
+    queryKey: ["/api/admin/activity-feed"],
+  });
+
+  const { data: userGrowthData } = useQuery<any[]>({
+    queryKey: ["/api/admin/analytics/user-growth"],
+  });
+
+  const { data: chefPerformance } = useQuery<any[]>({
+    queryKey: ["/api/admin/analytics/chef-performance"],
+  });
+
+  const { data: platformMetrics } = useQuery<any>({
+    queryKey: ["/api/admin/analytics/metrics"],
+  });
+
+  const { data: allReviews, refetch: refetchReviews } = useQuery<any[]>({
+    queryKey: ["/api/admin/reviews"],
+  });
+
+  const { data: allMarkets, refetch: refetchMarkets } = useQuery<any[]>({
+    queryKey: ["/api/admin/markets"],
+  });
+
+  const { data: platformSettings, refetch: refetchSettings } = useQuery<any[]>({
+    queryKey: ["/api/admin/settings"],
+  });
+
+  const { data: transactions } = useQuery<any[]>({
+    queryKey: ["/api/admin/transactions"],
+  });
+
+  const { data: payoutHistory } = useQuery<any[]>({
+    queryKey: ["/api/admin/payouts/history"],
+  });
+
+  const { data: chefPipeline } = useQuery<any[]>({
+    queryKey: ["/api/admin/chefs/pipeline"],
+  });
+
   const approveVerification = useMutation({
-    mutationFn: async (docId: number) => {
-      return apiRequest(`/api/admin/verifications/${docId}/approve`, {
-        method: "POST",
-      });
+    mutationFn: async (docId: string) => {
+      return apiRequest("POST", `/api/admin/verifications/${docId}/approve`);
     },
     onSuccess: () => {
       toast({ title: "Verification approved successfully" });
@@ -174,10 +226,8 @@ export default function AdminDashboard() {
   });
 
   const rejectVerification = useMutation({
-    mutationFn: async (docId: number) => {
-      return apiRequest(`/api/admin/verifications/${docId}/reject`, {
-        method: "POST",
-      });
+    mutationFn: async (docId: string) => {
+      return apiRequest("POST", `/api/admin/verifications/${docId}/reject`);
     },
     onSuccess: () => {
       toast({ title: "Verification rejected" });
@@ -190,9 +240,7 @@ export default function AdminDashboard() {
 
   const processChefPayout = useMutation({
     mutationFn: async (bookingId: string) => {
-      return apiRequest(`/api/admin/payouts/${bookingId}/process`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/admin/payouts/${bookingId}/process`);
     },
     onSuccess: () => {
       toast({ title: "Payout processed successfully" });
@@ -206,10 +254,7 @@ export default function AdminDashboard() {
 
   const toggleChefStatus = useMutation({
     mutationFn: async ({ chefId, isActive }: { chefId: string; isActive: boolean }) => {
-      return apiRequest(`/api/admin/chefs/${chefId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ isActive }),
-      });
+      return apiRequest("PATCH", `/api/admin/chefs/${chefId}/status`, { isActive });
     },
     onSuccess: () => {
       toast({ title: "Chef status updated" });
@@ -219,6 +264,99 @@ export default function AdminDashboard() {
       toast({ title: "Failed to update chef status", variant: "destructive" });
     },
   });
+
+  const updateReview = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+      return apiRequest("PATCH", `/api/admin/reviews/${id}`, updates);
+    },
+    onSuccess: () => {
+      toast({ title: "Review updated" });
+      refetchReviews();
+    },
+    onError: () => {
+      toast({ title: "Failed to update review", variant: "destructive" });
+    },
+  });
+
+  const createMarket = useMutation({
+    mutationFn: async (data: { name: string; slug: string; description?: string }) => {
+      return apiRequest("POST", "/api/admin/markets", data);
+    },
+    onSuccess: () => {
+      toast({ title: "Market created" });
+      refetchMarkets();
+    },
+    onError: () => {
+      toast({ title: "Failed to create market", variant: "destructive" });
+    },
+  });
+
+  const updateMarket = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+      return apiRequest("PATCH", `/api/admin/markets/${id}`, updates);
+    },
+    onSuccess: () => {
+      toast({ title: "Market updated" });
+      refetchMarkets();
+    },
+    onError: () => {
+      toast({ title: "Failed to update market", variant: "destructive" });
+    },
+  });
+
+  const updateSetting = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: any }) => {
+      return apiRequest("POST", "/api/admin/settings", { key, value });
+    },
+    onSuccess: () => {
+      toast({ title: "Setting updated" });
+      refetchSettings();
+    },
+    onError: () => {
+      toast({ title: "Failed to update setting", variant: "destructive" });
+    },
+  });
+
+  const handleExport = async (type: string) => {
+    try {
+      const res = await fetch(`/api/admin/export/${type}`, { credentials: "include" });
+      if (!res.ok) {
+        toast({ title: "Export failed", variant: "destructive" });
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const data = await res.json();
+        if (data.csv) {
+          const blob = new Blob([data.csv], { type: "text/csv" });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = data.filename || `${type}_export.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          toast({ title: "Export downloaded" });
+        } else {
+          toast({ title: "No data to export", variant: "destructive" });
+        }
+      } else {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${type}_export.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast({ title: "Export downloaded" });
+      }
+    } catch (error) {
+      toast({ title: "Export failed", variant: "destructive" });
+    }
+  };
 
   const mockRevenueData = [
     { name: "Mon", revenue: 2400, bookings: 4 },
@@ -239,10 +377,10 @@ export default function AdminDashboard() {
 
   const filteredChefs = (chefs || []).filter(chef =>
     chef.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chef.specialties?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    chef.cuisines?.some((s: string) => s.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const filteredUsers = (users || []).filter(u => {
+  const filteredUsers = (users || []).filter((u: any) => {
     if (userFilter === "all") return true;
     return u.role === userFilter;
   });
@@ -501,7 +639,11 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="flex-wrap">
+          <TabsList className="flex-wrap gap-1">
+            <TabsTrigger value="activity" data-testid="tab-activity">
+              <Activity className="h-4 w-4 mr-2" />
+              Activity
+            </TabsTrigger>
             <TabsTrigger value="verifications" data-testid="tab-verifications">
               <Shield className="h-4 w-4 mr-2" />
               Verifications
@@ -524,6 +666,26 @@ export default function AdminDashboard() {
             <TabsTrigger value="users" data-testid="tab-users">
               <Users className="h-4 w-4 mr-2" />
               Users
+            </TabsTrigger>
+            <TabsTrigger value="analytics" data-testid="tab-analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="reviews" data-testid="tab-reviews">
+              <Star className="h-4 w-4 mr-2" />
+              Reviews
+            </TabsTrigger>
+            <TabsTrigger value="markets" data-testid="tab-markets">
+              <MapPin className="h-4 w-4 mr-2" />
+              Markets
+            </TabsTrigger>
+            <TabsTrigger value="transactions" data-testid="tab-transactions">
+              <History className="h-4 w-4 mr-2" />
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger value="settings" data-testid="tab-settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -718,7 +880,7 @@ export default function AdminDashboard() {
                               </span>
                               <span className="flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
-                                ${(parseFloat(chef.pricePerPerson || "0")).toFixed(0)}/person
+                                ${(parseFloat(chef.minimumSpend || "0")).toFixed(0)} min
                               </span>
                             </div>
                           </div>
@@ -757,17 +919,17 @@ export default function AdminDashboard() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-1">Specialties</p>
+                                    <p className="text-sm font-medium text-muted-foreground mb-1">Cuisines</p>
                                     <div className="flex flex-wrap gap-1">
-                                      {(selectedChef?.specialties || []).map((s, i) => (
+                                      {(selectedChef?.cuisines || []).map((s: string, i: number) => (
                                         <Badge key={i} variant="secondary">{s}</Badge>
                                       ))}
                                     </div>
                                   </div>
                                   <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-1">Cuisines</p>
+                                    <p className="text-sm font-medium text-muted-foreground mb-1">Dietary</p>
                                     <div className="flex flex-wrap gap-1">
-                                      {(selectedChef?.cuisines || []).map((c, i) => (
+                                      {(selectedChef?.dietarySpecialties || []).map((c: string, i: number) => (
                                         <Badge key={i} variant="outline">{c}</Badge>
                                       ))}
                                     </div>
@@ -783,8 +945,8 @@ export default function AdminDashboard() {
                                     <p className="text-xs text-muted-foreground">Rating</p>
                                   </div>
                                   <div className="p-3 rounded-md bg-muted">
-                                    <p className="text-xl font-semibold">${(parseFloat(selectedChef?.pricePerPerson || "0")).toFixed(0)}</p>
-                                    <p className="text-xs text-muted-foreground">Per Person</p>
+                                    <p className="text-xl font-semibold">${(parseFloat(selectedChef?.minimumSpend || "0")).toFixed(0)}</p>
+                                    <p className="text-xs text-muted-foreground">Minimum</p>
                                   </div>
                                 </div>
                               </div>
@@ -915,7 +1077,7 @@ export default function AdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.slice(0, 15).map((u) => (
+                        {filteredUsers.slice(0, 15).map((u: any) => (
                           <TableRow key={u.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
@@ -956,6 +1118,477 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Activity Feed Tab */}
+          <TabsContent value="activity">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <CardTitle>Activity Feed</CardTitle>
+                  <CardDescription>Real-time platform activity</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => handleExport('activity')}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {(activityFeed?.length || 0) > 0 ? (
+                  <div className="space-y-3">
+                    {(activityFeed || []).slice(0, 20).map((activity: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 rounded-md border border-border">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                          activity.type === 'booking' ? 'bg-blue-500/10 text-blue-500' :
+                          activity.type === 'user' ? 'bg-green-500/10 text-green-500' :
+                          activity.type === 'chef' ? 'bg-amber-500/10 text-amber-500' :
+                          activity.type === 'review' ? 'bg-purple-500/10 text-purple-500' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {activity.type === 'booking' && <Calendar className="h-4 w-4" />}
+                          {activity.type === 'user' && <UserPlus className="h-4 w-4" />}
+                          {activity.type === 'chef' && <ChefHat className="h-4 w-4" />}
+                          {activity.type === 'review' && <Star className="h-4 w-4" />}
+                          {activity.type === 'payout' && <DollarSign className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground">{activity.description}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {activity.timestamp && format(new Date(activity.timestamp), "MMM d, h:mm a")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">No recent activity</h3>
+                    <p className="text-muted-foreground">Platform activity will appear here</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="space-y-6">
+              {/* User Growth Chart */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                  <div>
+                    <CardTitle>User Growth</CardTitle>
+                    <CardDescription>New users over time</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('users')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Users
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {userGrowthData && userGrowthData.length > 0 ? (
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={userGrowthData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                          <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                          <Line type="monotone" dataKey="users" stroke="hsl(var(--primary))" strokeWidth={2} />
+                          <Line type="monotone" dataKey="chefs" stroke="hsl(var(--accent))" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No user growth data available</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Platform Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Conversion Rate</p>
+                        <p className="text-2xl font-bold">{platformMetrics?.conversionRate?.toFixed(1) || 0}%</p>
+                      </div>
+                      <Target className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Avg Booking Value</p>
+                        <p className="text-2xl font-bold">${platformMetrics?.avgBookingValue?.toFixed(0) || 0}</p>
+                      </div>
+                      <DollarSign className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Chef Retention</p>
+                        <p className="text-2xl font-bold">{platformMetrics?.chefRetention?.toFixed(1) || 0}%</p>
+                      </div>
+                      <UserCheck className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Platform Fee</p>
+                        <p className="text-2xl font-bold">{platformMetrics?.platformFeeRate || 15}%</p>
+                      </div>
+                      <Percent className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Chef Performance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Performing Chefs</CardTitle>
+                  <CardDescription>Ranked by bookings and ratings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(chefPerformance?.length || 0) > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Chef</TableHead>
+                          <TableHead>Bookings</TableHead>
+                          <TableHead>Revenue</TableHead>
+                          <TableHead>Rating</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(chefPerformance || []).slice(0, 10).map((chef: any) => (
+                          <TableRow key={chef.id}>
+                            <TableCell className="font-medium">{chef.displayName}</TableCell>
+                            <TableCell>{chef.completedBookings}</TableCell>
+                            <TableCell>${(chef.totalRevenue || 0).toFixed(0)}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 text-amber-500" />
+                                {parseFloat(chef.averageRating || "0").toFixed(1)}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No chef performance data available</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <CardTitle>Review Moderation</CardTitle>
+                  <CardDescription>Monitor and moderate customer reviews</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => refetchReviews()}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {(allReviews?.length || 0) > 0 ? (
+                  <div className="space-y-4">
+                    {(allReviews || []).slice(0, 15).map((review: any) => (
+                      <div key={review.id} className="p-4 rounded-md border border-border">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="flex items-center">
+                                {[1,2,3,4,5].map((star) => (
+                                  <Star 
+                                    key={star} 
+                                    className={`h-4 w-4 ${star <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground'}`} 
+                                  />
+                                ))}
+                              </div>
+                              <Badge variant={review.isHidden ? "destructive" : "outline"}>
+                                {review.isHidden ? "Hidden" : "Visible"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm">{review.comment || "No comment"}</p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {review.createdAt && format(new Date(review.createdAt), "MMM d, yyyy")}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => updateReview.mutate({ id: review.id, updates: { isHidden: !review.isHidden } })}
+                            >
+                              {review.isHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => updateReview.mutate({ id: review.id, updates: { isFlagged: !review.isFlagged } })}
+                            >
+                              <Flag className={`h-4 w-4 ${review.isFlagged ? 'text-red-500' : ''}`} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">No reviews yet</h3>
+                    <p className="text-muted-foreground">Reviews will appear here once customers leave feedback</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Markets Tab */}
+          <TabsContent value="markets">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <CardTitle>Market Management</CardTitle>
+                  <CardDescription>Manage available service markets</CardDescription>
+                </div>
+                <Button size="sm" onClick={() => {
+                  const name = prompt("Enter market name:");
+                  if (name) {
+                    const slug = name.toLowerCase().replace(/\s+/g, '-');
+                    createMarket.mutate({ name, slug });
+                  }
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Market
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {(allMarkets?.length || 0) > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Slug</TableHead>
+                        <TableHead>Chefs</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(allMarkets || []).map((market: any) => (
+                        <TableRow key={market.id}>
+                          <TableCell className="font-medium">{market.name}</TableCell>
+                          <TableCell className="text-muted-foreground">{market.slug}</TableCell>
+                          <TableCell>{market.chefCount || 0}</TableCell>
+                          <TableCell>
+                            <Badge variant={market.isActive ? "outline" : "secondary"}>
+                              {market.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => updateMarket.mutate({ id: market.id, updates: { isActive: !market.isActive } })}
+                            >
+                              {market.isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-12">
+                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">No markets configured</h3>
+                    <p className="text-muted-foreground">Add markets to enable chef services in different regions</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Transactions Tab */}
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <CardTitle>Transaction History</CardTitle>
+                  <CardDescription>All financial transactions on the platform</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => handleExport('transactions')}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {(transactions?.length || 0) > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(transactions || []).slice(0, 20).map((tx: any) => (
+                          <TableRow key={tx.id}>
+                            <TableCell className="font-mono text-sm">{tx.id.slice(0, 8)}...</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{tx.type}</Badge>
+                            </TableCell>
+                            <TableCell className={tx.amount < 0 ? 'text-red-500' : 'text-green-500'}>
+                              {tx.amount < 0 ? '-' : '+'}${Math.abs(tx.amount).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={tx.status === 'completed' ? 'outline' : 'secondary'}>
+                                {tx.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {tx.createdAt && format(new Date(tx.createdAt), "MMM d, yyyy")}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-foreground mb-2">No transactions yet</h3>
+                    <p className="text-muted-foreground">Transactions will appear here once payments are processed</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Settings</CardTitle>
+                  <CardDescription>Configure platform-wide settings</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Platform Fee (%)</label>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="number" 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'platformFee')?.value || 15}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'platformFee', value: e.target.value })}
+                        />
+                        <span className="text-muted-foreground">%</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Commission taken from each booking</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Minimum Booking Amount</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">$</span>
+                        <Input 
+                          type="number" 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'minBooking')?.value || 100}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'minBooking', value: e.target.value })}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Minimum order value for bookings</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Payout Delay (days)</label>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="number" 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'payoutDelay')?.value || 3}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'payoutDelay', value: e.target.value })}
+                        />
+                        <span className="text-muted-foreground">days</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Days after booking completion before chef payout</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Cancellation Window (hours)</label>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="number" 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'cancellationWindow')?.value || 48}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'cancellationWindow', value: e.target.value })}
+                        />
+                        <span className="text-muted-foreground">hours</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Hours before event for free cancellation</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Administrative actions and exports</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Button variant="outline" className="justify-start" onClick={() => handleExport('bookings')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Bookings
+                    </Button>
+                    <Button variant="outline" className="justify-start" onClick={() => handleExport('chefs')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Chefs
+                    </Button>
+                    <Button variant="outline" className="justify-start" onClick={() => handleExport('users')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Users
+                    </Button>
+                    <Button variant="outline" className="justify-start" onClick={() => handleExport('transactions')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Transactions
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

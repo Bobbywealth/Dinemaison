@@ -100,6 +100,24 @@ export interface IStorage {
   
   getPlatformSetting(key: string): Promise<PlatformSetting | undefined>;
   setPlatformSetting(key: string, value: any): Promise<PlatformSetting>;
+  getAllPlatformSettings(): Promise<PlatformSetting[]>;
+  
+  getActivityFeed(limit?: number): Promise<any[]>;
+  getUserGrowthAnalytics(period: string): Promise<any[]>;
+  getChefPerformanceAnalytics(): Promise<any[]>;
+  getPlatformMetrics(): Promise<any>;
+  
+  getAllReviews(): Promise<Review[]>;
+  updateReview(id: string, updates: Partial<Review>): Promise<Review | undefined>;
+  
+  updateMarket(id: string, updates: Partial<Market>): Promise<Market | undefined>;
+  deleteMarket(id: string): Promise<void>;
+  
+  getTransactionHistory(filters?: { type?: string; startDate?: Date; endDate?: Date }): Promise<any[]>;
+  getPayoutHistory(): Promise<any[]>;
+  
+  getUserWithDetails(userId: string): Promise<any>;
+  getChefOnboardingPipeline(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -571,6 +589,371 @@ export class DatabaseStorage implements IStorage {
   }
 
   async removeCustomerFavorite(customerId: string, chefId: string): Promise<void> {
+  }
+
+  async getAllPlatformSettings(): Promise<PlatformSetting[]> {
+    return db.select().from(platformSettings);
+  }
+
+  async getActivityFeed(limit: number = 50): Promise<any[]> {
+    const activities: any[] = [];
+    
+    const recentBookings = await db
+      .select()
+      .from(bookings)
+      .orderBy(desc(bookings.createdAt))
+      .limit(20);
+    
+    for (const booking of recentBookings) {
+      const customer = await this.getUser(booking.customerId);
+      const chef = await this.getChefById(booking.chefId);
+      activities.push({
+        id: `booking-${booking.id}`,
+        type: "booking",
+        action: booking.status === "completed" ? "completed" : booking.status === "cancelled" ? "cancelled" : "created",
+        description: `${customer?.firstName || "Customer"} ${booking.status === "completed" ? "completed booking with" : booking.status === "cancelled" ? "cancelled booking with" : "booked"} ${chef?.displayName || "Chef"}`,
+        amount: parseFloat(booking.total || "0"),
+        timestamp: booking.createdAt,
+        metadata: { bookingId: booking.id, customerId: booking.customerId, chefId: booking.chefId }
+      });
+    }
+    
+    const recentUsers = await db
+      .select()
+      .from(users)
+      .orderBy(desc(users.createdAt))
+      .limit(10);
+    
+    for (const user of recentUsers) {
+      activities.push({
+        id: `user-${user.id}`,
+        type: "user",
+        action: "signup",
+        description: `${user.firstName} ${user.lastName} joined the platform`,
+        timestamp: user.createdAt,
+        metadata: { userId: user.id, email: user.email }
+      });
+    }
+    
+    const recentChefs = await db
+      .select()
+      .from(chefProfiles)
+      .orderBy(desc(chefProfiles.createdAt))
+      .limit(10);
+    
+    for (const chef of recentChefs) {
+      activities.push({
+        id: `chef-${chef.id}`,
+        type: "chef",
+        action: "registered",
+        description: `${chef.displayName} registered as a chef`,
+        timestamp: chef.createdAt,
+        metadata: { chefId: chef.id }
+      });
+    }
+    
+    const recentReviews = await db
+      .select()
+      .from(reviews)
+      .orderBy(desc(reviews.createdAt))
+      .limit(10);
+    
+    for (const review of recentReviews) {
+      const customer = await this.getUser(review.customerId);
+      const chef = await this.getChefById(review.chefId);
+      activities.push({
+        id: `review-${review.id}`,
+        type: "review",
+        action: "posted",
+        description: `${customer?.firstName || "Customer"} left a ${review.rating}-star review for ${chef?.displayName || "Chef"}`,
+        rating: review.rating,
+        timestamp: review.createdAt,
+        metadata: { reviewId: review.id, chefId: review.chefId, customerId: review.customerId }
+      });
+    }
+    
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return activities.slice(0, limit);
+  }
+
+  async getUserGrowthAnalytics(period: string): Promise<any[]> {
+    const data: any[] = [];
+    const now = new Date();
+    
+    if (period === "monthly") {
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+        
+        const monthUsers = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(users)
+          .where(and(gte(users.createdAt, monthStart), lte(users.createdAt, monthEnd)));
+        
+        const monthChefs = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(chefProfiles)
+          .where(and(gte(chefProfiles.createdAt, monthStart), lte(chefProfiles.createdAt, monthEnd)));
+        
+        data.push({
+          name: monthStart.toLocaleDateString("en-US", { month: "short" }),
+          users: Number(monthUsers[0]?.count || 0),
+          chefs: Number(monthChefs[0]?.count || 0),
+        });
+      }
+    } else {
+      for (let i = 6; i >= 0; i--) {
+        const dayStart = new Date(now);
+        dayStart.setDate(dayStart.getDate() - i);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(dayStart);
+        dayEnd.setHours(23, 59, 59, 999);
+        
+        const dayUsers = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(users)
+          .where(and(gte(users.createdAt, dayStart), lte(users.createdAt, dayEnd)));
+        
+        const dayChefs = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(chefProfiles)
+          .where(and(gte(chefProfiles.createdAt, dayStart), lte(chefProfiles.createdAt, dayEnd)));
+        
+        data.push({
+          name: dayStart.toLocaleDateString("en-US", { weekday: "short" }),
+          users: Number(dayUsers[0]?.count || 0),
+          chefs: Number(dayChefs[0]?.count || 0),
+        });
+      }
+    }
+    
+    return data;
+  }
+
+  async getChefPerformanceAnalytics(): Promise<any[]> {
+    const allChefs = await db.select().from(chefProfiles).where(eq(chefProfiles.isActive, true));
+    const performance: any[] = [];
+    
+    for (const chef of allChefs) {
+      const chefBookings = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.chefId, chef.id));
+      
+      const completedBookings = chefBookings.filter(b => b.status === "completed");
+      const totalRevenue = completedBookings.reduce((sum, b) => sum + parseFloat(b.total || "0"), 0);
+      
+      performance.push({
+        id: chef.id,
+        displayName: chef.displayName,
+        profileImageUrl: chef.profileImageUrl,
+        averageRating: parseFloat(chef.averageRating || "0"),
+        totalReviews: chef.totalReviews || 0,
+        completedBookings: completedBookings.length,
+        totalRevenue,
+        verificationLevel: chef.verificationLevel,
+        isCertified: chef.isCertified,
+        stripeConnectOnboarded: chef.stripeConnectOnboarded,
+      });
+    }
+    
+    performance.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    return performance;
+  }
+
+  async getPlatformMetrics(): Promise<any> {
+    const allBookings = await db.select().from(bookings);
+    const allUsers = await db.select().from(users);
+    const allChefs = await db.select().from(chefProfiles);
+    
+    const completedBookings = allBookings.filter(b => b.status === "completed");
+    const cancelledBookings = allBookings.filter(b => b.status === "cancelled");
+    const totalRevenue = completedBookings.reduce((sum, b) => sum + parseFloat(b.total || "0"), 0);
+    const totalFees = completedBookings.reduce((sum, b) => sum + parseFloat(b.serviceFee || "0"), 0);
+    
+    const avgOrderValue = completedBookings.length > 0 ? totalRevenue / completedBookings.length : 0;
+    const conversionRate = allBookings.length > 0 ? (completedBookings.length / allBookings.length) * 100 : 0;
+    const cancellationRate = allBookings.length > 0 ? (cancelledBookings.length / allBookings.length) * 100 : 0;
+    
+    const chefsOnboarded = allChefs.filter(c => c.stripeConnectOnboarded).length;
+    const chefsPending = allChefs.filter(c => !c.stripeConnectOnboarded).length;
+    
+    return {
+      totalRevenue,
+      platformFees: totalFees,
+      avgOrderValue: Math.round(avgOrderValue * 100) / 100,
+      conversionRate: Math.round(conversionRate * 100) / 100,
+      cancellationRate: Math.round(cancellationRate * 100) / 100,
+      totalUsers: allUsers.length,
+      totalChefs: allChefs.length,
+      activeChefs: allChefs.filter(c => c.isActive).length,
+      chefsOnboarded,
+      chefsPending,
+      totalBookings: allBookings.length,
+      completedBookings: completedBookings.length,
+      pendingBookings: allBookings.filter(b => b.status === "requested" || b.status === "accepted").length,
+    };
+  }
+
+  async getAllReviews(): Promise<Review[]> {
+    return db.select().from(reviews).orderBy(desc(reviews.createdAt));
+  }
+
+  async updateReview(id: string, updates: Partial<Review>): Promise<Review | undefined> {
+    const [updated] = await db
+      .update(reviews)
+      .set(updates)
+      .where(eq(reviews.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateMarket(id: string, updates: Partial<Market>): Promise<Market | undefined> {
+    const [updated] = await db
+      .update(markets)
+      .set(updates)
+      .where(eq(markets.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMarket(id: string): Promise<void> {
+    await db.delete(markets).where(eq(markets.id, id));
+  }
+
+  async getTransactionHistory(filters?: { type?: string; startDate?: Date; endDate?: Date }): Promise<any[]> {
+    const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt));
+    const transactions: any[] = [];
+    
+    for (const booking of allBookings) {
+      const customer = await this.getUser(booking.customerId);
+      const chef = await this.getChefById(booking.chefId);
+      
+      if (booking.paymentStatus === "completed" || booking.status === "completed") {
+        transactions.push({
+          id: `payment-${booking.id}`,
+          type: "payment",
+          bookingId: booking.id,
+          customerName: `${customer?.firstName || ""} ${customer?.lastName || ""}`.trim() || "Unknown",
+          chefName: chef?.displayName || "Unknown",
+          amount: parseFloat(booking.total || "0"),
+          fee: parseFloat(booking.serviceFee || "0"),
+          chefPayout: parseFloat(booking.chefPayout || "0"),
+          status: booking.paymentStatus,
+          date: booking.createdAt,
+        });
+      }
+      
+      if (booking.status === "cancelled") {
+        transactions.push({
+          id: `refund-${booking.id}`,
+          type: "refund",
+          bookingId: booking.id,
+          customerName: `${customer?.firstName || ""} ${customer?.lastName || ""}`.trim() || "Unknown",
+          chefName: chef?.displayName || "Unknown",
+          amount: -parseFloat(booking.total || "0"),
+          fee: 0,
+          chefPayout: 0,
+          status: "refunded",
+          date: booking.updatedAt,
+        });
+      }
+    }
+    
+    if (filters?.type && filters.type !== "all") {
+      return transactions.filter(t => t.type === filters.type);
+    }
+    
+    return transactions;
+  }
+
+  async getPayoutHistory(): Promise<any[]> {
+    const paidBookings = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.payoutStatus, "paid"))
+      .orderBy(desc(bookings.updatedAt));
+    
+    const payouts: any[] = [];
+    
+    for (const booking of paidBookings) {
+      const chef = await this.getChefById(booking.chefId);
+      payouts.push({
+        id: `payout-${booking.id}`,
+        bookingId: booking.id,
+        chefId: booking.chefId,
+        chefName: chef?.displayName || "Unknown",
+        amount: parseFloat(booking.chefPayout || booking.subtotal || "0"),
+        date: booking.updatedAt,
+        status: "completed",
+      });
+    }
+    
+    return payouts;
+  }
+
+  async getUserWithDetails(userId: string): Promise<any> {
+    const user = await this.getUser(userId);
+    if (!user) return null;
+    
+    const role = await this.getUserRole(userId);
+    const userBookings = await this.getBookings({ customerId: userId });
+    const chefProfile = await this.getChefByUserId(userId);
+    
+    const totalSpent = userBookings
+      .filter(b => b.status === "completed")
+      .reduce((sum, b) => sum + parseFloat(b.total || "0"), 0);
+    
+    return {
+      ...user,
+      role: role?.role || "customer",
+      totalBookings: userBookings.length,
+      completedBookings: userBookings.filter(b => b.status === "completed").length,
+      totalSpent,
+      recentBookings: userBookings.slice(0, 5),
+      chefProfile,
+    };
+  }
+
+  async getChefOnboardingPipeline(): Promise<any[]> {
+    const allChefs = await db.select().from(chefProfiles).orderBy(desc(chefProfiles.createdAt));
+    const pipeline: any[] = [];
+    
+    for (const chef of allChefs) {
+      const user = await this.getUser(chef.userId);
+      const verifications = await this.getVerificationDocuments(chef.id);
+      
+      let stage = "profile_created";
+      if (verifications.length > 0 && verifications.some(v => v.status === "pending")) {
+        stage = "documents_pending";
+      } else if (verifications.some(v => v.status === "approved")) {
+        stage = "verified";
+      }
+      if (chef.stripeConnectOnboarded) {
+        stage = "onboarded";
+      }
+      if (!chef.isActive) {
+        stage = "suspended";
+      }
+      
+      pipeline.push({
+        id: chef.id,
+        userId: chef.userId,
+        displayName: chef.displayName,
+        email: user?.email,
+        profileImageUrl: chef.profileImageUrl,
+        stage,
+        verificationLevel: chef.verificationLevel,
+        isCertified: chef.isCertified,
+        stripeConnectOnboarded: chef.stripeConnectOnboarded,
+        isActive: chef.isActive,
+        createdAt: chef.createdAt,
+        documentsCount: verifications.length,
+        pendingDocuments: verifications.filter(v => v.status === "pending").length,
+      });
+    }
+    
+    return pipeline;
   }
 }
 
