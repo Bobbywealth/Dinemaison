@@ -240,16 +240,26 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-background sticky top-0 z-50">
+      <header className="bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-28">
             <div className="flex items-center gap-4">
               <Link href="/">
-                <img 
-                  src={logoImage} 
-                  alt="Dine Maison" 
-                  className="h-8 w-auto object-contain dark:brightness-150 dark:contrast-125 cursor-pointer"
-                />
+                <div className="flex flex-col items-center cursor-pointer">
+                  <img 
+                    src={logoImage} 
+                    alt="Dine Maison" 
+                    className="h-28 w-auto object-contain brightness-0 invert"
+                  />
+                  <div className="flex flex-col items-center -mt-10">
+                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
+                      The Art of
+                    </span>
+                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
+                      Intimate Dining
+                    </span>
+                  </div>
+                </div>
               </Link>
               <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Admin</Badge>
             </div>
@@ -261,7 +271,7 @@ export default function AdminDashboard() {
                   {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
                 <a href="/api/logout">
                   <LogOut className="h-4 w-4" />
                 </a>
