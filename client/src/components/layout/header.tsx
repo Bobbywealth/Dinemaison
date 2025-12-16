@@ -13,13 +13,16 @@ import {
 import { ChefHat, User, LogOut, LayoutDashboard, Menu, X } from "lucide-react";
 import { useState } from "react";
 import logoImage from "@assets/12_1765912912124.png";
+import { useTheme } from "@/lib/theme-provider";
 
 export function Header() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme } = useTheme();
 
   const isLandingPage = location === "/";
+  const isDarkHeader = isLandingPage || theme === "dark";
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     const first = firstName?.charAt(0) || "";
@@ -29,7 +32,9 @@ export function Header() {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isLandingPage ? "bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10" : "bg-background border-b border-border"
+      isLandingPage 
+        ? "bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10" 
+        : "bg-background border-b border-border"
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-28">
@@ -38,14 +43,14 @@ export function Header() {
               <img 
                 src={logoImage} 
                 alt="Dine Maison" 
-                className={`h-20 w-auto object-contain ${isLandingPage ? 'brightness-0 invert' : 'dark:brightness-0 dark:invert'}`}
+                className={`h-20 w-auto object-contain ${isDarkHeader ? 'brightness-0 invert' : ''}`}
                 data-testid="img-logo"
               />
               <div className="flex flex-col mt-1">
-                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isLandingPage ? 'text-white/70' : 'text-muted-foreground'}`}>
+                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
                   The Art of
                 </span>
-                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isLandingPage ? 'text-white/70' : 'text-muted-foreground'}`}>
+                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
                   Intimate Dining
                 </span>
               </div>
@@ -54,12 +59,12 @@ export function Header() {
 
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/chefs" data-testid="link-browse-chefs">
-              <span className={`text-sm font-medium transition-colors cursor-pointer ${isLandingPage ? 'text-white/80 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}>
+              <span className={`text-sm font-medium transition-colors cursor-pointer ${isDarkHeader ? 'text-white/80 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}>
                 Browse Chefs
               </span>
             </Link>
             <Link href="/become-chef" data-testid="link-become-chef">
-              <span className={`text-sm font-medium transition-colors cursor-pointer ${isLandingPage ? 'text-white/80 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}>
+              <span className={`text-sm font-medium transition-colors cursor-pointer ${isDarkHeader ? 'text-white/80 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}>
                 Become a Chef
               </span>
             </Link>
@@ -111,7 +116,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" asChild className={`hidden sm:inline-flex ${isLandingPage ? 'text-white hover:bg-white/10' : ''}`} data-testid="button-login">
+                <Button variant="ghost" asChild className={`hidden sm:inline-flex ${isDarkHeader ? 'text-white hover:bg-white/10' : ''}`} data-testid="button-login">
                   <a href="/api/login">Sign In</a>
                 </Button>
                 <Button asChild data-testid="button-book-now">
