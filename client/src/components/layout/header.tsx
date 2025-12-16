@@ -38,7 +38,7 @@ export function Header() {
               <img 
                 src={logoImage} 
                 alt="Dine Maison" 
-                className={`h-20 w-auto object-contain ${isLandingPage ? 'brightness-150 contrast-125' : 'dark:brightness-150 dark:contrast-125'}`}
+                className={`h-20 w-auto object-contain ${isLandingPage ? 'brightness-0 invert' : 'dark:brightness-0 dark:invert'}`}
                 data-testid="img-logo"
               />
               <div className="flex flex-col mt-1">
