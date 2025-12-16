@@ -1,0 +1,452 @@
+DINE MAISON
+Full Product, Business & Technical Blueprint (MVP → Scale)
+1. Company Overview
+Company Name
+
+Dine Maison
+
+Tagline
+
+“The Art of Intimate Dining.”
+
+Core Concept
+
+Dine Maison is a two-sided marketplace that connects customers looking to book private chefs and intimate dining experiences with chefs offering those services.
+
+Think:
+
+Airbnb → trust + profiles + reviews
+
+Uber → on-demand booking + payments
+
+Applied to private chefs & intimate dining
+
+2. Problem Being Solved
+
+Today, customers struggle to:
+
+Find reliable private chefs
+
+Compare cuisines, dietary specialties, and experiences
+
+Trust quality without centralized reviews
+
+Book and pay easily
+
+Chefs struggle to:
+
+Get consistent bookings
+
+Handle payments, cancellations, and admin
+
+Build visibility and reputation
+
+Dine Maison solves both sides.
+
+3. Marketplace Model (Hybrid Supply)
+A. Marketplace Chefs (Independent)
+
+Create profiles
+
+Set availability and pricing
+
+Get booked directly
+
+Pay platform commission
+
+B. Dine Maison Certified / Staff Chefs
+
+Curated, vetted chefs
+
+Used when customer wants:
+
+Simplicity
+
+Speed
+
+“Dine Maison standard”
+
+Higher platform margin
+
+Admin can assign chefs manually
+
+This hybrid model increases trust, reliability, and revenue.
+
+4. Launch Markets
+
+NY / NJ
+
+Tampa Bay (Tampa / St. Pete / Clearwater)
+
+(Admin can enable/disable markets.)
+
+5. Pricing & Monetization
+Customer Fees
+
+Full payment upfront
+
+Optional tip (checkout or post-event)
+
+Small platform service fee (flat or %)
+
+Chef Fees
+
+Marketplace chefs: 15–20% commission
+
+Certified / staff chefs: 25–35% margin
+
+(Admin controls all pricing rules.)
+
+6. Payment Flow (Locked for MVP)
+
+Customer books → full payment charged
+
+Funds held (Stripe)
+
+Event completed
+
+Chef paid after hold window (24–48 hours)
+
+Tips released with payout
+
+For fastest MVP:
+
+Stripe payments first
+
+Manual payouts acceptable initially
+
+Stripe Connect added once stable
+
+7. Cancellation & Refund Policy (MVP)
+
+Default policy (configurable by Admin):
+
+48+ hours before event: full refund (minus service fee)
+
+24–48 hours: 50% refund
+
+< 24 hours / no-show: no refund
+
+Admin can override refunds manually.
+
+8. Chef Verification (Tiered – Simple but Strong)
+Level 1 – Basic Chef
+
+Government ID
+
+Profile info
+
+Signed agreement
+
+Level 2 – Verified Chef
+
+Food handler certificate
+
+Experience proof
+
+Optional background check
+
+Level 3 – Dine Maison Certified
+
+Admin approval
+
+Trial or interview
+
+Internal standards checklist
+
+Badges displayed on chef profiles.
+
+9. Insurance & Liability (Recommended Minimum)
+
+Chefs self-attest insurance OR upload proof
+
+Option to join group/event-based insurance later
+
+Platform acts as marketplace, not food provider
+
+Clear Terms of Service
+
+10. Minimum Booking Rules (Avoid Low-Value Chaos)
+
+Minimum guests: 2–4
+
+Minimum spend: $250–$500
+
+Chefs may set higher minimums
+
+Admin override allowed
+
+11. Platform Rollout Strategy
+Phase 1 – Web App (MVP)
+
+Desktop + mobile responsive
+
+Phase 2 – Progressive Web App (PWA)
+
+Push notifications
+
+Home screen install
+
+Phase 3 – Native Apps
+
+iOS
+
+Android
+
+Same backend for all phases.
+
+12. Roles & Dashboards (Required)
+Roles
+
+Customer
+
+Chef
+
+Admin
+
+Ops/Support (optional)
+
+Dashboards
+
+Customer Dashboard
+
+Chef Dashboard
+
+Admin Dashboard
+
+Internal Ops (optional)
+
+13. Dashboard Screen Mapping
+A. Customer Dashboard
+
+Auth (signup/login)
+
+Browse chefs (filters)
+
+Chef profile pages
+
+Booking wizard
+
+My bookings (upcoming/past)
+
+Messaging with chef
+
+Payments & receipts
+
+Reviews
+
+Profile & settings
+
+B. Chef Dashboard
+
+Auth
+
+Profile management
+
+Cuisine tags & gallery
+
+Availability calendar
+
+Booking requests (accept/decline)
+
+Upcoming bookings
+
+Messaging
+
+Earnings (view)
+
+Reviews
+
+Verification center
+
+C. Admin Dashboard
+
+KPIs (GMV, bookings)
+
+User management
+
+Chef verification approval
+
+Booking management
+
+Refunds & disputes
+
+Pricing & commission control
+
+Review moderation
+
+Messaging oversight
+
+Market activation
+
+14. Tech Stack (Optimized for Replit Speed)
+Core
+
+Next.js (TypeScript)
+
+Tailwind CSS
+
+Supabase (Auth + Postgres + Storage)
+
+Stripe (payments + later payouts)
+
+Why
+
+No custom auth
+
+No self-hosted DB
+
+No file server
+
+Minimal infrastructure work
+
+One repo. One app. Role-based routes.
+
+15. Database Schema (MVP Core Tables)
+
+Identity
+
+users
+
+user_profiles
+
+addresses
+
+Chef
+
+chef_profiles
+
+chef_cuisines
+
+chef_media
+
+chef_availability
+
+verification_documents
+
+Bookings
+
+bookings
+
+booking_line_items
+
+booking_status_events
+
+Payments
+
+payments
+
+refunds
+
+payouts (optional initially)
+
+Messaging
+
+conversations
+
+conversation_participants
+
+messages
+
+Reviews
+
+reviews
+
+review_flags
+
+Config
+
+platform_settings
+
+(This is already optimized to avoid rebuilds.)
+
+16. Booking State Flow (Important)
+
+draft
+
+requested
+
+accepted / declined
+
+confirmed (payment success)
+
+completed
+
+cancelled
+
+refunded
+
+All transitions logged.
+
+17. Replit Build Strategy (Fastest Path)
+Architecture
+
+Single Next.js app
+
+/customer/*
+
+/chef/*
+
+/admin/*
+
+Role middleware controls access
+
+Build Order
+
+Auth + roles
+
+Chef profiles + search
+
+Booking flow
+
+Stripe payment
+
+Messaging
+
+Reviews
+
+Admin controls
+
+18. What Is Intentionally NOT in MVP (By Design)
+
+These can wait and should not slow you down:
+
+Automated tax handling
+
+Promo codes
+
+Advanced dispute ticketing
+
+Background check integrations
+
+Chef subscription tiers
+
+Experience packages (beyond basic pricing)
+
+19. What You May Want to Add Later (Optional)
+
+“Assign a Certified Chef” auto-matching
+
+Chef packages (date night, tasting menu, etc.)
+
+Corporate bookings
+
+Concierge services
+
+Loyalty credits
+
+Analytics dashboards
+
+20. Final Reality Check – What You Need to Build
+
+To launch Dine Maison properly, you need:
+
+✅ Web app
+✅ Customer dashboard
+✅ Chef dashboard
+✅ Admin dashboard
+✅ Booking + payment working end-to-end
+✅ At least 1 real chef
+✅ At least 1 real booking
+
+Anything beyond that is optimization, not launch-blocking.
