@@ -83,7 +83,7 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-28 pb-16">
+        <main className="pt-36 pb-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <Skeleton className="h-8 w-48 mb-8" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -100,7 +100,7 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-28 pb-16">
+        <main className="pt-36 pb-16">
           <div className="max-w-md mx-auto px-4 text-center py-20">
             <ChefHat className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-semibold text-foreground mb-2">Sign In Required</h1>
@@ -121,7 +121,7 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-28 pb-16">
+        <main className="pt-36 pb-16">
           <div className="max-w-md mx-auto px-4 text-center py-20">
             <ChefHat className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-semibold text-foreground mb-2">Chef Not Found</h1>
@@ -185,7 +185,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="pt-28 pb-16">
+      <main className="pt-36 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href={`/chefs/${chef.id}`}>
             <span className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 cursor-pointer">
