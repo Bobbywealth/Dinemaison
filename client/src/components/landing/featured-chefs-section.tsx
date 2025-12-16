@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ChefCard } from "@/components/chef/chef-card";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import type { ChefProfile } from "@shared/schema";
 
 const featuredChefs: Partial<ChefProfile>[] = [
@@ -46,11 +47,40 @@ const featuredChefs: Partial<ChefProfile>[] = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
+
 export function FeaturedChefsSection() {
   return (
     <section className="py-24 bg-card/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12">
+        <motion.div 
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
           <div>
             <h2 className="font-serif text-3xl sm:text-4xl font-medium text-foreground mb-2">
               Featured Chefs
@@ -65,13 +95,21 @@ export function FeaturedChefsSection() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
           {featuredChefs.map((chef) => (
-            <ChefCard key={chef.id} chef={chef as ChefProfile} />
+            <motion.div key={chef.id} variants={itemVariants}>
+              <ChefCard chef={chef as ChefProfile} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
