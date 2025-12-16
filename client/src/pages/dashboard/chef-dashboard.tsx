@@ -19,7 +19,9 @@ import {
   CheckCircle,
   XCircle,
   Settings,
-  TrendingUp
+  TrendingUp,
+  CreditCard,
+  AlertCircle
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -40,6 +42,14 @@ export default function ChefDashboard() {
 
   const { data: bookings, isLoading: bookingsLoading } = useQuery<Booking[]>({
     queryKey: ["/api/chef/bookings"],
+  });
+
+  const { data: stripeStatus } = useQuery<{
+    connected: boolean;
+    onboarded: boolean;
+  }>({
+    queryKey: ["/api/chef/stripe-connect/status"],
+    enabled: !!profile,
   });
 
   const pendingRequests = (bookings || []).filter(b => b.status === "requested");
@@ -93,6 +103,32 @@ export default function ChefDashboard() {
             <Link href="/chef/profile/edit">Edit Profile</Link>
           </Button>
         </div>
+
+        {!stripeStatus?.onboarded && (
+          <Card className="mb-8 border-yellow-500/30 bg-yellow-500/5">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-md bg-yellow-500/10 flex items-center justify-center">
+                    <AlertCircle className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Complete Payment Setup</p>
+                    <p className="text-sm text-muted-foreground">
+                      Set up your payment account to receive earnings from bookings
+                    </p>
+                  </div>
+                </div>
+                <Button asChild data-testid="button-setup-payments-banner">
+                  <Link href="/chef/onboarding">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Set Up Payments
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>

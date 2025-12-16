@@ -9,6 +9,7 @@ import ChefsPage from "@/pages/chefs";
 import ChefProfilePage from "@/pages/chef-profile";
 import BecomeChefPage from "@/pages/become-chef";
 import BookingPage from "@/pages/booking";
+import ChefOnboardingPage from "@/pages/chef-onboarding";
 import DashboardRouter from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/chefs/:id" component={ChefProfilePage} />
       <Route path="/become-chef" component={BecomeChefPage} />
       <Route path="/book/:id" component={BookingPage} />
+      <Route path="/chef/onboarding" component={ChefOnboardingPage} />
       <Route path="/dashboard" component={DashboardRouter} />
       <Route component={NotFound} />
     </Switch>
