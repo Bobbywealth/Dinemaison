@@ -43,10 +43,10 @@ export function Header() {
               <img 
                 src={logoImage} 
                 alt="Dine Maison" 
-                className={`h-24 w-auto object-contain ${isDarkHeader ? 'brightness-0 invert' : ''}`}
+                className={`h-28 w-auto object-contain ${isDarkHeader ? 'brightness-0 invert' : ''}`}
                 data-testid="img-logo"
               />
-              <div className="flex flex-col items-center -mt-1">
+              <div className="flex flex-col items-center -mt-3">
                 <span className={`text-[9px] tracking-[0.3em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
                   The Art of
                 </span>
