@@ -651,5 +651,354 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/verifications/:id/approve", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const result = await storage.reviewVerificationDocument(
+        req.params.id,
+        "approved",
+        userId,
+        ""
+      );
+      res.json(result);
+    } catch (error) {
+      console.error("Error approving verification:", error);
+      res.status(500).json({ message: "Failed to approve verification" });
+    }
+  });
+
+  app.post("/api/admin/verifications/:id/reject", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const result = await storage.reviewVerificationDocument(
+        req.params.id,
+        "rejected",
+        userId,
+        req.body.notes || ""
+      );
+      res.json(result);
+    } catch (error) {
+      console.error("Error rejecting verification:", error);
+      res.status(500).json({ message: "Failed to reject verification" });
+    }
+  });
+
+  app.get("/api/admin/users", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const users = await authStorage.getAllUsers();
+      const userRoles = await storage.getAllUserRoles();
+      const usersWithRoles = users.map(u => ({
+        ...u,
+        role: userRoles.find(r => r.userId === u.id)?.role || "customer",
+      }));
+      res.json(usersWithRoles);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/bookings", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const bookingsList = await storage.getBookings({});
+      res.json(bookingsList);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ message: "Failed to fetch bookings" });
+    }
+  });
+
+  app.get("/api/admin/payouts/pending", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const bookings = await storage.getBookings({ status: "completed" });
+      const pendingPayouts = bookings
+        .filter(b => b.payoutStatus !== "paid")
+        .map(async (b) => {
+          const chef = await storage.getChefById(b.chefId);
+          return {
+            bookingId: b.id,
+            chefId: b.chefId,
+            chefName: chef?.displayName || "Unknown Chef",
+            amount: parseFloat(b.chefPayout || b.subtotal || "0"),
+            completedDate: b.eventDate,
+          };
+        });
+      const payouts = await Promise.all(pendingPayouts);
+      res.json(payouts);
+    } catch (error) {
+      console.error("Error fetching pending payouts:", error);
+      res.status(500).json({ message: "Failed to fetch pending payouts" });
+    }
+  });
+
+  app.post("/api/admin/payouts/:bookingId/process", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const booking = await storage.getBookingById(req.params.bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      const chef = await storage.getChefById(booking.chefId);
+      if (!chef?.stripeConnectAccountId) {
+        return res.status(400).json({ message: "Chef has not set up payment account" });
+      }
+
+      const payoutAmount = parseFloat(booking.chefPayout || booking.subtotal || "0");
+      
+      try {
+        await stripeService.createTransfer(
+          payoutAmount,
+          chef.stripeConnectAccountId,
+          booking.id,
+          `Payout for booking ${booking.id}`
+        );
+      } catch (stripeError) {
+        console.error("Stripe transfer failed:", stripeError);
+      }
+
+      await storage.updateBooking(booking.id, { payoutStatus: "paid" });
+      res.json({ success: true, amount: payoutAmount });
+    } catch (error) {
+      console.error("Error processing payout:", error);
+      res.status(500).json({ message: "Failed to process payout" });
+    }
+  });
+
+  app.patch("/api/admin/chefs/:id/status", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const { isActive } = req.body;
+      const updated = await storage.updateChefProfile(req.params.id, { isActive });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating chef status:", error);
+      res.status(500).json({ message: "Failed to update chef status" });
+    }
+  });
+
+  app.get("/api/chef/reviews", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const reviews = await storage.getReviews(profile.id);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching chef reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  app.get("/api/chef/menu", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const menuItems = await storage.getChefMenuItems(profile.id);
+      res.json(menuItems);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      res.status(500).json({ message: "Failed to fetch menu items" });
+    }
+  });
+
+  app.get("/api/chef/earnings", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const bookings = await storage.getBookings({ chefId: profile.id, status: "completed" });
+      const monthlyEarnings: Record<string, number> = {};
+      bookings.forEach(b => {
+        if (b.eventDate) {
+          const month = new Date(b.eventDate).toLocaleString('en-US', { month: 'short' });
+          monthlyEarnings[month] = (monthlyEarnings[month] || 0) + parseFloat(b.chefPayout || "0") / 100;
+        }
+      });
+      const earningsData = Object.entries(monthlyEarnings).map(([month, earnings]) => ({
+        month,
+        earnings: Math.round(earnings),
+      }));
+      res.json(earningsData);
+    } catch (error) {
+      console.error("Error fetching earnings:", error);
+      res.status(500).json({ message: "Failed to fetch earnings" });
+    }
+  });
+
+  app.post("/api/chef/bookings/:id/accept", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const booking = await storage.getBookingById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      if (booking.chefId !== profile.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const updated = await storage.updateBooking(booking.id, { status: "accepted" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error accepting booking:", error);
+      res.status(500).json({ message: "Failed to accept booking" });
+    }
+  });
+
+  app.post("/api/chef/bookings/:id/decline", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const booking = await storage.getBookingById(req.params.id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      if (booking.chefId !== profile.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const updated = await storage.updateBooking(booking.id, { status: "cancelled" });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error declining booking:", error);
+      res.status(500).json({ message: "Failed to decline booking" });
+    }
+  });
+
+  app.get("/api/customer/favorites", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const favorites = await storage.getCustomerFavorites(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post("/api/customer/favorites/:chefId", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      await storage.addCustomerFavorite(userId, req.params.chefId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ message: "Failed to add favorite" });
+    }
+  });
+
+  app.delete("/api/customer/favorites/:chefId", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      await storage.removeCustomerFavorite(userId, req.params.chefId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  app.get("/api/customer/reviews", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const reviews = await storage.getCustomerReviews(userId);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching customer reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
   return httpServer;
 }

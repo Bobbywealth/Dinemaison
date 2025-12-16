@@ -80,6 +80,7 @@ export interface IStorage {
   
   getReviews(chefId: string): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
+  getCustomerReviews(customerId: string): Promise<Review[]>;
   
   getAdminStats(): Promise<{
     totalUsers: number;
@@ -88,6 +89,14 @@ export interface IStorage {
     totalRevenue: number;
     pendingVerifications: number;
   }>;
+  
+  getAllUserRoles(): Promise<UserRole[]>;
+  
+  getChefMenuItems(chefId: string): Promise<any[]>;
+  
+  getCustomerFavorites(customerId: string): Promise<ChefProfile[]>;
+  addCustomerFavorite(customerId: string, chefId: string): Promise<void>;
+  removeCustomerFavorite(customerId: string, chefId: string): Promise<void>;
   
   getPlatformSetting(key: string): Promise<PlatformSetting | undefined>;
   setPlatformSetting(key: string, value: any): Promise<PlatformSetting>;
@@ -425,6 +434,32 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return result;
+  }
+
+  async getCustomerReviews(customerId: string): Promise<Review[]> {
+    return db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.customerId, customerId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getAllUserRoles(): Promise<UserRole[]> {
+    return db.select().from(userRoles);
+  }
+
+  async getChefMenuItems(chefId: string): Promise<any[]> {
+    return [];
+  }
+
+  async getCustomerFavorites(customerId: string): Promise<ChefProfile[]> {
+    return [];
+  }
+
+  async addCustomerFavorite(customerId: string, chefId: string): Promise<void> {
+  }
+
+  async removeCustomerFavorite(customerId: string, chefId: string): Promise<void> {
   }
 }
 
