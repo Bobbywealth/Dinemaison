@@ -22,7 +22,7 @@ export function Header() {
   const { theme } = useTheme();
 
   const isLandingPage = location === "/";
-  const isDarkHeader = isLandingPage || theme === "dark";
+  const isDarkHeader = true;
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     const first = firstName?.charAt(0) || "";
@@ -31,11 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isLandingPage 
-        ? "bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10" 
-        : "bg-background border-b border-border"
-    }`}>
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-28">
           <Link href="/" data-testid="link-home">
@@ -139,15 +135,15 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background">
+        <div className="md:hidden border-t border-white/10 bg-[hsl(220,30%,12%)]">
           <div className="px-4 py-4 space-y-3">
             <Link href="/chefs" onClick={() => setMobileMenuOpen(false)}>
-              <span className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              <span className="block py-2 text-sm font-medium text-white/80 hover:text-white">
                 Browse Chefs
               </span>
             </Link>
             <Link href="/become-chef" onClick={() => setMobileMenuOpen(false)}>
-              <span className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              <span className="block py-2 text-sm font-medium text-white/80 hover:text-white">
                 Become a Chef
               </span>
             </Link>
