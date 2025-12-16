@@ -39,18 +39,18 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-28">
           <Link href="/" data-testid="link-home">
-            <div className="flex flex-col items-start cursor-pointer">
+            <div className="flex flex-col items-center cursor-pointer">
               <img 
                 src={logoImage} 
                 alt="Dine Maison" 
-                className={`h-20 w-auto object-contain ${isDarkHeader ? 'brightness-0 invert' : ''}`}
+                className={`h-24 w-auto object-contain ${isDarkHeader ? 'brightness-0 invert' : ''}`}
                 data-testid="img-logo"
               />
-              <div className="flex flex-col mt-1">
-                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
+              <div className="flex flex-col items-center -mt-1">
+                <span className={`text-[9px] tracking-[0.3em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
                   The Art of
                 </span>
-                <span className={`text-[9px] tracking-[0.25em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
+                <span className={`text-[9px] tracking-[0.3em] uppercase leading-tight ${isDarkHeader ? 'text-white/70' : 'text-muted-foreground'}`}>
                   Intimate Dining
                 </span>
               </div>
