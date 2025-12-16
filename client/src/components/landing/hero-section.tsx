@@ -1,18 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronRight, Star } from "lucide-react";
-import heroImage from "@assets/stock_images/luxury_private_dinin_48eef900.jpg";
+import heroVideo from "@assets/generated_videos/luxury_private_dining_ambiance.mp4";
 
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={heroVideo} type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
       
-      <div className="absolute inset-0 opacity-30">
+      <div className="absolute inset-0 opacity-20">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
       </div>
@@ -46,21 +51,6 @@ export function HeroSection() {
                 Become a Chef
               </Link>
             </Button>
-          </div>
-
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
-            <div className="text-center">
-              <p className="text-3xl font-serif font-medium text-white">50+</p>
-              <p className="text-sm text-white/70 mt-1">Expert Chefs</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-serif font-medium text-white">1000+</p>
-              <p className="text-sm text-white/70 mt-1">Events Hosted</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-serif font-medium text-white">4.9</p>
-              <p className="text-sm text-white/70 mt-1">Avg Rating</p>
-            </div>
           </div>
         </div>
       </div>
