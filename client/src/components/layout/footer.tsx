@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import logoImage from "@assets/12_1765912912124.png";
 
 export function Footer() {
   return (
@@ -6,9 +7,11 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <span className="font-serif text-2xl font-medium tracking-tight text-foreground">
-              Dine <span className="text-primary">Maison</span>
-            </span>
+            <img 
+              src={logoImage} 
+              alt="Dine Maison" 
+              className="h-10 w-auto object-contain dark:brightness-150 dark:contrast-125"
+            />
             <p className="mt-4 text-sm text-muted-foreground">
               The Art of Intimate Dining. Experience luxury private chef services tailored to your taste.
             </p>

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Booking } from "@shared/schema";
+import logoImage from "@assets/12_1765912912124.png";
 import { 
   Calendar, 
   ChefHat, 
@@ -47,9 +48,11 @@ export default function CustomerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/">
-              <span className="font-serif text-xl font-medium text-foreground cursor-pointer">
-                Dine <span className="text-primary">Maison</span>
-              </span>
+              <img 
+                src={logoImage} 
+                alt="Dine Maison" 
+                className="h-8 w-auto object-contain dark:brightness-150 dark:contrast-125 cursor-pointer"
+              />
             </Link>
             <div className="flex items-center gap-3">
               <ThemeToggle />

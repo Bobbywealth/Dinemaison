@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChefHat, User, LogOut, LayoutDashboard, Menu, X } from "lucide-react";
 import { useState } from "react";
+import logoImage from "@assets/12_1765912912124.png";
 
 export function Header() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -34,9 +35,12 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" data-testid="link-home">
             <div className="flex items-center gap-2 cursor-pointer">
-              <span className="font-serif text-2xl font-medium tracking-tight text-foreground">
-                Dine <span className="text-primary">Maison</span>
-              </span>
+              <img 
+                src={logoImage} 
+                alt="Dine Maison" 
+                className="h-10 w-auto object-contain dark:brightness-150 dark:contrast-125"
+                data-testid="img-logo"
+              />
             </div>
           </Link>
 
