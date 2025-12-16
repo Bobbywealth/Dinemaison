@@ -10,9 +10,9 @@ export function Footer() {
             <img 
               src={logoImage} 
               alt="Dine Maison" 
-              className="h-10 w-auto object-contain dark:brightness-150 dark:contrast-125"
+              className="h-16 w-auto object-contain dark:brightness-150 dark:contrast-125"
             />
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               The Art of Intimate Dining. Experience luxury private chef services tailored to your taste.
             </p>
           </div>
