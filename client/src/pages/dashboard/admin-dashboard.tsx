@@ -1,12 +1,12 @@
-import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
 import {
   Table,
   TableBody,
@@ -34,19 +34,16 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { ChefProfile, Booking, VerificationDocument, User } from "@shared/schema";
-import logoImage from "@assets/dinemaison-logo.png";
-import { 
-  Users, 
-  ChefHat, 
-  DollarSign, 
+import {
+  Users,
+  ChefHat,
+  DollarSign,
   Calendar,
   Shield,
   CheckCircle,
   XCircle,
-  LogOut,
   TrendingUp,
   AlertCircle,
   Search,
@@ -77,7 +74,8 @@ import {
   Percent,
   Target,
   TrendingDown,
-  UserPlus
+  UserPlus,
+  LayoutDashboard,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { useState } from "react";
@@ -121,6 +119,7 @@ export default function AdminDashboard() {
   const [selectedChef, setSelectedChef] = useState<ChefProfile | null>(null);
   const [userFilter, setUserFilter] = useState<string>("all");
   const [revenuePeriod, setRevenuePeriod] = useState<string>("weekly");
+  const [activeSection, setActiveSection] = useState<string>("overview");
 
   const { data: stats, isLoading: statsLoading } = useQuery<{
     totalUsers: number;
@@ -385,56 +384,37 @@ export default function AdminDashboard() {
     return u.role === userFilter;
   });
 
+  const adminNavItems: DashboardNavItem[] = [
+    { id: "overview", title: "Overview", icon: LayoutDashboard },
+    { id: "activity", title: "Activity Feed", icon: Activity },
+    {
+      id: "verifications",
+      title: "Verifications",
+      icon: Shield,
+      badge: pendingVerifications?.length,
+    },
+    { id: "bookings", title: "Bookings", icon: Calendar },
+    { id: "chefs", title: "Chefs", icon: ChefHat },
+    { id: "payouts", title: "Payouts", icon: Wallet },
+    { id: "users", title: "Users", icon: Users },
+    { id: "analytics", title: "Analytics", icon: BarChart3 },
+    { id: "reviews", title: "Reviews", icon: Star },
+    { id: "markets", title: "Markets", icon: MapPin },
+    { id: "transactions", title: "Transactions", icon: History },
+    { id: "settings", title: "Settings", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-28">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <div className="flex flex-col items-center cursor-pointer">
-                  <img 
-                    src={logoImage} 
-                    alt="Dine Maison" 
-                    className="h-28 w-auto object-contain brightness-0 invert"
-                  />
-                  <div className="flex flex-col items-center -mt-10">
-                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                      The Art of
-                    </span>
-                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                      Intimate Dining
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Admin</Badge>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
-                <a href="/api/logout">
-                  <LogOut className="h-4 w-4" />
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Platform overview and management</p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+    <DashboardLayout
+      title="Admin Dashboard"
+      description="Platform overview and management"
+      navItems={adminNavItems}
+      activeItemId={activeSection}
+      onNavigate={setActiveSection}
+    >
+      {activeSection === "overview" ? (
+        <section id="overview" className="space-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -502,7 +482,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -637,58 +617,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        <Tabs defaultValue="verifications" className="space-y-6">
-          <TabsList className="flex-wrap gap-1">
-            <TabsTrigger value="activity" data-testid="tab-activity">
-              <Activity className="h-4 w-4 mr-2" />
-              Activity
-            </TabsTrigger>
-            <TabsTrigger value="verifications" data-testid="tab-verifications">
-              <Shield className="h-4 w-4 mr-2" />
-              Verifications
-              {(pendingVerifications?.length || 0) > 0 && (
-                <Badge variant="destructive" className="ml-2">{pendingVerifications?.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="bookings" data-testid="tab-bookings">
-              <Calendar className="h-4 w-4 mr-2" />
-              Bookings
-            </TabsTrigger>
-            <TabsTrigger value="chefs" data-testid="tab-chefs">
-              <ChefHat className="h-4 w-4 mr-2" />
-              Chefs
-            </TabsTrigger>
-            <TabsTrigger value="payouts" data-testid="tab-payouts">
-              <Wallet className="h-4 w-4 mr-2" />
-              Payouts
-            </TabsTrigger>
-            <TabsTrigger value="users" data-testid="tab-users">
-              <Users className="h-4 w-4 mr-2" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="analytics" data-testid="tab-analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="reviews" data-testid="tab-reviews">
-              <Star className="h-4 w-4 mr-2" />
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger value="markets" data-testid="tab-markets">
-              <MapPin className="h-4 w-4 mr-2" />
-              Markets
-            </TabsTrigger>
-            <TabsTrigger value="transactions" data-testid="tab-transactions">
-              <History className="h-4 w-4 mr-2" />
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="settings" data-testid="tab-settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-
+        </section>
+      ) : (
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
           <TabsContent value="verifications">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
@@ -1591,7 +1522,7 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
-    </div>
+      )}
+    </DashboardLayout>
   );
 }
