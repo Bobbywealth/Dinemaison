@@ -49,6 +49,8 @@ export function getSession() {
     console.log('Using memory session store (no DATABASE_URL)');
   }
   
+  const isProduction = process.env.NODE_ENV === "production";
+  
   return session({
     secret: sessionSecret,
     store: store,
@@ -56,8 +58,8 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: isProduction, // HTTPS only in production
+      sameSite: "lax", // 'lax' works for same-site requests
       maxAge: sessionTtl,
     },
   });
@@ -186,17 +188,23 @@ export function registerAuthRoutes(app: Express) {
 
   // Login
   app.post("/api/auth/login", (req, res, next) => {
+    console.log('Login attempt:', { email: req.body.email });
+    
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
+        console.error('Login error:', err);
         return res.status(500).json({ message: "Error logging in" });
       }
       if (!user) {
+        console.log('Login failed:', info?.message);
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
       req.login(user, (err) => {
         if (err) {
+          console.error('Session error:', err);
           return res.status(500).json({ message: "Error logging in" });
         }
+        console.log('Login successful:', user.email);
         res.json({ user });
       });
     })(req, res, next);

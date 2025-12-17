@@ -105,7 +105,7 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <button
                       onClick={async () => {
-                        await fetch("/api/auth/logout", { method: "POST" });
+                        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
                         window.location.href = "/";
                       }}
                       className="w-full cursor-pointer"
