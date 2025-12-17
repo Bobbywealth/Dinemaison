@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LandingPage from "@/pages/landing";
 import ChefsPage from "@/pages/chefs";
 import ChefProfilePage from "@/pages/chef-profile";
