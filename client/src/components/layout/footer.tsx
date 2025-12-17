@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import logoImage from "@assets/12_1765912912124.png";
+import logoImage from "@assets/dinemaison-logo.png";
 
 export function Footer() {
   return (

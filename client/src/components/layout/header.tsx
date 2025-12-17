@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChefHat, User, LogOut, LayoutDashboard, Menu, X } from "lucide-react";
 import { useState } from "react";
-import logoImage from "@assets/12_1765912912124.png";
+import logoImage from "@assets/dinemaison-logo.png";
 import { useTheme } from "@/lib/theme-provider";
 
 export function Header() {

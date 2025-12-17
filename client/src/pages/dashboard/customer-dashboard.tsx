@@ -32,7 +32,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { Booking, ChefProfile, Review } from "@shared/schema";
-import logoImage from "@assets/12_1765912912124.png";
+import logoImage from "@assets/dinemaison-logo.png";
 import { 
   Calendar, 
   ChefHat, 
