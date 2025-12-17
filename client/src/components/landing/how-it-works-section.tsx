@@ -56,7 +56,7 @@ const itemVariants = {
 
 export function HowItWorksSection() {
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section id="how-it-works" className="py-24 bg-background relative overflow-hidden">
       {/* Decorative background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{

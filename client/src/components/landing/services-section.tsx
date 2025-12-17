@@ -53,7 +53,7 @@ const itemVariants = {
 
 export function ServicesSection() {
   return (
-    <section className="py-24 bg-card/50 relative overflow-hidden">
+    <section id="services" className="py-24 bg-card/50 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-30">
         <motion.div 

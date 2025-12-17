@@ -51,7 +51,7 @@ const itemVariants = {
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section id="testimonials" className="py-24 bg-background relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
