@@ -7,18 +7,18 @@ import diningImage from "@assets/stock_images/luxury_private_dinin_b1c27f12.jpg"
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Video background with image fallback */}
-      <video 
-        autoPlay 
-        loop 
-        muted 
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        poster={diningImage}
+      {/* Image background with subtle zoom animation */}
+      <motion.div 
+        className="absolute inset-0"
+        animate={{ scale: [1, 1.05, 1] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
       >
-        <source src="https://videos.pexels.com/video-files/3209828/3209828-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-        {/* Fallback for browsers that don't support video */}
-      </video>
+        <img 
+          src={diningImage} 
+          alt="Luxury private dining" 
+          className="w-full h-full object-cover"
+        />
+      </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
       
       <div className="absolute inset-0 opacity-20">

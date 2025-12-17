@@ -4,13 +4,15 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { insertBookingSchema, insertChefProfileSchema, insertReviewSchema, users, type User } from "@shared/schema";
 import { z } from "zod";
-import { isAuthenticated, authStorage } from "./replit_integrations/auth";
+import { isAuthenticated } from "./auth";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 
 function getUserId(req: Request): string | null {
   const user = req.user as any;
-  return user?.claims?.sub || null;
+  return user?.id || null;
 }
 
 export async function registerRoutes(
@@ -312,7 +314,7 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Chef not found" });
       }
 
-      const user = await authStorage.getUser(userId);
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

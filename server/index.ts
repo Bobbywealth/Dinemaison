@@ -1,3 +1,12 @@
+// Log environment variables FIRST before any imports that might fail
+console.log('=== DINE MAISON SERVER STARTUP ===');
+console.log('Environment variables check:');
+console.log('  NODE_ENV:', process.env.NODE_ENV);
+console.log('  PORT:', process.env.PORT);
+console.log('  DATABASE_URL:', process.env.DATABASE_URL ? '✅ SET' : '❌ NOT SET');
+console.log('  SESSION_SECRET:', process.env.SESSION_SECRET ? '✅ SET' : '❌ NOT SET');
+console.log('================================');
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";

@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import type { Express, RequestHandler } from "express";
 import { db } from "./db";
 import { users } from "@shared/models/auth";
@@ -12,31 +13,51 @@ import crypto from "crypto";
 // Session configuration
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-change-in-production';
   
-  if (!process.env.SESSION_SECRET) {
-    throw new Error('SESSION_SECRET environment variable is required for session management');
-  }
-  
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is required for session storage');
-  }
-  
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-    ttl: sessionTtl,
-    tableName: "sessions",
+  // Log environment status for debugging
+  console.log('Auth setup - Environment check:', {
+    hasSessionSecret: !!process.env.SESSION_SECRET,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    nodeEnv: process.env.NODE_ENV,
   });
   
+  let store;
+  
+  // Use PostgreSQL store in production if DATABASE_URL is available
+  if (process.env.DATABASE_URL) {
+    try {
+      const pgStore = connectPg(session);
+      store = new pgStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: true,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      });
+      console.log('Using PostgreSQL session store');
+    } catch (error) {
+      console.error('Failed to create PostgreSQL session store:', error);
+      // Fall back to memory store
+      const MemStore = MemoryStore(session);
+      store = new MemStore({ checkPeriod: sessionTtl });
+      console.log('Falling back to memory session store');
+    }
+  } else {
+    // Use memory store for development or when DATABASE_URL is not set
+    const MemStore = MemoryStore(session);
+    store = new MemStore({ checkPeriod: sessionTtl });
+    console.log('Using memory session store (no DATABASE_URL)');
+  }
+  
   return session({
-    secret: process.env.SESSION_SECRET,
-    store: sessionStore,
+    secret: sessionSecret,
+    store: store,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: sessionTtl,
     },
   });
@@ -44,10 +65,14 @@ export function getSession() {
 
 // Setup authentication
 export async function setupAuth(app: Express) {
+  console.log('Setting up authentication...');
+  
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  console.log('Session middleware configured');
 
   // Passport Local Strategy
   passport.use(
