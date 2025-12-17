@@ -23,6 +23,7 @@ import {
   Users, 
   Star,
   LogOut,
+  LogIn,
   CheckCircle,
   XCircle,
   Settings,
@@ -206,6 +207,12 @@ export default function ChefDashboard() {
               )}
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" asChild className="text-white border-white/20 hover:bg-white/10">
+                <Link href="/login">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
                 <Link href="/chef/settings">
                   <Settings className="h-4 w-4" />

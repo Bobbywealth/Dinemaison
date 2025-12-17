@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 import { Link } from "wouter";
-import { LucideIcon, Menu, LogOut } from "lucide-react";
+import { LucideIcon, Menu, LogOut, LogIn } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/dinemaison-logo.png";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/lib/theme-provider";
 
 export type DashboardNavItem = {
   id: string;
@@ -51,28 +52,55 @@ function DashboardSidebar({
   onNavigate?: (itemId: string) => void;
 }) {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const hash = typeof window !== "undefined" ? window.location.hash : "";
+  const isDark = theme === "dark";
+  const sidebarClasses = cn(
+    "border-r transition-colors",
+    isDark ? "bg-[hsl(220,30%,12%)] text-white border-white/10" : "bg-white text-slate-900 border-border"
+  );
+  const navLabelClass = isDark ? "text-white/60" : "text-slate-500";
+  const navLinkClass = isDark ? "text-white/80 hover:text-white" : "text-slate-600 hover:text-slate-900";
+  const badgeClass = isDark ? "bg-white/10 text-white" : "bg-slate-100 text-slate-700";
 
   return (
-    <Sidebar className="bg-[hsl(220,30%,12%)] text-white border-r border-white/10">
-      <SidebarHeader className="border-b border-white/10">
+    <Sidebar className={sidebarClasses}>
+      <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border")}>
         <Link href="/" className="flex flex-col items-center py-4">
           <img
             src={logoImage}
             alt="Dine Maison"
-            className="h-24 w-auto object-contain brightness-0 invert"
+            className={cn(
+              "h-24 w-auto object-contain",
+              isDark ? "brightness-0 invert" : "brightness-100"
+            )}
           />
           <div className="flex flex-col items-center -mt-8">
-            <span className="text-[8px] tracking-[0.3em] uppercase text-white/70">
+            <span
+              className={cn(
+                "text-[8px] tracking-[0.3em] uppercase",
+                isDark ? "text-white/70" : "text-slate-500"
+              )}
+            >
               The Art of
             </span>
-            <span className="text-[8px] tracking-[0.3em] uppercase text-white/70">
+            <span
+              className={cn(
+                "text-[8px] tracking-[0.3em] uppercase",
+                isDark ? "text-white/70" : "text-slate-500"
+              )}
+            >
               Intimate Dining
             </span>
           </div>
         </Link>
         {user && (
-          <div className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2",
+              isDark ? "bg-white/10" : "bg-slate-100"
+            )}
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.profileImageUrl || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
@@ -84,7 +112,14 @@ function DashboardSidebar({
               <p className="text-sm font-semibold leading-tight truncate">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-white/70 truncate">{user.email}</p>
+              <p
+                className={cn(
+                  "text-xs truncate",
+                  isDark ? "text-white/70" : "text-slate-500"
+                )}
+              >
+                {user.email}
+              </p>
             </div>
           </div>
         )}
@@ -92,7 +127,7 @@ function DashboardSidebar({
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/60">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className={navLabelClass}>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -108,12 +143,12 @@ function DashboardSidebar({
                   >
                     <button
                       type="button"
-                      className="text-white/80 hover:text-white flex items-center w-full"
+                      className={cn("flex items-center w-full", navLinkClass)}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                       {item.badge && (
-                        <span className="ml-auto rounded-full bg-white/10 px-2 text-xs">
+                        <span className={cn("ml-auto rounded-full px-2 text-xs", badgeClass)}>
                           {item.badge}
                         </span>
                       )}
@@ -126,12 +161,12 @@ function DashboardSidebar({
                   >
                     <a
                       href={item.href || `#${item.id}`}
-                      className="text-white/80 hover:text-white"
+                      className={navLinkClass}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                       {item.badge && (
-                        <span className="ml-auto rounded-full bg-white/10 px-2 text-xs">
+                        <span className={cn("ml-auto rounded-full px-2 text-xs", badgeClass)}>
                           {item.badge}
                         </span>
                       )}
@@ -147,17 +182,37 @@ function DashboardSidebar({
 
       <SidebarSeparator />
 
-      <SidebarFooter>
+      <SidebarFooter className="space-y-2">
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start border text-sm",
+            isDark
+              ? "border-white/20 text-white hover:bg-white/10"
+              : "border-slate-200 text-slate-700 hover:bg-slate-100"
+          )}
+          asChild
+        >
+          <Link href="/login">
+            <LogIn className="h-4 w-4 mr-2" />
+            Login
+          </Link>
+        </Button>
         <Button
           variant="ghost"
-          className="text-white/80 hover:text-white hover:bg-white/10"
+          className={cn(
+            "w-full justify-start text-sm",
+            isDark
+              ? "text-white/80 hover:text-white hover:bg-white/10"
+              : "text-slate-700 hover:bg-slate-100"
+          )}
           onClick={async () => {
             await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
             window.location.href = "/";
           }}
         >
           <LogOut className="h-4 w-4 mr-2" />
-          Sign out
+          Logout
         </Button>
       </SidebarFooter>
     </Sidebar>
