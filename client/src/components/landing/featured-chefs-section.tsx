@@ -9,7 +9,7 @@ const featuredChefs: Partial<ChefProfile>[] = [
   {
     id: "1",
     displayName: "Chef Marcus Williams",
-    profileImageUrl: "/placeholder-chef-1.jpg",
+    profileImageUrl: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&h=400&fit=crop",
     cuisines: ["French", "Mediterranean"],
     hourlyRate: "150",
     averageRating: "4.9",
@@ -22,7 +22,7 @@ const featuredChefs: Partial<ChefProfile>[] = [
   {
     id: "2",
     displayName: "Chef Sofia Chen",
-    profileImageUrl: "/placeholder-chef-2.jpg",
+    profileImageUrl: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=400&h=400&fit=crop",
     cuisines: ["Asian Fusion", "Japanese"],
     hourlyRate: "125",
     averageRating: "4.8",
@@ -35,7 +35,7 @@ const featuredChefs: Partial<ChefProfile>[] = [
   {
     id: "3",
     displayName: "Chef Antonio Rossi",
-    profileImageUrl: "/placeholder-chef-3.jpg",
+    profileImageUrl: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&h=400&fit=crop",
     cuisines: ["Italian", "Farm-to-Table"],
     hourlyRate: "135",
     averageRating: "4.9",

@@ -2,20 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronRight, Star } from "lucide-react";
 import { motion } from "framer-motion";
-import heroVideo from "@assets/generated_videos/luxury_private_dining_ambiance.mp4";
+import diningImage from "@assets/stock_images/luxury_private_dinin_b1c27f12.jpg";
 
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <video 
-        autoPlay 
-        loop 
-        muted 
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src={heroVideo} type="video/mp4" />
-      </video>
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center"
+        style={{ backgroundImage: `url(${diningImage})` }}
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
       
       <div className="absolute inset-0 opacity-20">
