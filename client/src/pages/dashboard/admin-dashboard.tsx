@@ -78,7 +78,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -384,25 +384,86 @@ export default function AdminDashboard() {
     return u.role === userFilter;
   });
 
-  const adminNavItems: DashboardNavItem[] = [
-    { id: "overview", title: "Overview", icon: LayoutDashboard },
-    { id: "activity", title: "Activity Feed", icon: Activity },
-    {
-      id: "verifications",
-      title: "Verifications",
-      icon: Shield,
-      badge: pendingVerifications?.length,
+  const adminNavItems = useMemo<DashboardNavItem[]>(
+    () => [
+      { id: "overview", title: "Overview", icon: LayoutDashboard },
+      { id: "activity", title: "Activity Feed", icon: Activity },
+      {
+        id: "verifications",
+        title: "Verifications",
+        icon: Shield,
+        badge: pendingVerifications?.length,
+      },
+      { id: "bookings", title: "Bookings", icon: Calendar },
+      { id: "chefs", title: "Chefs", icon: ChefHat },
+      { id: "payouts", title: "Payouts", icon: Wallet },
+      { id: "users", title: "Users", icon: Users },
+      { id: "analytics", title: "Analytics", icon: BarChart3 },
+      { id: "reviews", title: "Reviews", icon: Star },
+      { id: "markets", title: "Markets", icon: MapPin },
+      { id: "transactions", title: "Transactions", icon: History },
+      { id: "settings", title: "Settings", icon: Settings },
+    ],
+    [pendingVerifications?.length]
+  );
+
+  const handleSectionChange = useCallback(
+    (sectionId: string) => {
+      if (!adminNavItems.some((item) => item.id === sectionId)) {
+        return;
+      }
+
+      setActiveSection(sectionId);
+
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const newHash = `#${sectionId}`;
+      if (window.location.hash !== newHash) {
+        window.history.replaceState(null, "", newHash);
+      }
+
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(sectionId);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (sectionId === "overview") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
     },
-    { id: "bookings", title: "Bookings", icon: Calendar },
-    { id: "chefs", title: "Chefs", icon: ChefHat },
-    { id: "payouts", title: "Payouts", icon: Wallet },
-    { id: "users", title: "Users", icon: Users },
-    { id: "analytics", title: "Analytics", icon: BarChart3 },
-    { id: "reviews", title: "Reviews", icon: Star },
-    { id: "markets", title: "Markets", icon: MapPin },
-    { id: "transactions", title: "Transactions", icon: History },
-    { id: "settings", title: "Settings", icon: Settings },
-  ];
+    [adminNavItems]
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const hashValue = window.location.hash.replace("#", "");
+      if (hashValue && adminNavItems.some((item) => item.id === hashValue)) {
+        handleSectionChange(hashValue);
+      } else if (!hashValue) {
+        setActiveSection((prev) => {
+          if (prev !== "overview") {
+            window.requestAnimationFrame(() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+          }
+          return "overview";
+        });
+      }
+    };
+
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+    };
+  }, [adminNavItems, handleSectionChange]);
 
   return (
     <DashboardLayout
@@ -410,7 +471,7 @@ export default function AdminDashboard() {
       description="Platform overview and management"
       navItems={adminNavItems}
       activeItemId={activeSection}
-      onNavigate={setActiveSection}
+      onNavigate={handleSectionChange}
     >
       {activeSection === "overview" ? (
         <section id="overview" className="space-y-8">
@@ -619,8 +680,8 @@ export default function AdminDashboard() {
         </div>
         </section>
       ) : (
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
-          <TabsContent value="verifications">
+        <Tabs value={activeSection} onValueChange={handleSectionChange} className="space-y-6">
+          <TabsContent value="verifications" id="verifications">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -697,7 +758,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="bookings">
+          <TabsContent value="bookings" id="bookings">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -760,7 +821,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="chefs">
+          <TabsContent value="chefs" id="chefs">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -919,7 +980,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="payouts">
+          <TabsContent value="payouts" id="payouts">
             <Card>
               <CardHeader>
                 <CardTitle>Pending Payouts</CardTitle>
@@ -975,7 +1036,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="users">
+          <TabsContent value="users" id="users">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1052,7 +1113,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Activity Feed Tab */}
-          <TabsContent value="activity">
+          <TabsContent value="activity" id="activity">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1104,7 +1165,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics">
+          <TabsContent value="analytics" id="analytics">
             <div className="space-y-6">
               {/* User Growth Chart */}
               <Card>
@@ -1233,7 +1294,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Reviews Tab */}
-          <TabsContent value="reviews">
+          <TabsContent value="reviews" id="reviews">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1302,7 +1363,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Markets Tab */}
-          <TabsContent value="markets">
+          <TabsContent value="markets" id="markets">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1368,7 +1429,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Transactions Tab */}
-          <TabsContent value="transactions">
+          <TabsContent value="transactions" id="transactions">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1428,7 +1489,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Settings Tab */}
-          <TabsContent value="settings">
+          <TabsContent value="settings" id="settings">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
