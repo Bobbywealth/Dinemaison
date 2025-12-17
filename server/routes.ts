@@ -439,7 +439,7 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Chef profile not found" });
       }
 
-      const user = await authStorage.getUser(userId);
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -729,9 +729,9 @@ export async function registerRoutes(
       return res.status(403).json({ message: "Admin access required" });
     }
     try {
-      const users = await authStorage.getAllUsers();
+      const allUsers = await db.select().from(users);
       const userRoles = await storage.getAllUserRoles();
-      const usersWithRoles = users.map(u => ({
+      const usersWithRoles = allUsers.map(u => ({
         ...u,
         role: userRoles.find(r => r.userId === u.id)?.role || "customer",
       }));

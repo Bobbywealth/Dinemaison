@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import { isAuthenticated } from '../replit_integrations/auth';
+import { isAuthenticated } from '../auth';
 import { uploadImageMiddleware, uploadDocumentMiddleware, handleImageUpload, UploadMiddleware } from '../middleware/upload';
 import { storage } from '../storage';
 import { logger } from '../lib/logger';
@@ -26,7 +26,7 @@ export function registerUploadRoutes(app: Express) {
     uploadImageMiddleware('gallery'),
     async (req, res) => {
       try {
-        const userId = (req.user as any)?.claims?.sub;
+        const userId = (req.user as any)?.id;
         if (!userId) {
           return res.status(401).json({ message: 'Not authenticated' });
         }
@@ -60,7 +60,7 @@ export function registerUploadRoutes(app: Express) {
     isAuthenticated,
     async (req, res) => {
       try {
-        const userId = (req.user as any)?.claims?.sub;
+        const userId = (req.user as any)?.id;
         if (!userId) {
           return res.status(401).json({ message: 'Not authenticated' });
         }
@@ -98,7 +98,7 @@ export function registerUploadRoutes(app: Express) {
     uploadDocumentMiddleware(),
     async (req, res) => {
       try {
-        const userId = (req.user as any)?.claims?.sub;
+        const userId = (req.user as any)?.id;
         if (!userId) {
           return res.status(401).json({ message: 'Not authenticated' });
         }
@@ -131,7 +131,7 @@ export function registerUploadRoutes(app: Express) {
     isAuthenticated,
     async (req, res) => {
       try {
-        const userId = (req.user as any)?.claims?.sub;
+        const userId = (req.user as any)?.id;
         if (!userId) {
           return res.status(401).json({ message: 'Not authenticated' });
         }
