@@ -8,6 +8,9 @@ console.log('  SESSION_SECRET:', process.env.SESSION_SECRET ? '✅ SET' : '❌ N
 console.log('================================');
 
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import compression from "compression";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -22,6 +25,32 @@ import { registerUploadRoutes } from "./routes/upload";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Security: Set various HTTP headers for protection
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      connectSrc: ["'self'", "wss:", "ws:", "https://api.stripe.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow embedding images from CDNs
+}));
+
+// Performance: Compress all responses
+app.use(compression());
+
+// CORS: Allow cross-origin requests (configure as needed)
+app.use(cors({
+  origin: config.server.isProduction 
+    ? ['https://dine-maison-official-site.onrender.com', 'https://dinemaison.com']
+    : true,
+  credentials: true,
+}));
 
 declare module "http" {
   interface IncomingMessage {

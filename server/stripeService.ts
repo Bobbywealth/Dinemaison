@@ -1,10 +1,20 @@
-import { getUncachableStripeClient } from './stripeClient';
+import { getStripeClient } from './stripeClient';
 import { storage } from './storage';
+import { logger } from './lib/logger';
 import type { Booking, ChefProfile } from '@shared/schema';
+import Stripe from 'stripe';
 
 export class StripeService {
+  private getStripe(): Stripe {
+    const stripe = getStripeClient();
+    if (!stripe) {
+      throw new Error('Stripe is not configured. Set STRIPE_SECRET_KEY environment variable.');
+    }
+    return stripe;
+  }
+
   async createCustomer(email: string, userId: string, name?: string) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     return await stripe.customers.create({
       email,
       name,
@@ -19,7 +29,7 @@ export class StripeService {
     chefId: string,
     description: string
   ) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
     return await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
@@ -42,7 +52,7 @@ export class StripeService {
     successUrl: string,
     cancelUrl: string
   ) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
     const total = parseFloat(booking.total);
     
@@ -78,9 +88,9 @@ export class StripeService {
     amount?: number,
     reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer'
   ) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
-    const refundParams: any = {
+    const refundParams: Stripe.RefundCreateParams = {
       payment_intent: paymentIntentId,
       reason: reason || 'requested_by_customer',
     };
@@ -98,7 +108,7 @@ export class StripeService {
     firstName: string,
     lastName: string
   ) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
     return await stripe.accounts.create({
       type: 'express',
@@ -118,7 +128,7 @@ export class StripeService {
   }
 
   async createAccountLink(accountId: string, refreshUrl: string, returnUrl: string) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
     return await stripe.accountLinks.create({
       account: accountId,
@@ -129,7 +139,7 @@ export class StripeService {
   }
 
   async getAccountStatus(accountId: string) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     return await stripe.accounts.retrieve(accountId);
   }
 
@@ -139,7 +149,7 @@ export class StripeService {
     bookingId: string,
     description: string
   ) {
-    const stripe = await getUncachableStripeClient();
+    const stripe = this.getStripe();
     
     return await stripe.transfers.create({
       amount: Math.round(amount * 100),
