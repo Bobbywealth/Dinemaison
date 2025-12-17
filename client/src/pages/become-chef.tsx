@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { 
   ChefHat, 
@@ -102,7 +104,63 @@ const itemVariants = {
 };
 
 export default function BecomeChefPage() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+
+  const { data: chefProfile, isLoading: chefLoading } = useQuery({
+    queryKey: ["/api/chef/profile"],
+    enabled: isAuthenticated,
+  });
+
+  const createProfile = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        displayName: `${user?.firstName || "Chef"} ${user?.lastName || ""}`.trim() || "Chef Partner",
+        bio:
+          "Private chef specializing in intimate dining experiences. Available for bespoke menus, tasting menus, and elevated dinner parties.",
+        yearsExperience: 5,
+        cuisines: ["Modern American", "Mediterranean", "Italian"],
+        dietarySpecialties: ["Gluten-Free", "Vegetarian"],
+        servicesOffered: ["Private Dinner", "Tasting Menu", "Event Catering"],
+        hourlyRate: "150",
+        minimumSpend: "350",
+        minimumGuests: 2,
+        maximumGuests: 12,
+        verificationLevel: "basic",
+        isCertified: false,
+        isActive: true,
+        commissionRate: "15",
+      };
+
+      const res = await fetch("/api/chef/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to create chef profile");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Chef profile created",
+        description: "You can now finish onboarding and set up payments.",
+      });
+      window.location.href = "/chef/onboarding";
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Could not create profile",
+        description: err?.message || "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,30 +249,46 @@ export default function BecomeChefPage() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
               {isAuthenticated ? (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Button size="lg" asChild className="text-base px-10 py-6 shadow-lg shadow-primary/25" data-testid="button-apply-chef">
-                    <Link href="/chef/onboarding">
-                      Start Your Application
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
+                <motion.div className="flex flex-col sm:flex-row gap-3" whileHover={{ scale: 1.01 }}>
+                  <Button
+                    size="lg"
+                    className="text-base px-10 py-6 shadow-lg shadow-primary/25"
+                    data-testid="button-apply-chef"
+                    disabled={createProfile.isPending || chefLoading}
+                    onClick={() => {
+                      if (chefProfile) {
+                        window.location.href = "/chef/onboarding";
+                        return;
+                      }
+                      createProfile.mutate();
+                    }}
+                  >
+                    {createProfile.isPending
+                      ? "Preparing your profile..."
+                      : chefProfile
+                      ? "Continue Onboarding"
+                      : "Start Your Application"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button size="lg" variant="outline" className="text-base px-10 py-6 border-white/30 text-white hover:bg-white/10">
+                    <Play className="mr-2 h-5 w-5" />
+                    Watch Video
                   </Button>
                 </motion.div>
               ) : (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                <motion.div className="flex flex-col sm:flex-row gap-3" whileHover={{ scale: 1.01 }}>
                   <Button size="lg" asChild className="text-base px-10 py-6 shadow-lg shadow-primary/25" data-testid="button-login-chef">
                     <Link href="/signup">
                       Get Started Today
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </Button>
+                  <Button size="lg" variant="outline" className="text-base px-10 py-6 border-white/30 text-white hover:bg-white/10">
+                    <Play className="mr-2 h-5 w-5" />
+                    Watch Video
+                  </Button>
                 </motion.div>
               )}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Button size="lg" variant="outline" className="text-base px-10 py-6 border-white/30 text-white hover:bg-white/10">
-                  <Play className="mr-2 h-5 w-5" />
-                  Watch Video
-                </Button>
-              </motion.div>
             </motion.div>
 
             {/* Stats */}
