@@ -103,20 +103,27 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <a href="/api/logout" data-testid="link-logout">
+                    <button
+                      onClick={async () => {
+                        await fetch("/api/auth/logout", { method: "POST" });
+                        window.location.href = "/";
+                      }}
+                      className="w-full cursor-pointer"
+                      data-testid="link-logout"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
-                    </a>
+                    </button>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" asChild className={`hidden sm:inline-flex ${isDarkHeader ? 'text-white hover:bg-white/10' : ''}`} data-testid="button-login">
-                  <a href="/api/login">Sign In</a>
+                  <Link href="/login">Sign In</Link>
                 </Button>
-                <Button asChild data-testid="button-book-now">
-                  <Link href="/chefs">Book Now</Link>
+                <Button asChild data-testid="button-signup">
+                  <Link href="/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
@@ -148,9 +155,11 @@ export function Header() {
               </span>
             </Link>
             {!isAuthenticated && (
-              <a href="/api/login" className="block py-2 text-sm font-medium text-primary">
-                Sign In
-              </a>
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <span className="block py-2 text-sm font-medium text-primary">
+                  Sign In
+                </span>
+              </Link>
             )}
           </div>
         </div>

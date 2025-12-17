@@ -10,9 +10,13 @@ import { authStorage } from "./storage";
 
 const getOidcConfig = memoize(
   async () => {
+    const replId = process.env.REPL_ID;
+    if (!replId) {
+      throw new Error('REPL_ID environment variable is not set. Authentication disabled.');
+    }
     return await client.discovery(
       new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
+      replId
     );
   },
   { maxAge: 3600 * 1000 }
@@ -20,6 +24,15 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required for session management');
+  }
+  
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required for session storage');
+  }
+  
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -28,7 +41,7 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -61,12 +74,26 @@ async function upsertUser(claims: any) {
 }
 
 export async function setupAuth(app: Express) {
+  // Check if authentication can be set up
+  if (!process.env.REPL_ID || !process.env.SESSION_SECRET || !process.env.DATABASE_URL) {
+    console.warn('⚠️  Authentication disabled: Missing required environment variables (REPL_ID, SESSION_SECRET, or DATABASE_URL)');
+    console.warn('⚠️  The app will run without authentication. This is OK for development but NOT for production.');
+    return;
+  }
+
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const config = await getOidcConfig();
+  let config;
+  try {
+    config = await getOidcConfig();
+  } catch (error: any) {
+    console.warn('⚠️  Failed to initialize authentication:', error.message);
+    console.warn('⚠️  The app will continue without authentication.');
+    return;
+  }
 
   const verify: VerifyFunction = async (
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
@@ -120,12 +147,16 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      if (config && process.env.REPL_ID) {
+        res.redirect(
+          client.buildEndSessionUrl(config, {
+            client_id: process.env.REPL_ID,
+            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          }).href
+        );
+      } else {
+        res.redirect('/');
+      }
     });
   });
 }

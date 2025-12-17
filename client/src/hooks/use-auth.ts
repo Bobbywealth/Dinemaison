@@ -14,7 +14,8 @@ async function fetchUser(): Promise<User | null> {
     throw new Error(`${response.status}: ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  return data.user || null;
 }
 
 export function useAuth() {

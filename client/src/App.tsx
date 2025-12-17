@@ -11,12 +11,20 @@ import BecomeChefPage from "@/pages/become-chef";
 import BookingPage from "@/pages/booking";
 import ChefOnboardingPage from "@/pages/chef-onboarding";
 import DashboardRouter from "@/pages/dashboard";
+import LoginPage from "@/pages/login";
+import SignupPage from "@/pages/signup";
+import ForgotPasswordPage from "@/pages/forgot-password";
+import ResetPasswordPage from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/signup" component={SignupPage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
+      <Route path="/reset-password/:token" component={ResetPasswordPage} />
       <Route path="/chefs" component={ChefsPage} />
       <Route path="/chefs/:id" component={ChefProfilePage} />
       <Route path="/become-chef" component={BecomeChefPage} />
@@ -30,14 +38,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark">
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
