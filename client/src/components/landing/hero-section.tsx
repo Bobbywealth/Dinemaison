@@ -16,7 +16,7 @@ export function HeroSection() {
         className="absolute inset-0 w-full h-full object-cover"
         poster={diningImage}
       >
-        <source src="https://2y90dcq9dm.ucarecd.net/9c87d141-47d9-4af4-9ea7-2bdbbe897fa0/Chefscooking.mp4" type="video/mp4" />
+        <source src="https://ucarecdn.com/9c87d141-47d9-4af4-9ea7-2bdbbe897fa0/Chefscooking.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
       
