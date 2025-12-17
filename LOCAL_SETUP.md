@@ -59,7 +59,23 @@ This will create all necessary tables in your database.
 
 ---
 
-## Step 5: Start Development Server
+## Step 5: Seed Test Accounts (Optional)
+
+```bash
+npm run db:seed
+```
+
+This creates test accounts for development:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | admin@dinemaison.com | admin123 |
+| **Chef** | chef@dinemaison.com | chef123 |
+| **Customer** | customer@dinemaison.com | customer123 |
+
+---
+
+## Step 6: Start Development Server
 
 ```bash
 npm run dev

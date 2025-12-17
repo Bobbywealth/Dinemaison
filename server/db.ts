@@ -18,9 +18,14 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+// Determine SSL settings based on environment and connection string
+const useSSL = process.env.NODE_ENV === 'production' || 
+               process.env.DATABASE_URL?.includes('render.com') ||
+               process.env.DATABASE_URL?.includes('sslmode=require');
+
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 // Test database connection
