@@ -77,6 +77,20 @@ import {
   LayoutDashboard,
   CheckSquare,
   LogOut,
+  Table2 as TableIcon,
+  Globe,
+  Server,
+  UserCog,
+  Bell,
+  Zap,
+  Lock,
+  Image,
+  Save,
+  AlertTriangle,
+  Code,
+  Mail,
+  BookOpen,
+  Utensils,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -130,6 +144,7 @@ export default function AdminDashboard() {
   const [newMarketName, setNewMarketName] = useState("");
   const [newMarketDescription, setNewMarketDescription] = useState("");
   const [addChefOpen, setAddChefOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState("general");
   const [newChefData, setNewChefData] = useState({
     email: "",
     password: "",
@@ -520,7 +535,14 @@ export default function AdminDashboard() {
 
   const handleSectionChange = useCallback(
     (sectionId: string) => {
-      if (!adminNavItems.some((item) => item.id === sectionId)) {
+      const navItem = adminNavItems.find((item) => item.id === sectionId);
+      if (!navItem) {
+        return;
+      }
+
+      // If the nav item has an href, navigate to that URL
+      if (navItem.href) {
+        window.location.href = navItem.href;
         return;
       }
 
@@ -898,107 +920,207 @@ export default function AdminDashboard() {
                     <CardTitle className="text-base md:text-lg">All Bookings</CardTitle>
                     <CardDescription className="text-xs md:text-sm">View and manage platform bookings</CardDescription>
                   </div>
-                  <Select defaultValue="all">
-                    <SelectTrigger className="w-full sm:w-40 rounded-xl">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Bookings</SelectItem>
-                      <SelectItem value="requested">Requested</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Mobile: Horizontal filter chips */}
-                <div className="flex gap-2 overflow-x-auto pb-2 md:hidden scrollbar-hide">
-                  <button className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium whitespace-nowrap">
-                    All
-                  </button>
-                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
-                    Pending
-                  </button>
-                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
-                    Confirmed
-                  </button>
-                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
-                    Cancelled
-                  </button>
+                  <div className="flex gap-2">
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-full sm:w-40 rounded-xl">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Bookings</SelectItem>
+                        <SelectItem value="requested">Requested</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                {(allBookings?.length || 0) > 0 ? (
-                  <>
-                    {/* Mobile: Card list view */}
-                    <div className="space-y-3 md:hidden">
-                      {(allBookings || []).slice(0, 10).map((booking) => (
-                        <div key={booking.id} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-                          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <Calendar className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div>
-                                <p className="font-semibold text-sm">{booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy")}</p>
-                                <p className="text-xs text-muted-foreground font-mono">ID: {booking.id.slice(0, 8)}</p>
-                              </div>
-                              <Badge variant="outline" className={cn("text-xs shrink-0", statusColors[booking.status || "requested"])}>
-                                {booking.status}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Chef: {booking.chefId.slice(0, 8)}</span>
-                              <span className="font-semibold text-foreground text-sm">${(parseFloat(booking.total) / 100).toFixed(2)}</span>
-                            </div>
-                          </div>
-                          <button className="text-muted-foreground hover:text-foreground">
-                            <ArrowUpRight className="h-5 w-5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                <Tabs value={bookingsView} onValueChange={(v) => setBookingsView(v as "table" | "calendar")} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="table" className="flex items-center gap-2">
+                      <TableIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline">Table View</span>
+                      <span className="sm:hidden">Table</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="calendar" className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span className="hidden sm:inline">Calendar View</span>
+                      <span className="sm:hidden">Calendar</span>
+                    </TabsTrigger>
+                  </TabsList>
 
-                    {/* Desktop: Table view */}
-                    <div className="hidden md:block overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Booking ID</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Chef</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                  <TabsContent value="table" className="mt-0">
+                    {(allBookings?.length || 0) > 0 ? (
+                      <>
+                        {/* Mobile: Card list view */}
+                        <div className="space-y-3 md:hidden">
                           {(allBookings || []).slice(0, 10).map((booking) => (
-                            <TableRow key={booking.id}>
-                              <TableCell className="font-mono text-xs">{booking.id.slice(0, 8)}...</TableCell>
-                              <TableCell>{booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy")}</TableCell>
-                              <TableCell>{booking.customerId.slice(0, 8)}...</TableCell>
-                              <TableCell>{booking.chefId.slice(0, 8)}...</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className={statusColors[booking.status || "requested"]}>
-                                  {booking.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right font-medium">${(parseFloat(booking.total) / 100).toFixed(2)}</TableCell>
-                            </TableRow>
+                            <div key={booking.id} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                <Calendar className="h-6 w-6 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <p className="font-semibold text-sm">{booking.eventDate && format(parseISO(booking.eventDate), "MMM d, yyyy")}</p>
+                                    <p className="text-xs text-muted-foreground font-mono">ID: {booking.id.slice(0, 8)}</p>
+                                  </div>
+                                  <Badge variant="outline" className={cn("text-xs shrink-0", statusColors[booking.status || "requested"])}>
+                                    {booking.status}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                  <span>Chef: {booking.chefId.slice(0, 8)}</span>
+                                  <span className="font-semibold text-foreground text-sm">${(parseFloat(booking.total) / 100).toFixed(2)}</span>
+                                </div>
+                              </div>
+                              <button className="text-muted-foreground hover:text-foreground">
+                                <ArrowUpRight className="h-5 w-5" />
+                              </button>
+                            </div>
                           ))}
-                        </TableBody>
-                      </Table>
+                        </div>
+
+                        {/* Desktop: Table view */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Booking ID</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Customer</TableHead>
+                                <TableHead>Chef</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {(allBookings || []).slice(0, 10).map((booking) => (
+                                <TableRow key={booking.id}>
+                                  <TableCell className="font-mono text-xs">{booking.id.slice(0, 8)}...</TableCell>
+                                  <TableCell>{booking.eventDate && format(parseISO(booking.eventDate), "MMM d, yyyy")}</TableCell>
+                                  <TableCell>{booking.customerId.slice(0, 8)}...</TableCell>
+                                  <TableCell>{booking.chefId.slice(0, 8)}...</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className={statusColors[booking.status || "requested"]}>
+                                      {booking.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right font-medium">${(parseFloat(booking.total) / 100).toFixed(2)}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="font-semibold text-foreground mb-2 text-sm md:text-base">No bookings yet</h3>
+                        <p className="text-muted-foreground text-xs md:text-sm">Bookings will appear here once customers start booking</p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="calendar" className="mt-0">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Calendar */}
+                      <div className="lg:col-span-2">
+                        <div className="flex justify-center">
+                          <CalendarComponent
+                            mode="single"
+                            selected={selectedCalendarDate}
+                            onSelect={setSelectedCalendarDate}
+                            className="rounded-md border shadow-sm"
+                            modifiers={{
+                              booked: datesWithBookings,
+                            }}
+                            modifiersClassNames={{
+                              booked: "bg-primary/20 text-primary font-bold relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full",
+                            }}
+                          />
+                        </div>
+                        <div className="mt-4 flex items-center gap-4 justify-center text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-primary"></div>
+                            <span className="text-muted-foreground">Has Bookings</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full border-2 border-muted-foreground"></div>
+                            <span className="text-muted-foreground">No Bookings</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Booking Details for Selected Date */}
+                      <div className="lg:col-span-1">
+                        {selectedCalendarDate ? (
+                          <Card className="border-border/50">
+                            <CardHeader>
+                              <CardTitle className="text-base">
+                                {format(selectedCalendarDate, "MMMM d, yyyy")}
+                              </CardTitle>
+                              <CardDescription>
+                                {selectedDateBookings.length} {selectedDateBookings.length === 1 ? 'booking' : 'bookings'}
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              {selectedDateBookings.length > 0 ? (
+                                <div className="space-y-3 max-h-96 overflow-y-auto">
+                                  {selectedDateBookings.map((booking) => (
+                                    <div key={booking.id} className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div className="space-y-1">
+                                          <p className="text-sm font-medium">{booking.eventTime || 'Time TBD'}</p>
+                                          <p className="text-xs text-muted-foreground font-mono">
+                                            ID: {booking.id.slice(0, 8)}
+                                          </p>
+                                        </div>
+                                        <Badge variant="outline" className={cn("text-xs", statusColors[booking.status || "requested"])}>
+                                          {booking.status}
+                                        </Badge>
+                                      </div>
+                                      <div className="space-y-1 text-xs text-muted-foreground">
+                                        <p>
+                                          <span className="font-medium">Guests:</span> {booking.guestCount}
+                                        </p>
+                                        <p>
+                                          <span className="font-medium">Total:</span> ${(parseFloat(booking.total) / 100).toFixed(2)}
+                                        </p>
+                                        {booking.eventAddress && (
+                                          <p className="line-clamp-1">
+                                            <MapPin className="h-3 w-3 inline mr-1" />
+                                            {booking.eventAddress}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8">
+                                  <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                                  <p className="text-sm text-muted-foreground">No bookings on this date</p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <Card className="border-border/50">
+                            <CardContent className="pt-6">
+                              <div className="text-center py-8">
+                                <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                                <p className="text-sm text-muted-foreground">Select a date to view bookings</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2 text-sm md:text-base">No bookings yet</h3>
-                    <p className="text-muted-foreground text-xs md:text-sm">Bookings will appear here once customers start booking</p>
-                  </div>
-                )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
         </section>
@@ -2363,97 +2485,950 @@ export default function AdminDashboard() {
       {/* Settings Section */}
       {activeSection === "settings" && (
         <section id="settings" className="space-y-6">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Platform Settings</CardTitle>
-                  <CardDescription>Configure platform-wide settings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Platform Fee (%)</label>
-                      <div className="flex items-center gap-2">
-                        <Input 
-                          type="number" 
-                          defaultValue={platformSettings?.find((s: any) => s.key === 'platformFee')?.value || 15}
-                          className="w-24"
-                          onBlur={(e) => updateSetting.mutate({ key: 'platformFee', value: e.target.value })}
-                        />
-                        <span className="text-muted-foreground">%</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Commission taken from each booking</p>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Minimum Booking Amount</label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">$</span>
-                        <Input 
-                          type="number" 
-                          defaultValue={platformSettings?.find((s: any) => s.key === 'minBooking')?.value || 100}
-                          className="w-24"
-                          onBlur={(e) => updateSetting.mutate({ key: 'minBooking', value: e.target.value })}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">Minimum order value for bookings</p>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Payout Delay (days)</label>
-                      <div className="flex items-center gap-2">
-                        <Input 
-                          type="number" 
-                          defaultValue={platformSettings?.find((s: any) => s.key === 'payoutDelay')?.value || 3}
-                          className="w-24"
-                          onBlur={(e) => updateSetting.mutate({ key: 'payoutDelay', value: e.target.value })}
-                        />
-                        <span className="text-muted-foreground">days</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Days after booking completion before chef payout</p>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Cancellation Window (hours)</label>
-                      <div className="flex items-center gap-2">
-                        <Input 
-                          type="number" 
-                          defaultValue={platformSettings?.find((s: any) => s.key === 'cancellationWindow')?.value || 48}
-                          className="w-24"
-                          onBlur={(e) => updateSetting.mutate({ key: 'cancellationWindow', value: e.target.value })}
-                        />
-                        <span className="text-muted-foreground">hours</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Hours before event for free cancellation</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Platform Settings
+              </CardTitle>
+              <CardDescription>Configure and manage your platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={settingsTab} onValueChange={setSettingsTab} className="space-y-6">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+                  <TabsTrigger value="general" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span className="hidden sm:inline">General</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span className="hidden sm:inline">Email</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="members" className="flex items-center gap-2">
+                    <UserCog className="h-4 w-4" />
+                    <span className="hidden sm:inline">Members</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="platform" className="flex items-center gap-2">
+                    <Server className="h-4 w-4" />
+                    <span className="hidden sm:inline">Platform</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="features" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    <span className="hidden sm:inline">Features</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>Administrative actions and exports</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Button variant="outline" className="justify-start" onClick={() => handleExport('bookings')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Bookings
-                    </Button>
-                    <Button variant="outline" className="justify-start" onClick={() => handleExport('chefs')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Chefs
-                    </Button>
-                    <Button variant="outline" className="justify-start" onClick={() => handleExport('users')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Users
-                    </Button>
-                    <Button variant="outline" className="justify-start" onClick={() => handleExport('transactions')}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Transactions
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                {/* General Settings Tab */}
+                <TabsContent value="general" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Site Information</CardTitle>
+                      <CardDescription>Basic site configuration and branding</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Site Name</label>
+                        <Input 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'siteName')?.value || 'Dine Maison'}
+                          onBlur={(e) => updateSetting.mutate({ key: 'siteName', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">The name of your platform</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Site Tagline</label>
+                        <Input 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'siteTagline')?.value || 'Premium Private Chef Services'}
+                          onBlur={(e) => updateSetting.mutate({ key: 'siteTagline', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">Short description shown in headers and meta tags</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Site Description</label>
+                        <Input 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'siteDescription')?.value || 'Connect with talented private chefs for unforgettable culinary experiences'}
+                          onBlur={(e) => updateSetting.mutate({ key: 'siteDescription', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">Used for SEO and social sharing</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Contact Email</label>
+                        <Input 
+                          type="email"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'contactEmail')?.value || 'info@dinemaison.com'}
+                          onBlur={(e) => updateSetting.mutate({ key: 'contactEmail', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">Main contact email for support inquiries</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Support Phone</label>
+                        <Input 
+                          type="tel"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'supportPhone')?.value || ''}
+                          placeholder="+1 (555) 123-4567"
+                          onBlur={(e) => updateSetting.mutate({ key: 'supportPhone', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">Customer support phone number</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Logo URL</label>
+                        <Input 
+                          type="url"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'logoUrl')?.value || ''}
+                          placeholder="https://example.com/logo.png"
+                          onBlur={(e) => updateSetting.mutate({ key: 'logoUrl', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">URL to your site logo image</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Favicon URL</label>
+                        <Input 
+                          type="url"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'faviconUrl')?.value || ''}
+                          placeholder="https://example.com/favicon.ico"
+                          onBlur={(e) => updateSetting.mutate({ key: 'faviconUrl', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">URL to your favicon</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Maintenance Mode</CardTitle>
+                      <CardDescription>Temporarily disable public access for maintenance</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Enable Maintenance Mode</label>
+                          <p className="text-xs text-muted-foreground">Site will show maintenance page to non-admins</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'maintenanceMode')?.value ? "destructive" : "outline"}
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'maintenanceMode', 
+                            value: !platformSettings?.find((s: any) => s.key === 'maintenanceMode')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'maintenanceMode')?.value ? 'Disable' : 'Enable'}
+                        </Button>
+                      </div>
+                      
+                      {platformSettings?.find((s: any) => s.key === 'maintenanceMode')?.value && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Maintenance Message</label>
+                          <Input 
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'maintenanceMessage')?.value || 'We are currently performing scheduled maintenance'}
+                            onBlur={(e) => updateSetting.mutate({ key: 'maintenanceMessage', value: e.target.value })}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Email Settings Tab */}
+                <TabsContent value="email" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Email Configuration</CardTitle>
+                      <CardDescription>SMTP settings for outgoing emails</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">SMTP Host</label>
+                        <Input 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'smtpHost')?.value || ''}
+                          placeholder="smtp.gmail.com"
+                          onBlur={(e) => updateSetting.mutate({ key: 'smtpHost', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">SMTP server hostname</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">SMTP Port</label>
+                          <Input 
+                            type="number"
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'smtpPort')?.value || 587}
+                            onBlur={(e) => updateSetting.mutate({ key: 'smtpPort', value: parseInt(e.target.value) })}
+                          />
+                          <p className="text-xs text-muted-foreground">Usually 587 or 465</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Use TLS/SSL</label>
+                          <Select 
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'smtpSecure')?.value || 'tls'}
+                            onValueChange={(value) => updateSetting.mutate({ key: 'smtpSecure', value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="tls">TLS</SelectItem>
+                              <SelectItem value="ssl">SSL</SelectItem>
+                              <SelectItem value="none">None</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">SMTP Username</label>
+                        <Input 
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'smtpUsername')?.value || ''}
+                          placeholder="your-email@gmail.com"
+                          onBlur={(e) => updateSetting.mutate({ key: 'smtpUsername', value: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">SMTP Password</label>
+                        <Input 
+                          type="password"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'smtpPassword')?.value || ''}
+                          placeholder="••••••••"
+                          onBlur={(e) => updateSetting.mutate({ key: 'smtpPassword', value: e.target.value })}
+                        />
+                        <p className="text-xs text-muted-foreground">⚠️ Stored securely but consider using environment variables</p>
+                      </div>
+                      
+                      <div className="border-t pt-4 space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">From Email</label>
+                          <Input 
+                            type="email"
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'emailFrom')?.value || 'noreply@dinemaison.com'}
+                            onBlur={(e) => updateSetting.mutate({ key: 'emailFrom', value: e.target.value })}
+                          />
+                          <p className="text-xs text-muted-foreground">Email address shown as sender</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">From Name</label>
+                          <Input 
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'emailFromName')?.value || 'Dine Maison'}
+                            onBlur={(e) => updateSetting.mutate({ key: 'emailFromName', value: e.target.value })}
+                          />
+                          <p className="text-xs text-muted-foreground">Name shown as sender</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Reply-To Email</label>
+                          <Input 
+                            type="email"
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'emailReplyTo')?.value || ''}
+                            placeholder="support@dinemaison.com"
+                            onBlur={(e) => updateSetting.mutate({ key: 'emailReplyTo', value: e.target.value })}
+                          />
+                          <p className="text-xs text-muted-foreground">Where replies should go</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2 pt-4">
+                        <Button variant="outline" className="flex-1">
+                          <Send className="h-4 w-4 mr-2" />
+                          Send Test Email
+                        </Button>
+                        <Button variant="secondary" className="flex-1">
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Configuration
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Email Notifications</CardTitle>
+                      <CardDescription>Control which emails are sent automatically</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Welcome Emails</label>
+                          <p className="text-xs text-muted-foreground">Send welcome email to new users</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'emailWelcome')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'emailWelcome', 
+                            value: platformSettings?.find((s: any) => s.key === 'emailWelcome')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'emailWelcome')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Booking Confirmations</label>
+                          <p className="text-xs text-muted-foreground">Send confirmation emails for bookings</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'emailBooking')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'emailBooking', 
+                            value: platformSettings?.find((s: any) => s.key === 'emailBooking')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'emailBooking')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Reminder Emails</label>
+                          <p className="text-xs text-muted-foreground">Send booking reminders</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'emailReminders')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'emailReminders', 
+                            value: platformSettings?.find((s: any) => s.key === 'emailReminders')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'emailReminders')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Members Settings Tab */}
+                <TabsContent value="members" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">User Registration</CardTitle>
+                      <CardDescription>Control how users can sign up</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Allow New Registrations</label>
+                          <p className="text-xs text-muted-foreground">Enable or disable new user signups</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'registrationOpen')?.value !== false ? "default" : "destructive"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'registrationOpen', 
+                            value: platformSettings?.find((s: any) => s.key === 'registrationOpen')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'registrationOpen')?.value !== false ? 'Open' : 'Closed'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Require Email Verification</label>
+                          <p className="text-xs text-muted-foreground">Users must verify email before accessing platform</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'requireEmailVerification')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'requireEmailVerification', 
+                            value: !platformSettings?.find((s: any) => s.key === 'requireEmailVerification')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'requireEmailVerification')?.value ? 'Required' : 'Optional'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Allow Social Login</label>
+                          <p className="text-xs text-muted-foreground">Enable Google, Facebook, etc.</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'socialLogin')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'socialLogin', 
+                            value: platformSettings?.find((s: any) => s.key === 'socialLogin')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'socialLogin')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Chef Registration</CardTitle>
+                      <CardDescription>Settings specific to chef accounts</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Chef Registration Open</label>
+                          <p className="text-xs text-muted-foreground">Allow new chefs to register</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'chefRegistrationOpen')?.value !== false ? "default" : "destructive"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'chefRegistrationOpen', 
+                            value: platformSettings?.find((s: any) => s.key === 'chefRegistrationOpen')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'chefRegistrationOpen')?.value !== false ? 'Open' : 'Closed'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Auto-Approve Chefs</label>
+                          <p className="text-xs text-muted-foreground">New chefs are active immediately without admin review</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'autoApproveChefs')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'autoApproveChefs', 
+                            value: !platformSettings?.find((s: any) => s.key === 'autoApproveChefs')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'autoApproveChefs')?.value ? 'Auto-Approve' : 'Manual Review'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Require Chef Background Check</label>
+                          <p className="text-xs text-muted-foreground">Chefs must complete background verification</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'requireBackgroundCheck')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'requireBackgroundCheck', 
+                            value: !platformSettings?.find((s: any) => s.key === 'requireBackgroundCheck')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'requireBackgroundCheck')?.value ? 'Required' : 'Optional'}
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Minimum Chef Experience (years)</label>
+                        <Input 
+                          type="number"
+                          min="0"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'minChefExperience')?.value || 0}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'minChefExperience', value: parseInt(e.target.value) })}
+                        />
+                        <p className="text-xs text-muted-foreground">Required years of professional experience</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Member Permissions</CardTitle>
+                      <CardDescription>Control what members can do</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Allow Reviews</label>
+                          <p className="text-xs text-muted-foreground">Customers can leave reviews</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'allowReviews')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'allowReviews', 
+                            value: platformSettings?.find((s: any) => s.key === 'allowReviews')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'allowReviews')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Moderate Reviews</label>
+                          <p className="text-xs text-muted-foreground">Reviews require admin approval before publishing</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'moderateReviews')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'moderateReviews', 
+                            value: !platformSettings?.find((s: any) => s.key === 'moderateReviews')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'moderateReviews')?.value ? 'Moderate' : 'Auto-Publish'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Allow Direct Messaging</label>
+                          <p className="text-xs text-muted-foreground">Enable member-to-member messaging</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'allowMessaging')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'allowMessaging', 
+                            value: platformSettings?.find((s: any) => s.key === 'allowMessaging')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'allowMessaging')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Platform Settings Tab */}
+                <TabsContent value="platform" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Financial Settings</CardTitle>
+                      <CardDescription>Commission, fees, and payment settings</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Platform Fee (%)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'platformFee')?.value || 15}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'platformFee', value: parseFloat(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">%</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Commission taken from each booking</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Service Fee (%)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'serviceFee')?.value || 5}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'serviceFee', value: parseFloat(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">%</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Fee charged to customers</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Minimum Booking Amount</label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">$</span>
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'minBooking')?.value || 100}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'minBooking', value: parseFloat(e.target.value) })}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">Minimum order value for bookings</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Currency</label>
+                          <Select 
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'currency')?.value || 'USD'}
+                            onValueChange={(value) => updateSetting.mutate({ key: 'currency', value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USD">USD - US Dollar</SelectItem>
+                              <SelectItem value="EUR">EUR - Euro</SelectItem>
+                              <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                              <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Booking Policies</CardTitle>
+                      <CardDescription>Timeframes and policies for bookings</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Payout Delay (days)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'payoutDelay')?.value || 3}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'payoutDelay', value: parseInt(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">days</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Days after booking completion before chef payout</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Cancellation Window (hours)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'cancellationWindow')?.value || 48}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'cancellationWindow', value: parseInt(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">hours</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Hours before event for free cancellation</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Booking Lead Time (hours)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'bookingLeadTime')?.value || 24}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'bookingLeadTime', value: parseInt(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">hours</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Minimum time before event for new bookings</p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Max Booking Advance (days)</label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              type="number" 
+                              defaultValue={platformSettings?.find((s: any) => s.key === 'maxBookingAdvance')?.value || 90}
+                              className="w-24"
+                              onBlur={(e) => updateSetting.mutate({ key: 'maxBookingAdvance', value: parseInt(e.target.value) })}
+                            />
+                            <span className="text-muted-foreground">days</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">How far in advance bookings can be made</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Search & Discovery</CardTitle>
+                      <CardDescription>How chefs appear in search results</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Default Search Radius (miles)</label>
+                        <Input 
+                          type="number"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'defaultSearchRadius')?.value || 25}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'defaultSearchRadius', value: parseInt(e.target.value) })}
+                        />
+                        <p className="text-xs text-muted-foreground">Default distance for chef search</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Results Per Page</label>
+                        <Input 
+                          type="number"
+                          defaultValue={platformSettings?.find((s: any) => s.key === 'resultsPerPage')?.value || 12}
+                          className="w-24"
+                          onBlur={(e) => updateSetting.mutate({ key: 'resultsPerPage', value: parseInt(e.target.value) })}
+                        />
+                        <p className="text-xs text-muted-foreground">Number of chefs shown per page</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Featured Chefs</label>
+                          <p className="text-xs text-muted-foreground">Show featured chefs at top of results</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'showFeatured')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'showFeatured', 
+                            value: platformSettings?.find((s: any) => s.key === 'showFeatured')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'showFeatured')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Features Tab */}
+                <TabsContent value="features" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Platform Features</CardTitle>
+                      <CardDescription>Enable or disable platform features</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Real-time Notifications</label>
+                          <p className="text-xs text-muted-foreground">Push notifications and live updates</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'realtimeNotifications')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'realtimeNotifications', 
+                            value: platformSettings?.find((s: any) => s.key === 'realtimeNotifications')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'realtimeNotifications')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Chef Verification System</label>
+                          <p className="text-xs text-muted-foreground">Badge system for verified chefs</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'chefVerification')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'chefVerification', 
+                            value: platformSettings?.find((s: any) => s.key === 'chefVerification')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'chefVerification')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Chef Analytics</label>
+                          <p className="text-xs text-muted-foreground">Performance metrics for chefs</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'chefAnalytics')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'chefAnalytics', 
+                            value: platformSettings?.find((s: any) => s.key === 'chefAnalytics')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'chefAnalytics')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Customer Favorites</label>
+                          <p className="text-xs text-muted-foreground">Allow saving favorite chefs</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'customerFavorites')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'customerFavorites', 
+                            value: platformSettings?.find((s: any) => s.key === 'customerFavorites')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'customerFavorites')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Promotional Codes</label>
+                          <p className="text-xs text-muted-foreground">Discount and promo code system</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'promoCodes')?.value !== false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'promoCodes', 
+                            value: platformSettings?.find((s: any) => s.key === 'promoCodes')?.value === false 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'promoCodes')?.value !== false ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Gift Cards</label>
+                          <p className="text-xs text-muted-foreground">Platform gift card purchases</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'giftCards')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'giftCards', 
+                            value: !platformSettings?.find((s: any) => s.key === 'giftCards')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'giftCards')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Referral Program</label>
+                          <p className="text-xs text-muted-foreground">Reward users for referrals</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'referralProgram')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'referralProgram', 
+                            value: !platformSettings?.find((s: any) => s.key === 'referralProgram')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'referralProgram')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Blog/Content System</label>
+                          <p className="text-xs text-muted-foreground">Platform blog and articles</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'blogSystem')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'blogSystem', 
+                            value: !platformSettings?.find((s: any) => s.key === 'blogSystem')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'blogSystem')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Integration Features</CardTitle>
+                      <CardDescription>Third-party integrations</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Google Analytics</label>
+                          <p className="text-xs text-muted-foreground">Track site analytics</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'googleAnalytics')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'googleAnalytics', 
+                            value: !platformSettings?.find((s: any) => s.key === 'googleAnalytics')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'googleAnalytics')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      {platformSettings?.find((s: any) => s.key === 'googleAnalytics')?.value && (
+                        <div className="space-y-2 pl-4">
+                          <label className="text-sm font-medium">GA Tracking ID</label>
+                          <Input 
+                            placeholder="G-XXXXXXXXXX"
+                            defaultValue={platformSettings?.find((s: any) => s.key === 'gaTrackingId')?.value || ''}
+                            onBlur={(e) => updateSetting.mutate({ key: 'gaTrackingId', value: e.target.value })}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">Live Chat Support</label>
+                          <p className="text-xs text-muted-foreground">Intercom, Zendesk, etc.</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'liveChat')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'liveChat', 
+                            value: !platformSettings?.find((s: any) => s.key === 'liveChat')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'liveChat')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">SMS Notifications</label>
+                          <p className="text-xs text-muted-foreground">Twilio SMS integration</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'smsNotifications')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'smsNotifications', 
+                            value: !platformSettings?.find((s: any) => s.key === 'smsNotifications')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'smsNotifications')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Export Data</CardTitle>
+                      <CardDescription>Administrative actions and exports</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Button variant="outline" className="justify-start" onClick={() => handleExport('bookings')}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Bookings
+                        </Button>
+                        <Button variant="outline" className="justify-start" onClick={() => handleExport('chefs')}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Chefs
+                        </Button>
+                        <Button variant="outline" className="justify-start" onClick={() => handleExport('users')}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Users
+                        </Button>
+                        <Button variant="outline" className="justify-start" onClick={() => handleExport('transactions')}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Transactions
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </section>
       )}
     </DashboardLayout>

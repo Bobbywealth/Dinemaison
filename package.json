@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:endpoints": "tsx script/test-endpoints.ts",
     "pwa:icons": "npx tsx script/generate-pwa-icons.ts",
     "pwa:screenshots": "npx tsx script/generate-screenshots.ts",
     "pwa:vapid": "npx tsx script/generate-vapid-keys.ts",
