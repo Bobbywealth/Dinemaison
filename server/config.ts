@@ -145,3 +145,4 @@ export function isFeatureEnabled(feature: 'auth' | 'stripe' | 'websocket'): bool
       return false;
   }
 }
+

@@ -18,3 +18,4 @@ export const FEATURES = {
   WEBSOCKET_ENABLED: true,
   ANALYTICS_ENABLED: !__DEV__,
 };
+

@@ -325,3 +325,4 @@ const resetTokenExpiry = new Date(Date.now() + 86400000);
 - [Resend Documentation](https://resend.com/docs)
 - [Nodemailer Guide](https://nodemailer.com/)
 
+

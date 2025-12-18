@@ -138,3 +138,4 @@ export const uploadDocumentMiddleware = () => {
     allowedTypes: [...config.uploads.allowedDocumentTypes],
   });
 };
+

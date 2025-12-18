@@ -69,3 +69,4 @@ describe('ErrorBoundary', () => {
     process.env.NODE_ENV = originalEnv;
   });
 });
+

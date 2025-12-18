@@ -44,3 +44,4 @@ describe('Logger', () => {
     expect(console.error).toHaveBeenCalled();
   });
 });
+

@@ -636,3 +636,4 @@ function ColorSwatch({ color, name }: { color: string; name: string }) {
     </div>
   );
 }
+

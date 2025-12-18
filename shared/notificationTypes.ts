@@ -99,3 +99,4 @@ export interface SendNotificationOptions {
   skipPreferences?: boolean;
   scheduledFor?: Date;
 }
+

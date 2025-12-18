@@ -170,3 +170,4 @@ export function formatBookingSMS(
 
   return messages[type] || `Booking update with ${chefName}`;
 }
+

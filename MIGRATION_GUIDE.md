@@ -206,3 +206,4 @@ If you encounter migration issues:
 3. Ensure database user has CREATE, INSERT, UPDATE permissions
 4. Review `ROOT_CAUSE_ANALYSIS.md` for common issues
 5. Contact support: support@dinemaison.com
+

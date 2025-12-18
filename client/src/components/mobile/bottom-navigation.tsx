@@ -117,3 +117,4 @@ export function BottomNavigation({ items = defaultItems, className }: BottomNavi
     </nav>
   );
 }
+

@@ -101,3 +101,4 @@ Your PWA is ready with:
 - ✅ Automatic updates
 
 Enjoy your Progressive Web App! 🚀
+

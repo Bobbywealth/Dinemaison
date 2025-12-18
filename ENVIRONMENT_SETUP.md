@@ -242,3 +242,4 @@ If you're stuck with environment setup:
 
 For Stripe setup help: https://stripe.com/docs/keys
 For database setup help: See `LOCAL_SETUP.md`
+

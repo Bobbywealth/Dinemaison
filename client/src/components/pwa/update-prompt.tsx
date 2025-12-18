@@ -48,3 +48,4 @@ export function UpdatePrompt() {
   // This component doesn't render anything itself - it uses toast notifications
   return null;
 }
+

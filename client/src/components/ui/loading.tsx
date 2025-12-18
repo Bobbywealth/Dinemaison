@@ -260,3 +260,4 @@ export function SuccessCheck({ className }: { className?: string }) {
     </motion.div>
   );
 }
+

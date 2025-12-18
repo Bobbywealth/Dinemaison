@@ -220,3 +220,4 @@ export async function showTestNotification(): Promise<void> {
     debug.error("Error showing test notification:", error);
   }
 }
+

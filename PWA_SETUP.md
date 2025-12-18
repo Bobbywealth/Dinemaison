@@ -403,3 +403,4 @@ Your PWA is now configured with:
 - ✅ Automatic updates
 
 Users can now install Dine Maison and use it like a native app!
+

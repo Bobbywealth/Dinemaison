@@ -43,3 +43,4 @@ END $$;
 -- Verify migration
 SELECT 'Markets created:' as message, COUNT(*) as count FROM markets;
 SELECT 'Chef-market assignments:' as message, COUNT(*) as count FROM chef_markets;
+

@@ -201,3 +201,4 @@ const maxRequests = 10;            // Only 10 auth attempts per 15 minutes
 ✅ **No breaking changes** - backward compatible  
 
 The app should now handle normal usage patterns without triggering rate limits, while still protecting against abuse and attacks.
+

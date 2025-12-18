@@ -38,3 +38,4 @@ describe('Config', () => {
     expect(config.uploads.allowedImageTypes).toContain('image/jpeg');
   });
 });
+

@@ -231,3 +231,4 @@ Check that `STRIPE_SECRET_KEY` is set in `.env`
 **Time to Launch:** 4-6 hours (configuration + testing)
 
 Happy cooking! 👨‍🍳👩‍🍳
+

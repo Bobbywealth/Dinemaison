@@ -69,3 +69,4 @@ generateScreenshots().catch((error) => {
   console.error("Error generating screenshots:", error);
   process.exit(1);
 });
+

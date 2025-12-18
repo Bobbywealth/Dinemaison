@@ -334,3 +334,4 @@ function getActionTextForNotificationType(type: NotificationType): string {
 
   return actionTexts[type] || 'View Details';
 }
+

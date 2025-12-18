@@ -21,3 +21,4 @@ END $$;
 -- Note: Existing users will need to reset their password or be migrated separately
 -- New users will have password set during signup
 
+

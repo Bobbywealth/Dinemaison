@@ -254,3 +254,4 @@ For detailed documentation:
 - **Mobile Setup**: `MOBILE_APP_SETUP.md`
 
 Need help? Check the troubleshooting sections in the full documentation!
+
