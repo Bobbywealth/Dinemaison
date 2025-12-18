@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       includeAssets: ["favicon.png", "*.jpg"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,woff,woff2}"],
@@ -68,6 +68,10 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        // Enable navigation preload for faster page loads
+        navigationPreload: true,
+        // Automatically reload pages when service worker updates
+        disableDevLogs: false,
       },
       manifest: {
         name: "Dine Maison - Private Chef Experiences",
@@ -78,7 +82,7 @@ export default defineConfig({
         display: "standalone",
         orientation: "portrait",
         scope: "/",
-        start_url: "/",
+        start_url: "/login",
         categories: ["food", "lifestyle", "business"],
         icons: [
           {

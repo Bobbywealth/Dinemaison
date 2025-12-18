@@ -141,7 +141,7 @@ export function HowItWorksSection() {
                 >
                   {/* Background image circle */}
                   <motion.div 
-                    className="w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl"
+                    className="w-32 h-32 sm:w-36 sm:h-36 md:w-32 md:h-32 lg:w-28 lg:h-28 rounded-full overflow-hidden border-4 border-background shadow-xl"
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -163,14 +163,14 @@ export function HowItWorksSection() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.4 + index * 0.1 }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <item.icon className="h-6 w-6 text-primary" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-20 md:h-20 lg:w-16 lg:h-16 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                      <item.icon className="h-10 w-10 sm:h-12 sm:w-12 md:h-10 md:w-10 lg:h-8 lg:w-8 text-primary" />
                     </div>
                   </motion.div>
                   
                   {/* Step number badge */}
                   <motion.span 
-                    className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center shadow-lg ring-2 ring-background"
+                    className="absolute -top-1 -right-1 w-10 h-10 sm:w-11 sm:h-11 md:w-10 md:h-10 rounded-full bg-primary text-primary-foreground text-sm sm:text-base font-bold flex items-center justify-center shadow-lg ring-2 ring-background"
                     initial={{ scale: 0, rotate: -180 }}
                     whileInView={{ scale: 1, rotate: 0 }}
                     viewport={{ once: true }}

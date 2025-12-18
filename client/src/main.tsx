@@ -11,13 +11,18 @@ debug.log("App initialization started", {
   timestamp: Date.now()
 });
 
-// Register service worker for PWA functionality
+// Register service worker for PWA functionality with auto-update
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    debug.log("PWA: New content available, prompting for update");
-    // Dispatch custom event for update prompt component
+    debug.log("PWA: New content available, auto-updating...");
+    // Dispatch custom event for update notification
     window.dispatchEvent(new CustomEvent("pwa-update-available"));
+    // Auto-reload after a short delay to apply updates
+    setTimeout(() => {
+      debug.log("PWA: Reloading to apply updates");
+      window.location.reload();
+    }, 1000);
   },
   onOfflineReady() {
     debug.log("PWA: App ready for offline use");
@@ -26,14 +31,55 @@ const updateSW = registerSW({
   },
   onRegistered(registration) {
     debug.log("PWA: Service Worker registered", { scope: registration?.scope });
+    
+    // Check for updates every 60 seconds
+    if (registration) {
+      setInterval(() => {
+        debug.log("PWA: Checking for updates...");
+        registration.update().catch((error) => {
+          debug.error("PWA: Update check failed", error);
+        });
+      }, 60000); // Check every 60 seconds
+    }
   },
   onRegisterError(error) {
     debug.error("PWA: Service Worker registration failed", error);
   },
 });
 
-// Expose update function globally for update prompt component
+// Expose update function globally for manual updates if needed
 (window as any).updatePWA = updateSW;
+
+// Check for updates when app becomes visible (user returns to app)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    debug.log("PWA: App became visible, checking for updates");
+    // Trigger service worker update check
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (registration) {
+          registration.update().catch((error) => {
+            debug.error("PWA: Manual update check failed", error);
+          });
+        }
+      });
+    }
+  }
+});
+
+// Listen for app focus to check for updates
+window.addEventListener("focus", () => {
+  debug.log("PWA: App gained focus, checking for updates");
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.getRegistration().then((registration) => {
+      if (registration) {
+        registration.update().catch((error) => {
+          debug.error("PWA: Focus update check failed", error);
+        });
+      }
+    });
+  }
+});
 
 // Ensure the DOM is fully loaded
 const renderApp = () => {

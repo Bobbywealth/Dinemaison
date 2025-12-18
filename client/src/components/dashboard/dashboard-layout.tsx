@@ -249,7 +249,7 @@ function DashboardTopBar({
   const isMobile = useIsMobile();
 
   return (
-    <div className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
           {isMobile ? (

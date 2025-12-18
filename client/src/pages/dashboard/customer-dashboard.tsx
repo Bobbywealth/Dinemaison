@@ -185,6 +185,7 @@ export default function CustomerDashboard() {
       { id: "past", title: "Past", icon: Clock },
       { id: "favorites", title: "Favorites", icon: Heart },
       { id: "reviews", title: "My Reviews", icon: MessageSquare },
+      { id: "more", title: "More", icon: Settings },
     ],
     [upcomingBookings.length]
   );
@@ -798,6 +799,167 @@ export default function CustomerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* More Section */}
+      {activeSection === "more" && (
+        <section id="more" className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">Settings & More</h2>
+            <p className="text-muted-foreground">Manage your account and preferences</p>
+          </div>
+
+          <div className="grid gap-4">
+            {/* Profile Card */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Account Information</CardTitle>
+                <CardDescription>View and manage your profile</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={user?.profileImageUrl || undefined} />
+                    <AvatarFallback className="text-lg">
+                      {user?.firstName?.charAt(0)}
+                      {user?.lastName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Bookings</p>
+                    <p className="text-2xl font-bold">{bookings?.length || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Spent</p>
+                    <p className="text-2xl font-bold">${totalSpent.toFixed(0)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  asChild
+                >
+                  <Link href="/chefs">
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <ChefHat className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium">Browse Chefs</p>
+                        <p className="text-sm text-muted-foreground">Find your next dining experience</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </Link>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("upcoming")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">View Upcoming Bookings</p>
+                      <p className="text-sm text-muted-foreground">
+                        {upcomingBookings.length} upcoming {upcomingBookings.length === 1 ? 'booking' : 'bookings'}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("favorites")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0">
+                      <Heart className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Favorite Chefs</p>
+                      <p className="text-sm text-muted-foreground">
+                        {favoriteChefs?.length || 0} favorite {favoriteChefs?.length === 1 ? 'chef' : 'chefs'}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Support */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Support & Help</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/faq">
+                    <MessageSquare className="mr-3 h-4 w-4" />
+                    FAQ
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/contact">
+                    <MessageSquare className="mr-3 h-4 w-4" />
+                    Contact Support
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/terms">
+                    <Settings className="mr-3 h-4 w-4" />
+                    Terms of Service
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/privacy">
+                    <Settings className="mr-3 h-4 w-4" />
+                    Privacy Policy
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
     </DashboardLayout>
   );
 }

@@ -12,19 +12,12 @@ export function UpdatePrompt() {
       setShowUpdatePrompt(true);
       
       toast({
-        title: "Update Available",
-        description: "A new version of Dine Maison is ready to install.",
+        title: "Updating App",
+        description: "Dine Maison is updating to the latest version...",
         action: (
-          <Button
-            size="sm"
-            onClick={handleUpdate}
-            variant="default"
-          >
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Update
-          </Button>
+          <RefreshCw className="h-4 w-4 animate-spin" />
         ),
-        duration: 0, // Don't auto-dismiss
+        duration: 2000, // Show briefly before auto-reload
       });
     };
 

@@ -193,6 +193,7 @@ export default function ChefDashboard() {
       { id: "reviews", title: "Reviews", icon: MessageSquare },
       { id: "menu", title: "Menu", icon: Utensils },
       { id: "profile", title: "Profile", icon: Settings },
+      { id: "more", title: "More", icon: Settings },
     ],
     [pendingRequests.length]
   );
@@ -926,6 +927,178 @@ export default function ChefDashboard() {
               </div>
             </CardContent>
           </Card>
+        </section>
+      )}
+
+      {/* More Section */}
+      {activeSection === "more" && (
+        <section id="more" className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">More Options</h2>
+            <p className="text-muted-foreground">Quick access to all features</p>
+          </div>
+
+          <div className="grid gap-4">
+            {/* Navigation Cards */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Navigation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("requests")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
+                      <Clock className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Pending Requests</p>
+                      <p className="text-sm text-muted-foreground">
+                        {pendingRequests.length} pending {pendingRequests.length === 1 ? 'request' : 'requests'}
+                      </p>
+                    </div>
+                    {pendingRequests.length > 0 && (
+                      <Badge variant="secondary">{pendingRequests.length}</Badge>
+                    )}
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("earnings")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                      <Wallet className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Earnings</p>
+                      <p className="text-sm text-muted-foreground">View your income and payouts</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("menu")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                      <Utensils className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Manage Menu</p>
+                      <p className="text-sm text-muted-foreground">Add and edit your offerings</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("profile")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                      <Settings className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Edit Profile</p>
+                      <p className="text-sm text-muted-foreground">
+                        Profile {profileCompleteness}% complete
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-4"
+                  onClick={() => handleSectionChange("calendar")}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                      <CalendarDays className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">Calendar View</p>
+                      <p className="text-sm text-muted-foreground">See your schedule</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Account Overview */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Account Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 mb-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={profile?.profileImageUrl || user?.profileImageUrl || undefined} />
+                    <AvatarFallback className="text-lg">
+                      {user?.firstName?.charAt(0)}
+                      {user?.lastName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg">{profile?.displayName || `${user?.firstName} ${user?.lastName}`}</p>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Bookings</p>
+                    <p className="text-2xl font-bold">{bookings?.length || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Profile Score</p>
+                    <p className="text-2xl font-bold">{profileCompleteness}%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Support Links */}
+            <Card className="hover-elevate">
+              <CardHeader>
+                <CardTitle className="text-lg">Support & Resources</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/faq">
+                    <MessageSquare className="mr-3 h-4 w-4" />
+                    FAQ
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/contact">
+                    <MessageSquare className="mr-3 h-4 w-4" />
+                    Contact Support
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </section>
       )}
     </DashboardLayout>
