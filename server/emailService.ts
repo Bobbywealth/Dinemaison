@@ -334,5 +334,3 @@ function getActionTextForNotificationType(type: NotificationType): string {
 
   return actionTexts[type] || 'View Details';
 }
-
-export const emailService = new EmailService();

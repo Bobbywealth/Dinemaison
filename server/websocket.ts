@@ -355,5 +355,3 @@ export function broadcastToUser(userId: string, eventType: string, data: any) {
     timestamp: new Date().toISOString(),
   });
 }
-
-export const wsManager = new WebSocketManager();
