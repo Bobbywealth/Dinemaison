@@ -1,11 +1,11 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { InstallPrompt, UpdatePrompt } from "@/components/pwa";
+import { InstallPrompt, UpdatePrompt, SplashScreen, AppTour, useSplashScreen } from "@/components/pwa";
 import { NetworkStatus } from "@/components/pwa/network-status";
 import LandingPage from "@/pages/landing";
 import ChefsPage from "@/pages/chefs";
@@ -29,11 +29,28 @@ import StyleGuidePage from "@/pages/styleguide";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { debug } from "./utils/debug";
+import { useAuth } from "./hooks/use-auth";
 
 function Router() {
+  const [location, setLocation] = useLocation();
+  const { user, isLoading } = useAuth();
+
   useEffect(() => {
     debug.log("Router mounted", { path: window.location.pathname });
   }, []);
+
+  // Redirect to login if it's first visit and user is not authenticated
+  useEffect(() => {
+    if (!isLoading) {
+      const isFirstVisit = !sessionStorage.getItem("dinemaison-visited");
+      const isAuthPage = location === "/login" || location === "/signup" || location === "/forgot-password" || location.startsWith("/reset-password");
+      
+      if (isFirstVisit && !user && !isAuthPage && location === "/") {
+        debug.log("First visit detected, redirecting to login");
+        setLocation("/login");
+      }
+    }
+  }, [isLoading, user, location, setLocation]);
   
   return (
     <Switch>
@@ -62,6 +79,11 @@ function Router() {
 }
 
 function App() {
+  const { showSplash, handleComplete } = useSplashScreen({ 
+    duration: 2500,
+    skipOnRevisit: false 
+  });
+
   useEffect(() => {
     debug.log("App component mounted");
     
@@ -85,6 +107,8 @@ function App() {
             <NetworkStatus />
             <InstallPrompt />
             <UpdatePrompt />
+            {showSplash && <SplashScreen duration={2500} onComplete={handleComplete} />}
+            <AppTour />
             <Router />
           </TooltipProvider>
         </ThemeProvider>
