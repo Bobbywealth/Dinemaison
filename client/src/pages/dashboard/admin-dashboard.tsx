@@ -392,7 +392,7 @@ export default function AdminDashboard() {
         id: "verifications",
         title: "Verifications",
         icon: Shield,
-        badge: pendingVerifications?.length,
+        badge: pendingVerifications?.length && pendingVerifications.length > 0 ? pendingVerifications.length : undefined,
       },
       { id: "bookings", title: "Bookings", icon: Calendar },
       { id: "chefs", title: "Chefs", icon: ChefHat },

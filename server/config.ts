@@ -42,7 +42,7 @@ export const config = {
   // Server
   server: {
     port: parseInt(env.PORT, 10),
-    host: '0.0.0.0',
+    host: env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1',
     env: env.NODE_ENV,
     isDevelopment: env.NODE_ENV === 'development',
     isProduction: env.NODE_ENV === 'production',

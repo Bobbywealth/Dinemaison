@@ -79,7 +79,7 @@ function DashboardSidebar({
             <span
               className={cn(
                 "text-[8px] tracking-[0.3em] uppercase",
-                isDark ? "text-white/70" : "text-slate-500"
+                isDark ? "text-white/70" : "text-slate-900"
               )}
             >
               The Art of
@@ -87,7 +87,7 @@ function DashboardSidebar({
             <span
               className={cn(
                 "text-[8px] tracking-[0.3em] uppercase",
-                isDark ? "text-white/70" : "text-slate-500"
+                isDark ? "text-white/70" : "text-slate-900"
               )}
             >
               Intimate Dining

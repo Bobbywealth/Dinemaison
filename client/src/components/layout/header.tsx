@@ -80,12 +80,12 @@ export function Header() {
               />
               <div className="flex flex-col items-center -mt-4">
                 <span className={`text-[8px] tracking-[0.25em] uppercase leading-tight transition-colors ${
-                  scrolled ? 'text-slate-500 dark:text-slate-400' : 'text-white/70'
+                  scrolled ? 'text-slate-900 dark:text-slate-400' : 'text-white/70'
                 }`}>
                   The Art of
                 </span>
                 <span className={`text-[8px] tracking-[0.25em] uppercase leading-tight transition-colors ${
-                  scrolled ? 'text-slate-500 dark:text-slate-400' : 'text-white/70'
+                  scrolled ? 'text-slate-900 dark:text-slate-400' : 'text-white/70'
                 }`}>
                   Intimate Dining
                 </span>

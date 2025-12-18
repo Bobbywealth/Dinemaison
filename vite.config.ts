@@ -21,5 +21,15 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:3456",
+        changeOrigin: true,
+      },
+      "/ws": {
+        target: "ws://127.0.0.1:3456",
+        ws: true,
+      },
+    },
   },
 });
