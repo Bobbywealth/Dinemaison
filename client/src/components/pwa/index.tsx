@@ -5,4 +5,12 @@ export { ShareButton } from "./share-button";
 export { SplashScreen, useSplashScreen } from "./splash-screen";
 export { NotificationSettings } from "./notification-settings";
 export { AppTour, useAppTour } from "./app-tour";
+export { SyncStatus } from "./sync-status";
+export { 
+  OfflineFallback, 
+  HomeOfflineFallback, 
+  ChefsOfflineFallback, 
+  BookingsOfflineFallback, 
+  MenuOfflineFallback 
+} from "./offline-fallback";
 

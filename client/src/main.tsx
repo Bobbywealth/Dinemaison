@@ -5,6 +5,7 @@ import "./index.css";
 import { debug } from "./utils/debug";
 import { registerSW } from "virtual:pwa-register";
 import { initProtocolHandler } from "./lib/protocol-handler";
+import { initBackgroundSync, trySyncNow } from "./lib/background-sync";
 
 // Log app initialization
 debug.log("App initialization started", {
@@ -53,6 +54,21 @@ const updateSW = registerSW({
 
 // Initialize protocol handler for custom URL scheme
 initProtocolHandler();
+
+// Initialize background sync for offline request queueing
+initBackgroundSync();
+
+// Listen for messages from service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'PROCESS_SYNC_QUEUE') {
+      debug.log('Service worker requested sync queue processing');
+      trySyncNow().catch((error) => {
+        debug.error('Failed to process sync queue', error);
+      });
+    }
+  });
+}
 
 // Check for updates when app becomes visible (user returns to app)
 document.addEventListener("visibilitychange", () => {
