@@ -5,8 +5,7 @@ import { db } from "./db";
 import { insertBookingSchema, insertChefProfileSchema, insertReviewSchema, users, type User } from "@shared/schema";
 import { z } from "zod";
 import { isAuthenticated } from "./auth";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 
@@ -1340,6 +1339,46 @@ export async function registerRoutes(
       console.error("Error exporting data:", error);
       res.status(500).json({ message: "Failed to export data" });
     }
+  });
+
+  // Health check endpoint
+  app.get("/api/health", async (req: Request, res: Response) => {
+    try {
+      // Check database connectivity
+      const dbHealth = await db.execute(sql`SELECT 1`);
+      
+      res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        database: dbHealth ? "connected" : "disconnected",
+        version: process.env.npm_package_version || "1.0.0"
+      });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Debug endpoint for production issues
+  app.get("/api/debug/info", (req: Request, res: Response) => {
+    res.json({
+      timestamp: new Date().toISOString(),
+      node_version: process.version,
+      platform: process.platform,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Not set",
+        SESSION_SECRET: process.env.SESSION_SECRET ? "Set" : "Not set"
+      }
+    });
   });
 
   return httpServer;

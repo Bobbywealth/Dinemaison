@@ -14,7 +14,88 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading state while React app initializes -->
+      <div id="app-loader" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      ">
+        <div style="text-align: center; color: white; font-family: 'Playfair Display', serif;">
+          <h1 style="font-size: 2.5rem; font-weight: 500; margin-bottom: 1rem; background: linear-gradient(135deg, #d4af37 0%, #f4e4bc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            DINE MAISON
+          </h1>
+          <p style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+            The Art of Intimate Dining
+          </p>
+          <div class="spinner-container">
+            <div class="spinner"></div>
+          </div>
+          <p id="loading-text" style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); margin-top: 1.5rem;">
+            Loading...
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <style>
+      /* Loading spinner styles */
+      .spinner-container {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        margin: 0 auto;
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(212, 175, 55, 0.2);
+        border-top-color: #d4af37;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Hide loader once React mounts */
+      #root:not(:empty) #app-loader {
+        display: none !important;
+      }
+    </style>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Fallback error handling -->
+    <script>
+      // Show error if app doesn't load within 10 seconds
+      setTimeout(function() {
+        var loader = document.getElementById('app-loader');
+        var loadingText = document.getElementById('loading-text');
+        if (loader && loader.style.display !== 'none') {
+          loadingText.innerHTML = 'Taking longer than expected... Please refresh the page.';
+        }
+      }, 10000);
+
+      // Error handling for script loading issues
+      window.addEventListener('error', function(e) {
+        if (e.filename && e.filename.includes('main.tsx')) {
+          var loadingText = document.getElementById('loading-text');
+          if (loadingText) {
+            loadingText.innerHTML = 'Error loading application. Please refresh the page.';
+          }
+        }
+      });
+    </script>
   </body>
 </html>

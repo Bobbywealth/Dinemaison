@@ -7,17 +7,27 @@ import diningImage from "@assets/stock_images/luxury_private_dinin_b1c27f12.jpg"
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Video background with image fallback */}
-      <video 
+      {/* Background image (video commented out until a video file is available) */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${diningImage})` }}
+      />
+      
+      {/* Video background - uncomment when you have a video file */}
+      {/* <video 
         autoPlay 
         loop 
         muted 
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
         poster={diningImage}
+        onError={(e) => {
+          // Hide video element if it fails to load
+          e.currentTarget.style.display = 'none';
+        }}
       >
-        <source src="https://ucarecdn.com/9c87d141-47d9-4af4-9ea7-2bdbbe897fa0/Chefscooking.mp4" type="video/mp4" />
-      </video>
+        <source src="/videos/your-video.mp4" type="video/mp4" />
+      </video> */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
       
       <div className="absolute inset-0 opacity-20">

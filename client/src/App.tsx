@@ -17,8 +17,14 @@ import SignupPage from "@/pages/signup";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+import { debug } from "./utils/debug";
 
 function Router() {
+  useEffect(() => {
+    debug.log("Router mounted", { path: window.location.pathname });
+  }, []);
+  
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
@@ -38,6 +44,20 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    debug.log("App component mounted");
+    
+    // Test API connectivity
+    fetch("/api/health")
+      .then(res => res.json())
+      .then(data => {
+        debug.log("Health check successful", data);
+      })
+      .catch(error => {
+        debug.error("Health check failed", error);
+      });
+  }, []);
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
