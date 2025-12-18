@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Plus, X } from "lucide-react";
+import { Header } from "@/components/layout/header";
 
 const CATEGORIES = [
   "Appetizer",
@@ -114,7 +115,8 @@ export default function AddMenuItem() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <Header />
+      <div className="max-w-3xl mx-auto px-4 py-8 mt-20">
         <div className="mb-6">
           <Button variant="ghost" asChild className="mb-4">
             <Link href="/dashboard/chef#menu">

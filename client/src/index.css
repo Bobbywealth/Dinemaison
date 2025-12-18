@@ -1110,3 +1110,284 @@ html {
   );
   pointer-events: none;
 }
+
+/* ================================
+   PWA & MOBILE OPTIMIZATIONS
+   ================================ */
+
+/* Safe Area Support for notched devices (iPhone X+, etc.) */
+:root {
+  /* Safe area insets for iOS notch and Android navigation */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
+/* Safe area utilities */
+.safe-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-x {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-y {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-all {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+/* Min height accounting for safe areas */
+.min-h-screen-safe {
+  min-height: 100vh;
+  min-height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
+}
+
+/* Bottom padding for safe area (useful for fixed bottom navs) */
+.pb-safe {
+  padding-bottom: max(1rem, var(--safe-area-inset-bottom));
+}
+
+.mb-safe {
+  margin-bottom: max(1rem, var(--safe-area-inset-bottom));
+}
+
+/* Touch optimization */
+.touch-manipulation {
+  touch-action: manipulation; /* Removes 300ms tap delay */
+  -webkit-tap-highlight-color: transparent; /* Removes blue highlight on tap in iOS */
+}
+
+/* Minimum touch target size (44px x 44px for iOS, 48px x 48px for Android) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.touch-target-lg {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Better tap feedback */
+.tap-feedback {
+  -webkit-tap-highlight-color: hsl(var(--primary) / 0.1);
+  transition: background-color 0.1s ease;
+}
+
+.tap-feedback:active {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+/* iOS-style bounce scroll */
+.overscroll-bounce {
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on double-tap */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* iOS-style card with subtle shadow */
+.ios-card {
+  background: hsl(var(--card));
+  border-radius: 12px;
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.08);
+  overflow: hidden;
+}
+
+.dark .ios-card {
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.3);
+}
+
+/* Native-feeling animations */
+.native-bounce {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.native-bounce:active {
+  transform: scale(0.97);
+}
+
+/* Pull-to-refresh indicator style */
+.pull-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 9999;
+}
+
+.pull-indicator.pulling {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Optimize for high DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .crisp-edges {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* PWA display modes */
+@media (display-mode: standalone) {
+  /* When installed as PWA */
+  body {
+    user-select: none; /* Prevent text selection to feel more native */
+  }
+  
+  /* Allow text selection in inputs and text areas */
+  input, textarea, [contenteditable] {
+    user-select: text;
+  }
+}
+
+@media (display-mode: fullscreen) {
+  /* When in fullscreen mode */
+  .hide-in-fullscreen {
+    display: none;
+  }
+}
+
+/* Keyboard safe area for iOS */
+@supports (padding: max(0px)) {
+  .keyboard-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Smooth momentum scrolling for iOS */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Sticky elements accounting for safe area */
+.sticky-top-safe {
+  position: sticky;
+  top: var(--safe-area-inset-top);
+  z-index: 50;
+}
+
+.fixed-top-safe {
+  position: fixed;
+  top: var(--safe-area-inset-top);
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+.fixed-bottom-safe {
+  position: fixed;
+  bottom: var(--safe-area-inset-bottom);
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll snap for carousels */
+.snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* Better focus styles for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch device detected */
+  *:focus {
+    outline: none;
+  }
+  
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+  
+  /* Larger touch targets */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+}
+
+/* Landscape mode optimizations for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Reduce padding in landscape */
+  .landscape-compact {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Smaller header in landscape */
+  header {
+    height: 56px !important;
+  }
+}
+
+/* Enhanced viewport for mobile PWA */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific */
+  .ios-full-height {
+    height: -webkit-fill-available;
+  }
+  
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Android-specific optimizations */
+@media (display-mode: standalone) and (orientation: portrait) {
+  /* Optimize for Android standalone mode */
+  .android-status-bar-space {
+    padding-top: 24px; /* Android status bar height */
+  }
+}

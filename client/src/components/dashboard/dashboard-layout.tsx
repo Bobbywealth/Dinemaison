@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 import { Link } from "wouter";
-import { LucideIcon, Menu, LogOut, LogIn } from "lucide-react";
+import { LucideIcon, Menu, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -67,19 +67,19 @@ function DashboardSidebar({
   return (
     <Sidebar className={sidebarClasses}>
       <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border")}>
-        <Link href="/" className="flex flex-col items-center py-4">
+        <Link href="/" className="flex flex-col items-center py-6">
           <img
             src={logoImage}
             alt="Dine Maison"
             className={cn(
-              "h-24 w-auto object-contain",
+              "h-32 w-auto object-contain",
               isDark ? "brightness-0 invert" : "brightness-100"
             )}
           />
-          <div className="flex flex-col items-center -mt-8">
+          <div className="flex flex-col items-center -mt-10">
             <span
               className={cn(
-                "text-[8px] tracking-[0.3em] uppercase",
+                "text-[9px] tracking-[0.3em] uppercase",
                 isDark ? "text-white/70" : "text-slate-900"
               )}
             >
@@ -87,7 +87,7 @@ function DashboardSidebar({
             </span>
             <span
               className={cn(
-                "text-[8px] tracking-[0.3em] uppercase",
+                "text-[9px] tracking-[0.3em] uppercase",
                 isDark ? "text-white/70" : "text-slate-900"
               )}
             >
@@ -183,22 +183,7 @@ function DashboardSidebar({
 
       <SidebarSeparator />
 
-      <SidebarFooter className="space-y-2">
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start border text-sm",
-            isDark
-              ? "border-white/20 text-white hover:bg-white/10"
-              : "border-slate-200 text-slate-700 hover:bg-slate-100"
-          )}
-          asChild
-        >
-          <Link href="/login">
-            <LogIn className="h-4 w-4 mr-2" />
-            Login
-          </Link>
-        </Button>
+      <SidebarFooter>
         <Button
           variant="ghost"
           className={cn(

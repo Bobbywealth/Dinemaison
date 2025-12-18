@@ -19,6 +19,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Plus, X, Save, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ChefProfile } from "@shared/schema";
+import { Header } from "@/components/layout/header";
 
 const CUISINES = [
   "Italian",
@@ -167,7 +168,8 @@ export default function EditChefProfile() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 py-8 mt-20">
           <Skeleton className="h-8 w-48 mb-6" />
           <Card>
             <CardHeader>
@@ -187,7 +189,8 @@ export default function EditChefProfile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <Header />
+      <div className="max-w-4xl mx-auto px-4 py-8 mt-20">
         <div className="mb-6">
           <Button variant="ghost" asChild className="mb-4">
             <Link href="/dashboard">

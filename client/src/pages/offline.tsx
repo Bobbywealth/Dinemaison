@@ -2,6 +2,7 @@ import { WifiOff, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
+import { Header } from "@/components/layout/header";
 
 export default function OfflinePage() {
   const [, setLocation] = useLocation();
@@ -15,7 +16,9 @@ export default function OfflinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <div className="flex-1 flex items-center justify-center p-4 mt-20">
       <Card className="max-w-md w-full text-center">
         <CardHeader>
           <div className="mx-auto mb-4 rounded-full bg-muted p-4 w-fit">
@@ -52,6 +55,7 @@ export default function OfflinePage() {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

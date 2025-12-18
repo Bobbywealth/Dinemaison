@@ -3,17 +3,27 @@ import logoImage from "@assets/dinemaison-logo.png";
 
 export function Footer() {
   return (
-    <footer className="bg-card border-t border-border">
+    <footer className="bg-card border-t border-border pb-safe">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <img 
-              src={logoImage} 
-              alt="Dine Maison" 
-              className="h-16 w-auto object-contain brightness-0 invert dark:brightness-100"
-            />
-            <p className="mt-2 text-sm text-muted-foreground">
-              The Art of Intimate Dining. Experience luxury private chef services tailored to your taste.
+            <Link href="/" className="inline-block">
+              <img 
+                src={logoImage} 
+                alt="Dine Maison" 
+                className="h-20 sm:h-24 w-auto object-contain dark:brightness-0 dark:invert"
+              />
+              <div className="flex flex-col items-start -mt-6 sm:-mt-7">
+                <span className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                  The Art of
+                </span>
+                <span className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-muted-foreground">
+                  Intimate Dining
+                </span>
+              </div>
+            </Link>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Experience luxury private chef services tailored to your taste.
             </p>
           </div>
           

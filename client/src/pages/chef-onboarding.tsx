@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, CheckCircle, AlertCircle, CreditCard, ArrowLeft } from "lucide-react";
+import { Header } from "@/components/layout/header";
 
 export default function ChefOnboardingPage() {
   const [, navigate] = useLocation();
@@ -84,7 +85,8 @@ export default function ChefOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <Header />
+      <div className="max-w-2xl mx-auto px-4 py-12 mt-20">
         <Button
           variant="ghost"
           className="mb-6"

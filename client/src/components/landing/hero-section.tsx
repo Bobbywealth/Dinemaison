@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronRight, Star, Sparkles } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import diningImage from "@assets/stock_images/luxury_private_dinin_b1c27f12.jpg";
 import { useRef } from "react";
 
 export function HeroSection() {
@@ -18,15 +17,20 @@ export function HeroSection() {
 
   return (
     <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Parallax Background Image */}
+      {/* Parallax Background Video */}
       <motion.div 
         className="absolute inset-0 w-full h-full"
         style={{ y: imageY }}
       >
-        <div 
-          className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat scale-110"
-          style={{ backgroundImage: `url(${diningImage})` }}
-        />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-[120%] object-cover scale-110"
+        >
+          <source src="https://nsfugatyzizzpefvlwbk.supabase.co/storage/v1/object/public/videos/Chefscooking.%202222.mp4" type="video/mp4" />
+        </video>
       </motion.div>
       
       {/* Enhanced Gradient Overlays */}

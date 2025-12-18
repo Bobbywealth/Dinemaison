@@ -134,8 +134,16 @@ export default function SignupPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <button onClick={() => setLocation("/")} className="flex items-center gap-3 group">
-              <img src={logoImage} alt="Dine Maison" className="h-10 w-auto brightness-0 invert" />
+            <button onClick={() => setLocation("/")} className="flex flex-col items-start gap-1 group">
+              <img src={logoImage} alt="Dine Maison" className="h-20 lg:h-24 w-auto brightness-0 invert" />
+              <div className="flex flex-col items-start -mt-5 lg:-mt-6">
+                <span className="text-[9px] lg:text-[10px] tracking-[0.25em] uppercase text-white/70">
+                  The Art of
+                </span>
+                <span className="text-[9px] lg:text-[10px] tracking-[0.25em] uppercase text-white/70">
+                  Intimate Dining
+                </span>
+              </div>
             </button>
           </motion.div>
           
@@ -206,10 +214,16 @@ export default function SignupPage() {
           transition={{ duration: 0.6 }}
         >
           {/* Mobile logo */}
-          <div className="lg:hidden flex justify-center">
-            <button onClick={() => setLocation("/")} className="flex items-center gap-2">
-              <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                <ChefHat className="h-6 w-6 text-primary-foreground" />
+          <div className="lg:hidden flex flex-col items-center justify-center gap-2">
+            <button onClick={() => setLocation("/")} className="flex flex-col items-center gap-1">
+              <img src={logoImage} alt="Dine Maison" className="h-16 sm:h-20 w-auto dark:brightness-0 dark:invert" />
+              <div className="flex flex-col items-center -mt-4 sm:-mt-5">
+                <span className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-foreground/70">
+                  The Art of
+                </span>
+                <span className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-foreground/70">
+                  Intimate Dining
+                </span>
               </div>
             </button>
           </div>
