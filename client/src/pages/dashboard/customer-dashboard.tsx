@@ -32,7 +32,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { Booking, ChefProfile, Review } from "@shared/schema";
-import logoImage from "@assets/dinemaison-logo.png";
+import { Logo } from "@/components/logo";
 import { 
   Calendar, 
   ChefHat, 
@@ -181,10 +181,9 @@ export default function CustomerDashboard() {
           <div className="flex items-center justify-between h-28">
             <Link href="/">
               <div className="flex flex-col items-center cursor-pointer">
-                <img 
-                  src={logoImage} 
-                  alt="Dine Maison" 
-                  className="h-28 w-auto object-contain brightness-0 invert"
+                <Logo 
+                  variant="large"
+                  textColor="text-white"
                 />
                 <div className="flex flex-col items-center -mt-10">
                   <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">

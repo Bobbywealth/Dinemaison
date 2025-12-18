@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dine Maison Logo Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+        }
+        
+        .section-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-text {
+            letter-spacing: 0.1em;
+        }
+        
+        .logo-diamond {
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover .logo-diamond {
+            transform: rotate(12deg) scale(1.1);
+        }
+        
+        /* Small Logo */
+        .logo-small {
+            font-size: 1.25rem;
+        }
+        
+        .logo-small .logo-diamond {
+            font-size: 1.5rem;
+        }
+        
+        /* Default Logo */
+        .logo-default {
+            font-size: 1.5rem;
+        }
+        
+        .logo-default .logo-diamond {
+            font-size: 1.875rem;
+        }
+        
+        /* Large Logo */
+        .logo-large {
+            font-size: 2.5rem;
+        }
+        
+        .logo-large .logo-diamond {
+            font-size: 3rem;
+        }
+        
+        .tagline {
+            display: flex;
+            flex-direction: column;
+            margin-top: -0.25rem;
+            opacity: 0.7;
+        }
+        
+        .tagline span {
+            font-size: 0.5rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+        
+        .logo-with-tagline {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Dark mode example */
+        .dark-section {
+            background: white;
+            color: #1a1a2e;
+        }
+        
+        .dark-section .logo {
+            color: #1a1a2e;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: white; text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Dine Maison Logo System</h1>
+        <p style="color: rgba(255, 255, 255, 0.8); text-align: center; margin-bottom: 3rem;">
+            Consistent white logo with diamond symbol across all pages
+        </p>
+        
+        <!-- Small Logo -->
+        <div class="section">
+            <div class="section-title">Small Logo (Mobile, Compact Areas)</div>
+            <div class="logo logo-small">
+                <span class="logo-text">DINE</span>
+                <span class="logo-diamond">◆</span>
+                <span class="logo-text">MAISON</span>
+            </div>
+        </div>
+        
+        <!-- Default Logo -->
+        <div class="section">
+            <div class="section-title">Default Logo (Navigation, Headers)</div>
+            <div class="logo logo-default">
+                <span class="logo-text">DINE</span>
+                <span class="logo-diamond">◆</span>
+                <span class="logo-text">MAISON</span>
+            </div>
+        </div>
+        
+        <!-- Large Logo -->
+        <div class="section">
+            <div class="section-title">Large Logo (Hero Sections, Dashboards)</div>
+            <div class="logo logo-large">
+                <span class="logo-text">DINE</span>
+                <span class="logo-diamond">◆</span>
+                <span class="logo-text">MAISON</span>
+            </div>
+        </div>
+        
+        <!-- Logo with Tagline -->
+        <div class="section">
+            <div class="section-title">Logo with Tagline (Homepage Header)</div>
+            <div class="logo-with-tagline">
+                <div class="logo logo-default">
+                    <span class="logo-text">DINE</span>
+                    <span class="logo-diamond">◆</span>
+                    <span class="logo-text">MAISON</span>
+                </div>
+                <div class="tagline">
+                    <span>The Art of</span>
+                    <span>Intimate Dining</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dark Mode Example -->
+        <div class="section dark-section">
+            <div class="section-title">Light Background (Footer, Light Sections)</div>
+            <div class="logo logo-default">
+                <span class="logo-text">DINE</span>
+                <span class="logo-diamond">◆</span>
+                <span class="logo-text">MAISON</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

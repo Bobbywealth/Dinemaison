@@ -36,7 +36,14 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       mediaSrc: ["'self'", "https:", "blob:"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "wss:", "ws:", "https://api.stripe.com"],
+      connectSrc: [
+        "'self'",
+        "wss:",
+        "ws:",
+        "https://api.stripe.com",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+      ],
     },
   },
   crossOriginEmbedderPolicy: false, // Allow embedding images from CDNs
