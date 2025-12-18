@@ -78,9 +78,11 @@ import {
   CheckSquare,
   LogOut,
 } from "lucide-react";
-import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   LineChart,
   Line,
@@ -122,6 +124,8 @@ export default function AdminDashboard() {
   const [userFilter, setUserFilter] = useState<string>("all");
   const [revenuePeriod, setRevenuePeriod] = useState<string>("weekly");
   const [activeSection, setActiveSection] = useState<string>("overview");
+  const [bookingsView, setBookingsView] = useState<"table" | "calendar">("table");
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [addMarketOpen, setAddMarketOpen] = useState(false);
   const [newMarketName, setNewMarketName] = useState("");
   const [newMarketDescription, setNewMarketDescription] = useState("");
@@ -172,6 +176,38 @@ export default function AdminDashboard() {
   const { data: allBookings } = useQuery<Booking[]>({
     queryKey: ["/api/admin/bookings"],
   });
+
+  // Group bookings by date for calendar view
+  const bookingsByDate = useMemo(() => {
+    if (!allBookings) return new Map<string, Booking[]>();
+    
+    const grouped = new Map<string, Booking[]>();
+    allBookings.forEach(booking => {
+      if (booking.eventDate) {
+        const dateKey = format(parseISO(booking.eventDate), "yyyy-MM-dd");
+        const existing = grouped.get(dateKey) || [];
+        grouped.set(dateKey, [...existing, booking]);
+      }
+    });
+    return grouped;
+  }, [allBookings]);
+
+  // Get bookings for selected date
+  const selectedDateBookings = useMemo(() => {
+    if (!selectedCalendarDate || !allBookings) return [];
+    return allBookings.filter(booking => {
+      if (!booking.eventDate) return false;
+      return isSameDay(parseISO(booking.eventDate), selectedCalendarDate);
+    });
+  }, [selectedCalendarDate, allBookings]);
+
+  // Dates with bookings for calendar highlighting
+  const datesWithBookings = useMemo(() => {
+    if (!allBookings) return [];
+    return allBookings
+      .filter(b => b.eventDate)
+      .map(b => parseISO(b.eventDate!));
+  }, [allBookings]);
 
   const { data: chefs, refetch: refetchChefs } = useQuery<ChefProfile[]>({
     queryKey: ["/api/admin/chefs"],

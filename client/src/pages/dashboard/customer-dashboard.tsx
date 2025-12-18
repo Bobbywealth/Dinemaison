@@ -1199,7 +1199,7 @@ export default function CustomerDashboard() {
     return (
       <div className="min-h-screen bg-background">
         <CustomerDesktopHeader />
-        <main className="container py-8">
+        <main className="container max-w-7xl mx-auto py-8 px-6">
           {sectionsContent}
         </main>
       </div>
