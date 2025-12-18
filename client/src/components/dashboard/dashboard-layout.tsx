@@ -70,26 +70,26 @@ function DashboardSidebar({
   return (
     <Sidebar className={sidebarClasses}>
       <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border", "px-6 py-6")}>
-        <Link href="/" className="flex flex-col items-start mb-6">
-          <div className="mb-3">
-            <h1 className={cn(
-              "text-3xl font-serif italic",
-              isDark ? "text-white" : "text-slate-900"
-            )}>
-              Maison
-            </h1>
-            <div className={cn(
-              "text-[10px] tracking-[0.2em] uppercase mt-1",
-              isDark ? "text-white/60" : "text-slate-500"
-            )}>
-              THE ART OF
-            </div>
-            <div className={cn(
-              "text-[10px] tracking-[0.2em] uppercase",
-              isDark ? "text-white/60" : "text-slate-500"
-            )}>
-              INTIMATE DINING
-            </div>
+        <Link href="/" className="flex flex-col items-center mb-6">
+          <img 
+            src={logoImage} 
+            alt="Dine Maison" 
+            className={cn(
+              "h-16 w-auto object-contain mb-2",
+              isDark ? "brightness-0 invert" : ""
+            )}
+          />
+          <div className={cn(
+            "text-[9px] tracking-[0.25em] uppercase text-center",
+            isDark ? "text-white/60" : "text-slate-500"
+          )}>
+            THE ART OF
+          </div>
+          <div className={cn(
+            "text-[9px] tracking-[0.25em] uppercase text-center",
+            isDark ? "text-white/60" : "text-slate-500"
+          )}>
+            INTIMATE DINING
           </div>
         </Link>
         {user && (
