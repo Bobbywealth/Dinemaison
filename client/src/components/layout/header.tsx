@@ -10,11 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChefHat, User, LogOut, LayoutDashboard, Menu, X, Home, Info, Utensils, Users, HelpCircle, Phone } from "lucide-react";
+import { ChefHat, User, LogOut, LayoutDashboard, Menu, X, Home, Info, Utensils, Users, HelpCircle, Phone, Bell } from "lucide-react";
 import { useState, useEffect } from "react";
 import logoImage from "@assets/dinemaison-logo.png";
 import { useTheme } from "@/lib/theme-provider";
 import { queryClient } from "@/lib/queryClient";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 
 export function Header() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -130,6 +131,10 @@ export function Header() {
               <ThemeToggle />
             </div>
             
+            {isAuthenticated && user && (
+              <NotificationCenter />
+            )}
+            
             {isLoading ? (
               <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated && user ? (
@@ -160,6 +165,12 @@ export function Header() {
                     <Link href="/profile" data-testid="link-profile">
                       <User className="mr-2 h-4 w-4" />
                       Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/notification-settings" data-testid="link-notification-settings">
+                      <Bell className="mr-2 h-4 w-4" />
+                      Notifications
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

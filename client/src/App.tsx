@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt, UpdatePrompt, SplashScreen, AppTour, useSplashScreen } from "@/components/pwa";
 import { NetworkStatus } from "@/components/pwa/network-status";
+import { NotificationToastListener } from "@/components/notifications/notification-toast";
 import LandingPage from "@/pages/landing";
 import ChefsPage from "@/pages/chefs";
 import ChefProfilePage from "@/pages/chef-profile";
@@ -26,6 +27,7 @@ import PrivacyPage from "@/pages/privacy";
 import AboutPage from "@/pages/about";
 import FAQPage from "@/pages/faq";
 import StyleGuidePage from "@/pages/styleguide";
+import NotificationSettingsPage from "@/pages/notification-settings";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { debug } from "./utils/debug";
@@ -83,6 +85,7 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/styleguide" component={StyleGuidePage} />
       <Route path="/dashboard" component={DashboardRouter} />
+      <Route path="/notification-settings" component={NotificationSettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -115,6 +118,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <NetworkStatus />
+            <NotificationToastListener />
             <InstallPrompt />
             <UpdatePrompt />
             {showSplash && <SplashScreen duration={2500} onComplete={handleComplete} />}
