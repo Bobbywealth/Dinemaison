@@ -10,6 +10,33 @@ debug.log("App initialization started", {
   timestamp: Date.now()
 });
 
+// Remove any stale service workers that might have been registered previously.
+// We don't ship a service worker today, so old registrations can break fetches.
+const cleanupServiceWorkers = () => {
+  if (!("serviceWorker" in navigator)) return;
+
+  navigator.serviceWorker.getRegistrations()
+    .then((registrations) => {
+      registrations.forEach((registration) => {
+        debug.log("Unregistering stale service worker", { scope: registration.scope });
+        registration.unregister();
+      });
+    })
+    .catch((error) => {
+      debug.error("Failed to unregister service workers", error);
+    });
+
+  if ("caches" in window) {
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+      .catch((error) => {
+        debug.error("Failed to clear service worker caches", error);
+      });
+  }
+};
+
+cleanupServiceWorkers();
+
 // Ensure the DOM is fully loaded
 const renderApp = () => {
   debug.log("renderApp called", { readyState: document.readyState });
