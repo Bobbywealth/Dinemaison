@@ -323,3 +323,99 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
+// ============== NOTIFICATIONS ==============
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  type: varchar("type").notNull(), // booking_requested, booking_confirmed, etc.
+  title: varchar("title").notNull(),
+  body: text("body").notNull(),
+  data: jsonb("data").default({}),
+  category: varchar("category").default("system"), // booking, payment, message, system
+  priority: varchar("priority").default("normal"), // low, normal, high, urgent
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("notifications_user_id_idx").on(table.userId),
+  createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+  typeIdx: index("notifications_type_idx").on(table.type),
+}));
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
+
+// ============== NOTIFICATION PREFERENCES ==============
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  notificationType: varchar("notification_type").notNull(),
+  channelPush: boolean("channel_push").default(true),
+  channelEmail: boolean("channel_email").default(true),
+  channelSms: boolean("channel_sms").default(false),
+  channelInApp: boolean("channel_in_app").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("notification_preferences_user_id_idx").on(table.userId),
+  userTypeIdx: index("notification_preferences_user_type_idx").on(table.userId, table.notificationType),
+}));
+
+export const insertNotificationPreferenceSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertNotificationPreference = z.infer<typeof insertNotificationPreferenceSchema>;
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+
+// ============== DEVICE TOKENS ==============
+export const deviceTokens = pgTable("device_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  platform: varchar("platform").notNull(), // ios, android, web
+  token: text("token").notNull(),
+  deviceId: varchar("device_id"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("device_tokens_user_id_idx").on(table.userId),
+  tokenIdx: index("device_tokens_token_idx").on(table.token),
+  platformIdx: index("device_tokens_platform_idx").on(table.platform),
+}));
+
+export const insertDeviceTokenSchema = createInsertSchema(deviceTokens).omit({
+  id: true,
+  createdAt: true,
+  lastUsedAt: true,
+});
+
+export type InsertDeviceToken = z.infer<typeof insertDeviceTokenSchema>;
+export type DeviceToken = typeof deviceTokens.$inferSelect;
+
+// ============== NOTIFICATION DELIVERY LOG ==============
+export const notificationDeliveryLog = pgTable("notification_delivery_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  notificationId: varchar("notification_id"),
+  channel: varchar("channel").notNull(), // push, email, sms, websocket, in_app
+  status: varchar("status").default("pending"), // pending, sent, failed, delivered
+  errorMessage: text("error_message"),
+  sentAt: timestamp("sent_at").defaultNow(),
+}, (table) => ({
+  notificationIdIdx: index("notification_delivery_log_notification_id_idx").on(table.notificationId),
+  channelIdx: index("notification_delivery_log_channel_idx").on(table.channel),
+  statusIdx: index("notification_delivery_log_status_idx").on(table.status),
+}));
+
+export const insertNotificationDeliveryLogSchema = createInsertSchema(notificationDeliveryLog).omit({
+  id: true,
+  sentAt: true,
+});
+
+export type InsertNotificationDeliveryLog = z.infer<typeof insertNotificationDeliveryLogSchema>;
+export type NotificationDeliveryLog = typeof notificationDeliveryLog.$inferSelect;

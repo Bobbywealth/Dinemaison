@@ -239,6 +239,96 @@ export class WebSocketManager {
     this.sendToUser(chefId, message);
   }
 
+  // ============== NOTIFICATION SYSTEM ==============
+
+  /**
+   * Broadcast notification to a specific user (all their connected devices)
+   */
+  public broadcastNotification(userId: string, notification: any) {
+    const message: WSMessage = {
+      type: 'notification:new',
+      payload: notification,
+    };
+
+    this.sendToUser(userId, message);
+    logger.debug(`Notification broadcasted to user ${userId} via WebSocket`);
+  }
+
+  /**
+   * Send notification read status update
+   */
+  public notifyNotificationRead(userId: string, notificationId: string) {
+    const message: WSMessage = {
+      type: 'notification:read',
+      payload: {
+        notificationId,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    this.sendToUser(userId, message);
+  }
+
+  /**
+   * Send notification deleted status
+   */
+  public notifyNotificationDeleted(userId: string, notificationId: string) {
+    const message: WSMessage = {
+      type: 'notification:deleted',
+      payload: {
+        notificationId,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    this.sendToUser(userId, message);
+  }
+
+  /**
+   * Send unread count update
+   */
+  public notifyUnreadCountUpdate(userId: string, count: number) {
+    const message: WSMessage = {
+      type: 'notification:unread_count',
+      payload: {
+        count,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    this.sendToUser(userId, message);
+  }
+
+  /**
+   * Check if user is online (has active WebSocket connections)
+   */
+  public isUserOnline(userId: string): boolean {
+    const userClients = this.clients.get(userId);
+    return userClients !== undefined && userClients.size > 0;
+  }
+
+  /**
+   * Get count of active connections for a user
+   */
+  public getUserConnectionCount(userId: string): number {
+    const userClients = this.clients.get(userId);
+    return userClients?.size || 0;
+  }
+
+  /**
+   * Get total number of connected clients
+   */
+  public getConnectedClientsCount(): number {
+    return this.wss?.clients.size || 0;
+  }
+
+  /**
+   * Get number of authenticated users
+   */
+  public getAuthenticatedUsersCount(): number {
+    return this.clients.size;
+  }
+
   // Cleanup on shutdown
   public destroy() {
     if (this.pingInterval) {
@@ -253,6 +343,17 @@ export class WebSocketManager {
     this.clients.clear();
     logger.info('WebSocket server shut down');
   }
+}
+
+export const wsManager = new WebSocketManager();
+
+// Helper function to broadcast notification to user
+export function broadcastToUser(userId: string, eventType: string, data: any) {
+  wsManager.broadcastNotification(userId, {
+    type: eventType,
+    data,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 export const wsManager = new WebSocketManager();

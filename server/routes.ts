@@ -1526,5 +1526,273 @@ export async function registerRoutes(
     }
   });
 
+  // ============== NOTIFICATION SYSTEM API ROUTES ==============
+  
+  // Get user notification preferences
+  app.get("/api/notifications/preferences", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { getNotificationPreferences } = await import("./notificationPreferences");
+      const preferences = await getNotificationPreferences(userId);
+      res.json(preferences);
+    } catch (error) {
+      console.error("Error fetching notification preferences:", error);
+      res.status(500).json({ message: "Failed to fetch preferences" });
+    }
+  });
+
+  // Update user notification preferences
+  app.put("/api/notifications/preferences", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { updateNotificationPreferences } = await import("./notificationPreferences");
+      const success = await updateNotificationPreferences(userId, req.body);
+      
+      if (success) {
+        res.json({ success: true, message: "Preferences updated successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to update preferences" });
+      }
+    } catch (error) {
+      console.error("Error updating notification preferences:", error);
+      res.status(500).json({ message: "Failed to update preferences" });
+    }
+  });
+
+  // Reset preferences to defaults
+  app.post("/api/notifications/preferences/reset", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { resetPreferencesToDefaults } = await import("./notificationPreferences");
+      const success = await resetPreferencesToDefaults(userId);
+      
+      if (success) {
+        res.json({ success: true, message: "Preferences reset to defaults" });
+      } else {
+        res.status(500).json({ message: "Failed to reset preferences" });
+      }
+    } catch (error) {
+      console.error("Error resetting preferences:", error);
+      res.status(500).json({ message: "Failed to reset preferences" });
+    }
+  });
+
+  // Register device token for mobile push notifications
+  app.post("/api/notifications/devices/register", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { platform, token, deviceId } = req.body;
+      
+      if (!platform || !token) {
+        return res.status(400).json({ message: "Platform and token are required" });
+      }
+      
+      const { registerDeviceToken } = await import("./pushNotificationService");
+      const success = await registerDeviceToken(userId, platform, token, deviceId);
+      
+      if (success) {
+        res.json({ success: true, message: "Device registered successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to register device" });
+      }
+    } catch (error) {
+      console.error("Error registering device:", error);
+      res.status(500).json({ message: "Failed to register device" });
+    }
+  });
+
+  // Unregister device token
+  app.delete("/api/notifications/devices/:deviceId", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { removeDeviceToken } = await import("./pushNotificationService");
+      const success = await removeDeviceToken(req.params.deviceId);
+      
+      if (success) {
+        res.json({ success: true, message: "Device unregistered successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to unregister device" });
+      }
+    } catch (error) {
+      console.error("Error unregistering device:", error);
+      res.status(500).json({ message: "Failed to unregister device" });
+    }
+  });
+
+  // Get user device tokens
+  app.get("/api/notifications/devices", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { getUserDeviceTokens } = await import("./pushNotificationService");
+      const devices = await getUserDeviceTokens(userId);
+      res.json(devices);
+    } catch (error) {
+      console.error("Error fetching devices:", error);
+      res.status(500).json({ message: "Failed to fetch devices" });
+    }
+  });
+
+  // Get in-app notifications for user
+  app.get("/api/notifications/in-app", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      const { getUserNotifications } = await import("./notificationService");
+      const notifications = await getUserNotifications(userId, limit, offset);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // Get unread notification count
+  app.get("/api/notifications/in-app/unread-count", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { getUnreadCount } = await import("./notificationService");
+      const count = await getUnreadCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch("/api/notifications/in-app/:id/read", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { markNotificationAsRead } = await import("./notificationService");
+      const success = await markNotificationAsRead(req.params.id);
+      
+      if (success) {
+        res.json({ success: true, message: "Notification marked as read" });
+      } else {
+        res.status(500).json({ message: "Failed to mark notification as read" });
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Delete notification
+  app.delete("/api/notifications/in-app/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { deleteNotification } = await import("./notificationService");
+      const success = await deleteNotification(req.params.id);
+      
+      if (success) {
+        res.json({ success: true, message: "Notification deleted" });
+      } else {
+        res.status(500).json({ message: "Failed to delete notification" });
+      }
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
+    }
+  });
+
+  // Test notification endpoints
+  app.post("/api/notifications/test/push", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { sendPushNotification } = await import("./pushNotificationService");
+      await sendPushNotification(userId, {
+        title: "Test Push Notification",
+        body: "This is a test notification from Dine Maison",
+        tag: "test-notification",
+      });
+      res.json({ success: true, message: "Test push notification sent" });
+    } catch (error) {
+      console.error("Error sending test push:", error);
+      res.status(500).json({ message: "Failed to send test push" });
+    }
+  });
+
+  app.post("/api/notifications/test/email", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { NotificationType } = await import("@shared/notificationTypes");
+      const { sendNotificationEmail } = await import("./emailService");
+      await sendNotificationEmail(userId, NotificationType.SYSTEM_ANNOUNCEMENT, {
+        title: "Test Email Notification",
+        body: "This is a test email notification from Dine Maison",
+      });
+      res.json({ success: true, message: "Test email notification sent" });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Failed to send test email" });
+    }
+  });
+
+  app.post("/api/notifications/test/sms", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { sendSMS } = await import("./smsService");
+      await sendSMS(userId, "Test SMS", "This is a test SMS from Dine Maison");
+      res.json({ success: true, message: "Test SMS sent" });
+    } catch (error) {
+      console.error("Error sending test SMS:", error);
+      res.status(500).json({ message: "Failed to send test SMS" });
+    }
+  });
+
   return httpServer;
 }

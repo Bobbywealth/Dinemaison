@@ -227,6 +227,112 @@ class EmailService {
       text: `${statusInfo.title} - ${statusInfo.message}`,
     });
   }
+
+  // Notification email templates
+  async sendNotificationEmail(
+    email: string,
+    title: string,
+    body: string,
+    actionUrl?: string,
+    actionText?: string
+  ): Promise<boolean> {
+    const baseUrl = config.server.isProduction ? 'https://dinemaison.com' : 'http://localhost:5000';
+    const fullActionUrl = actionUrl ? `${baseUrl}${actionUrl}` : `${baseUrl}/dashboard`;
+    
+    return this.sendEmail({
+      to: email,
+      subject: title,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 30px; border-radius: 12px 12px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Dine Maison</h1>
+          </div>
+          
+          <div style="background: white; padding: 30px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 12px 12px;">
+            <h2 style="color: #1F2937; margin-top: 0;">${title}</h2>
+            <p style="color: #4B5563; font-size: 16px; line-height: 1.6;">${body}</p>
+            
+            ${actionText ? `
+              <div style="margin: 30px 0;">
+                <a href="${fullActionUrl}" style="background: #8B5CF6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">${actionText}</a>
+              </div>
+            ` : ''}
+            
+            <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 30px 0;">
+            
+            <p style="color: #9CA3AF; font-size: 14px; line-height: 1.5;">
+              Best regards,<br>
+              The Dine Maison Team
+            </p>
+            
+            <p style="color: #9CA3AF; font-size: 12px; margin-top: 20px;">
+              You're receiving this because you have notifications enabled for your Dine Maison account.
+              <a href="${baseUrl}/notification-settings" style="color: #8B5CF6; text-decoration: none;">Manage preferences</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `${title}\n\n${body}\n\n${actionText ? `${actionText}: ${fullActionUrl}\n\n` : ''}Best regards,\nThe Dine Maison Team`,
+    });
+  }
+}
+
+export const emailService = new EmailService();
+
+// Helper function to send notification email with user lookup
+import { db } from './db';
+import { users } from '@shared/schema';
+import { eq } from 'drizzle-orm';
+import { NotificationType, type NotificationPayload } from '@shared/notificationTypes';
+
+export async function sendNotificationEmail(
+  userId: string,
+  notificationType: NotificationType,
+  payload: Omit<NotificationPayload, 'type'>
+): Promise<boolean> {
+  try {
+    // Get user email
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user || !user.email) {
+      logger.warn(`No email found for user ${userId}`);
+      return false;
+    }
+
+    // Extract action URL from payload data
+    const actionUrl = payload.data?.url || payload.data?.actionUrl;
+    const actionText = getActionTextForNotificationType(notificationType);
+
+    return await emailService.sendNotificationEmail(
+      user.email,
+      payload.title,
+      payload.body,
+      actionUrl,
+      actionText
+    );
+  } catch (error) {
+    logger.error('Error sending notification email:', error);
+    return false;
+  }
+}
+
+function getActionTextForNotificationType(type: NotificationType): string {
+  const actionTexts: Partial<Record<NotificationType, string>> = {
+    [NotificationType.BOOKING_REQUESTED]: 'View Booking',
+    [NotificationType.BOOKING_CONFIRMED]: 'View Booking Details',
+    [NotificationType.BOOKING_CANCELLED]: 'View Cancellation',
+    [NotificationType.BOOKING_REMINDER]: 'View Booking',
+    [NotificationType.PAYMENT_SUCCESS]: 'View Receipt',
+    [NotificationType.PAYMENT_FAILED]: 'Update Payment',
+    [NotificationType.MESSAGE_RECEIVED]: 'View Message',
+    [NotificationType.REVIEW_RECEIVED]: 'View Review',
+  };
+
+  return actionTexts[type] || 'View Details';
 }
 
 export const emailService = new EmailService();

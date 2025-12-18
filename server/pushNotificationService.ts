@@ -1,8 +1,26 @@
 import webpush from "web-push";
 import { db } from "./db";
-import { pushSubscriptions } from "@shared/schema";
+import { pushSubscriptions, deviceTokens } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "./lib/logger";
+
+// Firebase Admin SDK (optional - for mobile push)
+let firebaseAdmin: any = null;
+try {
+  // Only import if firebase-admin is installed
+  firebaseAdmin = require("firebase-admin");
+  
+  // Initialize Firebase if credentials are provided
+  const firebaseConfig = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (firebaseConfig && !firebaseAdmin.apps.length) {
+    firebaseAdmin.initializeApp({
+      credential: firebaseAdmin.credential.cert(JSON.parse(firebaseConfig)),
+    });
+    logger.info("Firebase Admin SDK initialized for mobile push notifications");
+  }
+} catch (error) {
+  logger.warn("Firebase Admin SDK not available. Mobile push notifications will not work. Install with: npm install firebase-admin");
+}
 
 // VAPID keys for web push
 // In production, these should be environment variables
@@ -123,14 +141,33 @@ export async function getUserSubscriptions(userId: string) {
 }
 
 /**
- * Send a push notification to a specific user
+ * Send a push notification to a specific user (web and mobile)
  */
 export async function sendPushNotification(
   userId: string,
   payload: PushNotificationPayload
 ): Promise<void> {
+  try {
+    // Send to web subscriptions (VAPID)
+    await sendWebPushNotification(userId, payload);
+    
+    // Send to mobile devices (FCM)
+    await sendMobilePushNotification(userId, payload);
+  } catch (error) {
+    logger.error("Error in sendPushNotification:", error);
+    throw error;
+  }
+}
+
+/**
+ * Send web push notification via VAPID
+ */
+async function sendWebPushNotification(
+  userId: string,
+  payload: PushNotificationPayload
+): Promise<void> {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-    logger.warn("Cannot send push notification: VAPID keys not configured");
+    logger.warn("Cannot send web push notification: VAPID keys not configured");
     return;
   }
 
@@ -138,7 +175,7 @@ export async function sendPushNotification(
     const subscriptions = await getUserSubscriptions(userId);
 
     if (subscriptions.length === 0) {
-      logger.info(`No push subscriptions found for user ${userId}`);
+      logger.debug(`No web push subscriptions found for user ${userId}`);
       return;
     }
 
@@ -165,24 +202,118 @@ export async function sendPushNotification(
           },
           notificationPayload
         );
-        logger.info(`Push notification sent to user ${userId}`);
+        logger.info(`Web push notification sent to user ${userId}`);
       } catch (error: any) {
         // If subscription is invalid or expired, remove it
         if (error.statusCode === 410 || error.statusCode === 404) {
-          logger.info(`Removing invalid subscription for user ${userId}`);
+          logger.info(`Removing invalid web push subscription for user ${userId}`);
           await db
             .delete(pushSubscriptions)
             .where(eq(pushSubscriptions.endpoint, sub.endpoint));
         } else {
-          logger.error("Error sending push notification:", error);
+          logger.error("Error sending web push notification:", error);
         }
       }
     });
 
     await Promise.all(sendPromises);
   } catch (error) {
-    logger.error("Error in sendPushNotification:", error);
-    throw error;
+    logger.error("Error in sendWebPushNotification:", error);
+  }
+}
+
+/**
+ * Send mobile push notification via FCM
+ */
+async function sendMobilePushNotification(
+  userId: string,
+  payload: PushNotificationPayload
+): Promise<void> {
+  if (!firebaseAdmin) {
+    logger.debug("Firebase Admin SDK not initialized. Skipping mobile push.");
+    return;
+  }
+
+  try {
+    // Get user's mobile device tokens
+    const tokens = await db
+      .select()
+      .from(deviceTokens)
+      .where(
+        and(
+          eq(deviceTokens.userId, userId),
+          eq(deviceTokens.isActive, true)
+        )
+      );
+
+    if (tokens.length === 0) {
+      logger.debug(`No mobile device tokens found for user ${userId}`);
+      return;
+    }
+
+    const messaging = firebaseAdmin.messaging();
+    
+    const fcmPayload = {
+      notification: {
+        title: payload.title,
+        body: payload.body,
+      },
+      data: {
+        ...(payload.data || {}),
+        tag: payload.tag || "",
+        requireInteraction: String(payload.requireInteraction || false),
+      },
+      android: {
+        notification: {
+          icon: "notification_icon",
+          color: "#FF6B35",
+          tag: payload.tag,
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            badge: 1,
+          },
+        },
+      },
+    };
+
+    const sendPromises = tokens.map(async (deviceToken) => {
+      try {
+        await messaging.send({
+          ...fcmPayload,
+          token: deviceToken.token,
+        });
+        
+        // Update last used timestamp
+        await db
+          .update(deviceTokens)
+          .set({ lastUsedAt: new Date() })
+          .where(eq(deviceTokens.id, deviceToken.id));
+        
+        logger.info(`Mobile push notification sent to user ${userId} on ${deviceToken.platform}`);
+      } catch (error: any) {
+        // Handle invalid or expired tokens
+        if (
+          error.code === "messaging/invalid-registration-token" ||
+          error.code === "messaging/registration-token-not-registered"
+        ) {
+          logger.info(`Removing invalid device token for user ${userId}`);
+          await db
+            .update(deviceTokens)
+            .set({ isActive: false })
+            .where(eq(deviceTokens.id, deviceToken.id));
+        } else {
+          logger.error("Error sending mobile push notification:", error);
+        }
+      }
+    });
+
+    await Promise.all(sendPromises);
+  } catch (error) {
+    logger.error("Error in sendMobilePushNotification:", error);
   }
 }
 
@@ -285,4 +416,112 @@ export async function sendMessageNotification(
       },
     ],
   });
+}
+
+// ============== MOBILE DEVICE TOKEN MANAGEMENT ==============
+
+/**
+ * Register a mobile device token
+ */
+export async function registerDeviceToken(
+  userId: string,
+  platform: "ios" | "android" | "web",
+  token: string,
+  deviceId?: string
+): Promise<boolean> {
+  try {
+    // Check if token already exists
+    const [existing] = await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.token, token))
+      .limit(1);
+
+    if (existing) {
+      // Update existing token
+      await db
+        .update(deviceTokens)
+        .set({
+          userId,
+          platform,
+          deviceId: deviceId || existing.deviceId,
+          isActive: true,
+          lastUsedAt: new Date(),
+        })
+        .where(eq(deviceTokens.id, existing.id));
+      
+      logger.info(`Updated device token for user ${userId} on ${platform}`);
+    } else {
+      // Insert new token
+      await db.insert(deviceTokens).values({
+        userId,
+        platform,
+        token,
+        deviceId,
+        isActive: true,
+      });
+      
+      logger.info(`Registered new device token for user ${userId} on ${platform}`);
+    }
+    
+    return true;
+  } catch (error) {
+    logger.error("Error registering device token:", error);
+    return false;
+  }
+}
+
+/**
+ * Unregister a device token
+ */
+export async function unregisterDeviceToken(token: string): Promise<boolean> {
+  try {
+    await db
+      .update(deviceTokens)
+      .set({ isActive: false })
+      .where(eq(deviceTokens.token, token));
+    
+    logger.info(`Unregistered device token`);
+    return true;
+  } catch (error) {
+    logger.error("Error unregistering device token:", error);
+    return false;
+  }
+}
+
+/**
+ * Get all device tokens for a user
+ */
+export async function getUserDeviceTokens(userId: string) {
+  try {
+    return await db
+      .select()
+      .from(deviceTokens)
+      .where(
+        and(
+          eq(deviceTokens.userId, userId),
+          eq(deviceTokens.isActive, true)
+        )
+      );
+  } catch (error) {
+    logger.error("Error getting user device tokens:", error);
+    return [];
+  }
+}
+
+/**
+ * Remove device token by ID
+ */
+export async function removeDeviceToken(deviceId: string): Promise<boolean> {
+  try {
+    await db
+      .delete(deviceTokens)
+      .where(eq(deviceTokens.id, deviceId));
+    
+    logger.info(`Removed device token ${deviceId}`);
+    return true;
+  } catch (error) {
+    logger.error("Error removing device token:", error);
+    return false;
+  }
 }

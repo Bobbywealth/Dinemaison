@@ -30,6 +30,7 @@ import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { debug } from "./utils/debug";
 import { useAuth } from "./hooks/use-auth";
+import { isStandalone } from "./lib/native-features";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -39,14 +40,16 @@ function Router() {
     debug.log("Router mounted", { path: window.location.pathname });
   }, []);
 
-  // Redirect to login if it's first visit and user is not authenticated
+  // Redirect to login if it's first visit and user is not authenticated - ONLY for PWA app
   useEffect(() => {
     if (!isLoading) {
       const isFirstVisit = !sessionStorage.getItem("dinemaison-visited");
       const isAuthPage = location === "/login" || location === "/signup" || location === "/forgot-password" || location.startsWith("/reset-password");
+      const isPWA = isStandalone();
       
-      if (isFirstVisit && !user && !isAuthPage && location === "/") {
-        debug.log("First visit detected, redirecting to login");
+      // Only redirect to login if running as PWA (standalone mode)
+      if (isFirstVisit && !user && !isAuthPage && location === "/" && isPWA) {
+        debug.log("First visit detected in PWA mode, redirecting to login");
         setLocation("/login");
       }
     }
