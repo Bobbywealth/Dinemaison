@@ -343,6 +343,13 @@ export function DashboardLayout({
   onNavigate,
 }: DashboardLayoutProps) {
   const isMobile = useIsMobile();
+  const bottomNavItems = navItems.map((item) => ({
+    id: item.id,
+    label: item.title,
+    icon: item.icon,
+    href: item.href || `#${item.id}`,
+    badge: typeof item.badge === "number" ? item.badge : undefined,
+  }));
 
   return (
     <SidebarProvider className="min-h-screen bg-background">
@@ -374,33 +381,8 @@ export function DashboardLayout({
       {/* Show bottom navigation on mobile */}
       {isMobile && (
         <BottomNavigation
-          items={[
-            { id: "home", label: "Home", icon: navItems[0]?.icon || Menu, href: "/dashboard#overview" },
-            { 
-              id: "bookings", 
-              label: "Bookings", 
-              icon: navItems.find(i => i.id === "bookings")?.icon || Menu, 
-              href: "/dashboard#bookings" 
-            },
-            { 
-              id: "chefs", 
-              label: "Chefs", 
-              icon: navItems.find(i => i.id === "chefs")?.icon || Menu, 
-              href: "/dashboard#chefs" 
-            },
-            { 
-              id: "analytics", 
-              label: "Analytics", 
-              icon: navItems.find(i => i.id === "analytics")?.icon || Menu, 
-              href: "/dashboard#analytics" 
-            },
-            { 
-              id: "more", 
-              label: "More", 
-              icon: Menu, 
-              href: "/dashboard#more" 
-            },
-          ]}
+          items={bottomNavItems.length ? bottomNavItems : undefined}
+          onNavigate={onNavigate}
         />
       )}
     </SidebarProvider>

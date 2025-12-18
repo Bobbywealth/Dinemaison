@@ -1,4 +1,3 @@
-import { Link, useLocation } from "wouter";
 import { LucideIcon, Home, Calendar, ChefHat, BarChart3, Menu as MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,7 @@ export type BottomNavItem = {
 type BottomNavigationProps = {
   items?: BottomNavItem[];
   className?: string;
+  onNavigate?: (itemId: string) => void;
 };
 
 const defaultItems: BottomNavItem[] = [
@@ -25,8 +25,7 @@ const defaultItems: BottomNavItem[] = [
   { id: "more", label: "More", icon: MoreHorizontal, href: "/dashboard#more" },
 ];
 
-export function BottomNavigation({ items = defaultItems, className }: BottomNavigationProps) {
-  const [location] = useLocation();
+export function BottomNavigation({ items = defaultItems, className, onNavigate }: BottomNavigationProps) {
   const hash = typeof window !== "undefined" ? window.location.hash : "";
 
   const isActive = (item: BottomNavItem) => {
@@ -68,25 +67,57 @@ export function BottomNavigation({ items = defaultItems, className }: BottomNavi
                   : "text-muted-foreground hover:text-foreground"
               )}
               onClick={(e) => {
-                // Smooth scroll to section
-                if (item.href.includes("#")) {
+                const hasHash = item.href.startsWith("#") || item.href.includes("#");
+                const sectionId = hasHash ? item.href.split("#")[1] : item.id;
+
+                if (onNavigate && hasHash) {
                   e.preventDefault();
-                  const sectionId = item.href.split("#")[1];
-                  window.location.hash = sectionId;
-                  
-                  // Trigger smooth scroll
+                  // Keep URL hash in sync for deep links
+                  if (typeof window !== "undefined") {
+                    window.history.replaceState(null, "", `#${sectionId}`);
+                  }
+                  onNavigate(sectionId);
+                  // Smooth scroll to new section after state updates
                   setTimeout(() => {
                     const element = document.getElementById(sectionId);
                     if (element) {
                       element.scrollIntoView({ behavior: "smooth", block: "start" });
-                    } else if (sectionId === "overview" || sectionId === "home") {
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }, 50);
+                  return;
+                }
+
+                if (onNavigate && !hasHash) {
+                  onNavigate(sectionId);
+                  return;
+                }
+
+                // Default behavior when no onNavigate handler is provided
+                if (hasHash) {
+                  e.preventDefault();
+                  const sectionHash = sectionId;
+                  window.location.hash = sectionHash;
+                  
+                  setTimeout(() => {
+                    const element = document.getElementById(sectionHash);
+                    if (element) {
+                      element.scrollIntoView({ behavior: "smooth", block: "start" });
+                    } else if (sectionHash === "overview" || sectionHash === "home") {
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }, 50);
                 }
               }}
-              onMouseEnter={() => prefetchRoute(item.href.split("#")[0])}
-              onTouchStart={() => prefetchRoute(item.href.split("#")[0])}
+              onMouseEnter={() => {
+                const basePath = item.href.split("#")[0];
+                if (basePath) prefetchRoute(basePath);
+              }}
+              onTouchStart={() => {
+                const basePath = item.href.split("#")[0];
+                if (basePath) prefetchRoute(basePath);
+              }}
             >
               {/* Active indicator */}
               {active && (
