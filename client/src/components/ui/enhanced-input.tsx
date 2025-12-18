@@ -70,7 +70,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
             </div>
           )}
 
-          <motion.input
+          <input
             type={inputType}
             className={cn(
               "flex w-full rounded-lg border border-input bg-background px-4 py-3 text-sm transition-all duration-200",

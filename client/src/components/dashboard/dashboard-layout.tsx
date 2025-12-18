@@ -28,6 +28,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomNavigation } from "@/components/mobile/bottom-navigation";
 import { HamburgerDrawer } from "@/components/mobile/hamburger-drawer";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 
 export type DashboardNavItem = {
   id: string;
@@ -247,33 +248,57 @@ function DashboardTopBar({
 }: Pick<DashboardLayoutProps, "title" | "description" | "navItems" | "activeItemId" | "onNavigate">) {
   const { toggleSidebar } = useSidebar();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
+  // Mobile header with centered logo
+  if (isMobile) {
+    return (
+      <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
+        <div className="flex flex-col items-center py-4 px-4">
+          <Link href="/" className="flex flex-col items-center gap-1">
+            <img 
+              src={logoImage} 
+              alt="Maison" 
+              className={cn(
+                "h-12 w-auto object-contain",
+                isDark ? "brightness-0 invert" : ""
+              )}
+            />
+            <div className="flex flex-col items-center -mt-1">
+              <div className={cn(
+                "text-[7px] tracking-[0.25em] uppercase",
+                isDark ? "text-white/50" : "text-slate-500"
+              )}>
+                THE ART OF
+              </div>
+              <div className={cn(
+                "text-[7px] tracking-[0.25em] uppercase -mt-0.5",
+                isDark ? "text-white/50" : "text-slate-500"
+              )}>
+                INTIMATE DINING
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop header
   return (
     <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
-          {isMobile ? (
-            <HamburgerDrawer
-              navItems={navItems.map(item => ({
-                id: item.id,
-                title: item.title,
-                icon: item.icon,
-                href: item.href,
-                badge: item.badge,
-              }))}
-              activeItemId={activeItemId}
-              onNavigate={onNavigate}
-            />
-          ) : (
-            <Button
-              variant="outline"
-              size="icon"
-              className="md:hidden"
-              onClick={toggleSidebar}
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="icon"
+            className="md:hidden"
+            onClick={toggleSidebar}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
           <div>
             <h1 className="text-lg font-semibold">{title}</h1>
             {description && (
@@ -281,7 +306,19 @@ function DashboardTopBar({
             )}
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <NotificationCenter />
+          {user && (
+            <Avatar className="h-9 w-9 border-2 border-border">
+              <AvatarImage src={user.profileImageUrl || undefined} />
+              <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
+                {user.firstName?.charAt(0)}
+                {user.lastName?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+        </div>
       </div>
     </div>
   );

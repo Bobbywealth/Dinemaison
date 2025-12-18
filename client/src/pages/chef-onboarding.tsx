@@ -34,9 +34,7 @@ export default function ChefOnboardingPage() {
 
   const onboardMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/chef/stripe-connect/onboard", {
-        method: "POST",
-      });
+      const response = await apiRequest("POST", "/api/chef/stripe-connect/onboard");
       return response.json();
     },
     onSuccess: (data) => {

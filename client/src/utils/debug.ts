@@ -27,7 +27,30 @@ export const debug = {
     }
   },
 
-  error: (message: string, error: any) => {
+  warn: (message: string, data?: any) => {
+    const timestamp = new Date().toISOString();
+    console.warn(`[DineMaison Warning ${timestamp}]`, message, data);
+    
+    // Store warning for debugging
+    try {
+      const logs = JSON.parse(sessionStorage.getItem('debug-logs') || '[]');
+      logs.push({
+        timestamp,
+        type: 'warning',
+        message,
+        data,
+        url: window.location.href
+      });
+      if (logs.length > 50) {
+        logs.shift();
+      }
+      sessionStorage.setItem('debug-logs', JSON.stringify(logs));
+    } catch (e) {
+      console.error('Failed to store warning log:', e);
+    }
+  },
+
+  error: (message: string, error?: any) => {
     const timestamp = new Date().toISOString();
     console.error(`[DineMaison Error ${timestamp}]`, message, error);
     

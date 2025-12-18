@@ -54,7 +54,7 @@ const EnhancedTextarea = React.forwardRef<HTMLTextAreaElement, EnhancedTextareaP
         )}
         
         <div className="relative">
-          <motion.textarea
+          <textarea
             className={cn(
               "flex w-full rounded-lg border border-input bg-background px-4 py-3 text-sm transition-all duration-200",
               "placeholder:text-muted-foreground",

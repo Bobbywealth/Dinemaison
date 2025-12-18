@@ -136,73 +136,132 @@ export function ServicesSection() {
             <motion.div 
               key={index} 
               variants={itemVariants}
-              whileHover={{ y: -8 }}
+              whileHover={{ y: -12, scale: 1.02 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
               <Card 
-                className="group relative overflow-hidden transition-all duration-500 border-border/50 h-full hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/20 bg-card/80 backdrop-blur-sm"
+                className="group relative overflow-hidden transition-all duration-500 border-border/40 h-full hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/30 bg-transparent"
                 data-testid={`card-service-${index}`}
               >
-                {/* Gradient glow effect on hover */}
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  initial={false}
-                />
-
-                {/* Background image with overlay */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                  <motion.img 
+                {/* Always visible background image with elegant overlay */}
+                <div className="absolute inset-0">
+                  <img 
                     src={service.image} 
                     alt={service.title}
-                    className="w-full h-full object-cover"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.7 }}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-background/85" />
+                  {/* Multi-layer gradient for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/70" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-background/40 via-transparent to-primary/10" />
+                  {/* Glassmorphism effect */}
+                  <div className="absolute inset-0 backdrop-blur-[2px] group-hover:backdrop-blur-[1px] transition-all duration-500" />
                 </div>
 
-                <CardContent className="relative p-8 z-10">
-                  {/* Icon with animated background */}
+                {/* Shimmer effect on hover */}
+                <motion.div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  initial={false}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-amber-500/20" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      repeatDelay: 2,
+                    }}
+                  />
+                </motion.div>
+
+                {/* Inner glow border */}
+                <div className="absolute inset-[1px] rounded-[11px] border border-white/5 group-hover:border-white/10 transition-colors pointer-events-none" />
+
+                <CardContent className="relative p-8 z-10 flex flex-col h-full">
+                  {/* Enhanced icon with glow effect */}
                   <motion.div 
-                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/15 to-amber-500/10 flex items-center justify-center mb-6 group-hover:from-primary group-hover:to-amber-600 group-hover:scale-110 transition-all duration-500 shadow-lg shadow-primary/0 group-hover:shadow-primary/30"
-                    whileHover={{ rotate: [0, -5, 5, 0] }}
+                    className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 via-amber-500/15 to-orange-500/10 flex items-center justify-center mb-6 group-hover:from-primary/30 group-hover:via-amber-500/25 group-hover:to-orange-500/20 transition-all duration-500 border border-primary/20 group-hover:border-primary/40"
+                    whileHover={{ 
+                      rotate: [0, -5, 5, 0],
+                      scale: 1.1,
+                    }}
                     transition={{ type: "spring", stiffness: 300, duration: 0.5 }}
                   >
-                    <service.icon className="h-8 w-8 text-primary group-hover:text-white transition-colors duration-300" />
+                    {/* Glowing background */}
+                    <div className="absolute inset-0 rounded-2xl bg-primary/0 group-hover:bg-primary/20 blur-xl transition-all duration-500" />
+                    <service.icon className="relative h-8 w-8 text-primary group-hover:text-amber-400 transition-colors duration-300 drop-shadow-lg" />
+                    
+                    {/* Subtle pulse animation */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl border-2 border-primary/30"
+                      animate={{
+                        scale: [1, 1.1, 1],
+                        opacity: [0.5, 0, 0.5],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
                   </motion.div>
                   
-                  <h3 className="font-bold text-xl text-foreground mb-3 group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-amber-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                  <h3 className="font-bold text-xl text-foreground mb-3 group-hover:text-amber-400 transition-all duration-300 drop-shadow-sm">
                     {service.title}
                   </h3>
                   
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 group-hover:text-foreground/70 transition-colors">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 group-hover:text-foreground/80 transition-colors flex-grow">
                     {service.description}
                   </p>
                   
-                  {/* Animated separator */}
-                  <motion.div 
-                    className="h-0.5 bg-gradient-to-r from-transparent via-primary/0 to-transparent mb-4 group-hover:via-primary/50 transition-all duration-500"
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                  />
+                  {/* Elegant separator with shimmer */}
+                  <div className="relative h-px mb-4 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                      initial={{ x: '-100%' }}
+                      whileInView={{ x: '100%' }}
+                      viewport={{ once: true }}
+                      transition={{ 
+                        delay: 0.5 + index * 0.15, 
+                        duration: 1.5,
+                        ease: "easeInOut"
+                      }}
+                    />
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent opacity-0 group-hover:opacity-100"
+                      animate={{ x: ['-100%', '100%'] }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        repeatDelay: 1
+                      }}
+                    />
+                  </div>
                   
-                  {/* Enhanced hover indicator */}
+                  {/* Enhanced hover indicator with better animation */}
                   <motion.div 
-                    className="flex items-center text-primary text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300"
+                    className="flex items-center text-primary group-hover:text-amber-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300"
                     initial={{ x: -10 }}
-                    whileHover={{ x: 5 }}
+                    animate={{ x: 0 }}
                   >
-                    <span>Explore Service</span>
+                    <span className="drop-shadow">Explore Service</span>
                     <motion.span 
-                      className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 group-hover:bg-primary/20"
-                      animate={{ x: [0, 3, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 group-hover:bg-amber-400/20 border border-primary/20 group-hover:border-amber-400/40"
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
                       →
                     </motion.span>
                   </motion.div>
                 </CardContent>
+
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-full" />
               </Card>
             </motion.div>
           ))}

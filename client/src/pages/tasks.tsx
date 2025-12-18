@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useSearchParams } from "wouter/use-location";
+import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,8 +20,16 @@ import { TaskStatus, TaskPriority, type TaskWithUser, type CreateTaskPayload } f
 import { useToast } from "@/hooks/use-toast";
 
 export default function TasksPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [location, setLocation] = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(location.split('?')[1] || ''), [location]);
   const view = (searchParams.get("view") as "list" | "kanban") || "kanban";
+  
+  const setView = (newView: "list" | "kanban") => {
+    const params = new URLSearchParams(searchParams);
+    params.set("view", newView);
+    setLocation(`${location.split('?')[0]}?${params.toString()}`);
+  };
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -141,7 +149,7 @@ export default function TasksPage() {
   };
 
   const handleViewChange = (newView: string) => {
-    setSearchParams({ view: newView });
+    setView(newView as "list" | "kanban");
   };
 
   const handleNewTask = () => {

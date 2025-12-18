@@ -76,6 +76,7 @@ import {
   UserPlus,
   LayoutDashboard,
   CheckSquare,
+  LogOut,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -124,6 +125,28 @@ export default function AdminDashboard() {
   const [addMarketOpen, setAddMarketOpen] = useState(false);
   const [newMarketName, setNewMarketName] = useState("");
   const [newMarketDescription, setNewMarketDescription] = useState("");
+  const [addChefOpen, setAddChefOpen] = useState(false);
+  const [newChefData, setNewChefData] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    displayName: "",
+    bio: "",
+    profileImageUrl: "",
+    yearsExperience: 0,
+    cuisines: [] as string[],
+    dietarySpecialties: [] as string[],
+    servicesOffered: [] as string[],
+    minimumSpend: "250",
+    minimumGuests: 2,
+    maximumGuests: 12,
+    hourlyRate: "150",
+    verificationLevel: "basic",
+    isCertified: false,
+    isActive: true,
+    commissionRate: "15",
+  });
 
   const { data: stats, isLoading: statsLoading } = useQuery<{
     totalUsers: number;
@@ -265,6 +288,45 @@ export default function AdminDashboard() {
     },
     onError: () => {
       toast({ title: "Failed to update chef status", variant: "destructive" });
+    },
+  });
+
+  const createChef = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/chefs", data);
+    },
+    onSuccess: () => {
+      toast({ title: "Chef created successfully!" });
+      setAddChefOpen(false);
+      setNewChefData({
+        email: "",
+        password: "",
+        firstName: "",
+        lastName: "",
+        displayName: "",
+        bio: "",
+        profileImageUrl: "",
+        yearsExperience: 0,
+        cuisines: [] as string[],
+        dietarySpecialties: [] as string[],
+        servicesOffered: [] as string[],
+        minimumSpend: "250",
+        minimumGuests: 2,
+        maximumGuests: 12,
+        hourlyRate: "150",
+        verificationLevel: "basic",
+        isCertified: false,
+        isActive: true,
+        commissionRate: "15",
+      });
+      refetchChefs();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create chef",
+        description: error.message || "Please check your input and try again",
+        variant: "destructive"
+      });
     },
   });
 
@@ -915,15 +977,25 @@ export default function AdminDashboard() {
                     <CardTitle className="text-base md:text-lg">Chef Management</CardTitle>
                     <CardDescription className="text-xs md:text-sm">View and manage registered chefs</CardDescription>
                   </div>
-                  <div className="relative w-full sm:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search chefs..." 
-                      className="pl-9 rounded-xl"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      data-testid="input-search-chefs"
-                    />
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        placeholder="Search chefs..." 
+                        className="pl-9 rounded-xl"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        data-testid="input-search-chefs"
+                      />
+                    </div>
+                    <Button 
+                      onClick={() => setAddChefOpen(true)}
+                      size="sm"
+                      className="rounded-xl shrink-0"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Chef
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -1133,6 +1205,235 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Add Chef Dialog */}
+            <Dialog open={addChefOpen} onOpenChange={setAddChefOpen}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Chef</DialogTitle>
+                  <DialogDescription>
+                    Create a new chef account with profile details
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mb-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setNewChefData({
+                      email: "ameer.natson@dinemaison.com",
+                      password: "chef123",
+                      firstName: "Ameer",
+                      lastName: "Natson",
+                      displayName: "Ameer Natson",
+                      bio: "Visionary culinary artist blending bold international flavors with refined technique. With a passion for innovation and a deep respect for tradition, Chef Ameer crafts unforgettable dining experiences that celebrate the art of food. From contemporary fusion to classic comfort with a twist, his dynamic approach transforms every meal into a memorable journey. Known for his creative plating, locally-sourced ingredients, and warm hospitality, Chef Ameer brings both expertise and soul to your table.",
+                      profileImageUrl: "https://freeimage.host/i/fl0CC0b",
+                      yearsExperience: 12,
+                      cuisines: ["Contemporary American", "Fusion", "Mediterranean", "Caribbean"],
+                      dietarySpecialties: ["Vegan", "Vegetarian", "Gluten-Free", "Paleo"],
+                      servicesOffered: ["Private Dinner", "Event Catering", "Meal Prep", "Cooking Class"],
+                      minimumSpend: "300",
+                      minimumGuests: 2,
+                      maximumGuests: 16,
+                      hourlyRate: "175",
+                      verificationLevel: "certified",
+                      isCertified: true,
+                      isActive: true,
+                      commissionRate: "15",
+                    })}
+                  >
+                    Load Ameer Natson Template
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">First Name</label>
+                      <Input
+                        value={newChefData.firstName}
+                        onChange={(e) => setNewChefData({ ...newChefData, firstName: e.target.value })}
+                        placeholder="First name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Last Name</label>
+                      <Input
+                        value={newChefData.lastName}
+                        onChange={(e) => setNewChefData({ ...newChefData, lastName: e.target.value })}
+                        placeholder="Last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email</label>
+                    <Input
+                      type="email"
+                      value={newChefData.email}
+                      onChange={(e) => setNewChefData({ ...newChefData, email: e.target.value })}
+                      placeholder="chef@example.com"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Password</label>
+                    <Input
+                      type="password"
+                      value={newChefData.password}
+                      onChange={(e) => setNewChefData({ ...newChefData, password: e.target.value })}
+                      placeholder="Minimum 8 characters"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Display Name</label>
+                    <Input
+                      value={newChefData.displayName}
+                      onChange={(e) => setNewChefData({ ...newChefData, displayName: e.target.value })}
+                      placeholder="e.g. Chef John Doe"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bio</label>
+                    <textarea
+                      className="w-full min-h-[100px] px-3 py-2 text-sm rounded-md border border-input bg-background"
+                      value={newChefData.bio}
+                      onChange={(e) => setNewChefData({ ...newChefData, bio: e.target.value })}
+                      placeholder="Tell us about the chef's experience and specialties..."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Profile Image URL</label>
+                    <Input
+                      value={newChefData.profileImageUrl}
+                      onChange={(e) => setNewChefData({ ...newChefData, profileImageUrl: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Years of Experience</label>
+                      <Input
+                        type="number"
+                        value={newChefData.yearsExperience}
+                        onChange={(e) => setNewChefData({ ...newChefData, yearsExperience: parseInt(e.target.value) || 0 })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Hourly Rate ($)</label>
+                      <Input
+                        value={newChefData.hourlyRate}
+                        onChange={(e) => setNewChefData({ ...newChefData, hourlyRate: e.target.value })}
+                        placeholder="150"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Min Spend ($)</label>
+                      <Input
+                        value={newChefData.minimumSpend}
+                        onChange={(e) => setNewChefData({ ...newChefData, minimumSpend: e.target.value })}
+                        placeholder="250"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Min Guests</label>
+                      <Input
+                        type="number"
+                        value={newChefData.minimumGuests}
+                        onChange={(e) => setNewChefData({ ...newChefData, minimumGuests: parseInt(e.target.value) || 2 })}
+                        placeholder="2"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Max Guests</label>
+                      <Input
+                        type="number"
+                        value={newChefData.maximumGuests}
+                        onChange={(e) => setNewChefData({ ...newChefData, maximumGuests: parseInt(e.target.value) || 12 })}
+                        placeholder="12"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cuisines (comma separated)</label>
+                    <Input
+                      value={newChefData.cuisines.join(", ")}
+                      onChange={(e) => setNewChefData({ 
+                        ...newChefData, 
+                        cuisines: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                      })}
+                      placeholder="Italian, French, Mediterranean"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Dietary Specialties (comma separated)</label>
+                    <Input
+                      value={newChefData.dietarySpecialties.join(", ")}
+                      onChange={(e) => setNewChefData({ 
+                        ...newChefData, 
+                        dietarySpecialties: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                      })}
+                      placeholder="Vegan, Gluten-Free, Vegetarian"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Services Offered (comma separated)</label>
+                    <Input
+                      value={newChefData.servicesOffered.join(", ")}
+                      onChange={(e) => setNewChefData({ 
+                        ...newChefData, 
+                        servicesOffered: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                      })}
+                      placeholder="Private Dinner, Cooking Class, Event Catering"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setAddChefOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      createChef.mutate({
+                        email: newChefData.email,
+                        password: newChefData.password,
+                        firstName: newChefData.firstName,
+                        lastName: newChefData.lastName,
+                        chefProfile: {
+                          displayName: newChefData.displayName,
+                          bio: newChefData.bio,
+                          profileImageUrl: newChefData.profileImageUrl || undefined,
+                          yearsExperience: newChefData.yearsExperience,
+                          cuisines: newChefData.cuisines,
+                          dietarySpecialties: newChefData.dietarySpecialties,
+                          servicesOffered: newChefData.servicesOffered,
+                          minimumSpend: newChefData.minimumSpend,
+                          minimumGuests: newChefData.minimumGuests,
+                          maximumGuests: newChefData.maximumGuests,
+                          hourlyRate: newChefData.hourlyRate,
+                          verificationLevel: newChefData.verificationLevel,
+                          isCertified: newChefData.isCertified,
+                          isActive: newChefData.isActive,
+                          commissionRate: newChefData.commissionRate,
+                        }
+                      });
+                    }}
+                    disabled={createChef.isPending || !newChefData.email || !newChefData.password || !newChefData.firstName || !newChefData.lastName || !newChefData.displayName}
+                  >
+                    {createChef.isPending ? "Creating..." : "Create Chef"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </section>
       )}
 

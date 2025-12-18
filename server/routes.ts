@@ -8,6 +8,7 @@ import { isAuthenticated } from "./auth";
 import { eq, sql } from "drizzle-orm";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
+import bcrypt from "bcryptjs";
 
 function getUserId(req: Request): string | null {
   const user = req.user as any;
@@ -646,6 +647,59 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching chefs:", error);
       res.status(500).json({ message: "Failed to fetch chefs" });
+    }
+  });
+
+  app.post("/api/admin/chefs", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const role = await storage.getUserRole(userId);
+    if (role?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    try {
+      const { email, password, firstName, lastName, chefProfile } = req.body;
+
+      // Validate required fields
+      if (!email || !password || !firstName || !lastName || !chefProfile) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if user already exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (existingUser.length > 0) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+        })
+        .returning();
+
+      // Set role to chef
+      await storage.setUserRole(newUser.id, "chef");
+
+      // Create chef profile
+      const profile = await storage.createChefProfile({
+        userId: newUser.id,
+        ...chefProfile,
+      });
+
+      res.status(201).json({ user: newUser, profile });
+    } catch (error) {
+      console.error("Error creating chef:", error);
+      res.status(500).json({ message: "Failed to create chef" });
     }
   });
 

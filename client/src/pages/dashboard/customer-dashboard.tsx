@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
+import { CustomerDesktopHeader } from "@/components/dashboard/customer-header";
 import {
   Dialog,
   DialogContent,
@@ -50,10 +51,14 @@ import {
   Award,
   ArrowRight,
   CheckCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  Utensils,
+  Home
 } from "lucide-react";
 import { format, isAfter, isBefore, addHours } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { BottomNavigation } from "@/components/mobile/bottom-navigation";
 
 const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
@@ -74,6 +79,7 @@ const statusLabels: Record<string, string> = {
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -93,9 +99,7 @@ export default function CustomerDashboard() {
 
   const cancelBooking = useMutation({
     mutationFn: async (bookingId: string) => {
-      return apiRequest(`/api/bookings/${bookingId}/cancel`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/bookings/${bookingId}/cancel`);
     },
     onSuccess: (data: any) => {
       toast({ 
@@ -111,10 +115,7 @@ export default function CustomerDashboard() {
 
   const submitReview = useMutation({
     mutationFn: async ({ bookingId, rating, comment }: { bookingId: string; rating: number; comment: string }) => {
-      return apiRequest(`/api/bookings/${bookingId}/review`, {
-        method: "POST",
-        body: JSON.stringify({ rating, comment }),
-      });
+      return apiRequest("POST", `/api/bookings/${bookingId}/review`, { rating, comment });
     },
     onSuccess: () => {
       toast({ title: "Review submitted! Thank you for your feedback." });
@@ -131,9 +132,7 @@ export default function CustomerDashboard() {
 
   const removeFavorite = useMutation({
     mutationFn: async (chefId: string) => {
-      return apiRequest(`/api/customer/favorites/${chefId}`, {
-        method: "DELETE",
-      });
+      return apiRequest("DELETE", `/api/customer/favorites/${chefId}`);
     },
     onSuccess: () => {
       toast({ title: "Chef removed from favorites" });
@@ -214,174 +213,354 @@ export default function CustomerDashboard() {
     }
   }, [customerNavItems]);
 
-  return (
-    <DashboardLayout
-      title="Customer Dashboard"
-      description={`Welcome back, ${user?.firstName || "Guest"}`}
-      navItems={customerNavItems}
-      activeItemId={activeSection}
-      onNavigate={handleSectionChange}
-    >
+  // Shared sections content for both desktop and mobile
+  const sectionsContent = (
+    <>
       {activeSection === "overview" && (
         <section id="overview" className="space-y-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold text-foreground">
-                Welcome back, {user?.firstName || "Guest"}
-              </h2>
-              <p className="text-muted-foreground">Manage your dining experiences</p>
-            </div>
-            <Button asChild data-testid="button-new-booking">
-              <Link href="/chefs">
-                <Plus className="mr-2 h-4 w-4" />
-                Book a Chef
-              </Link>
-            </Button>
-          </div>
+          {/* Desktop Hero Section */}
+          {!isMobile && (
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Welcome Message */}
+              <div className="text-center space-y-3 pt-8">
+                <h1 className="text-5xl font-serif font-bold text-foreground">
+                  Welcome back, {user?.firstName || "Guest"} 👋
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  What would you like to plan today?
+                </p>
+              </div>
 
-          {needsReview.length > 0 && (
-            <Card className="border-primary/30 bg-primary/5">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <Star className="h-6 w-6 text-primary" />
+              {/* Book a Chef Button */}
+              <div className="flex justify-center">
+                <Button 
+                  asChild 
+                  size="lg"
+                  className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-12 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
+                  data-testid="button-new-booking"
+                >
+                  <Link href="/chefs">
+                    <Utensils className="mr-3 h-5 w-5" />
+                    Book a Chef
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Next Experience Section */}
+              {upcomingBookings.length > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-3xl p-8 border border-blue-100 dark:border-blue-900">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                      <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">Share Your Experience</p>
-                      <p className="text-sm text-muted-foreground">
-                        You have {needsReview.length} experience{needsReview.length > 1 ? 's' : ''} waiting for your review
-                      </p>
+                    <h2 className="text-2xl font-semibold text-foreground">Next Experience</h2>
+                  </div>
+
+                  <div className="grid md:grid-cols-[1fr_2fr] gap-6">
+                    {/* Chef Avatar and Info */}
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20 border-4 border-white dark:border-gray-800">
+                        <AvatarFallback className="bg-primary/10 text-2xl">
+                          <ChefHat className="h-8 w-8 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">Chef Maria</p>
+                        <p className="text-lg text-muted-foreground">
+                          {upcomingBookings[0].eventDate && format(new Date(upcomingBookings[0].eventDate), "EEE, MMM d")} · {upcomingBookings[0].eventTime}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* View Details Button */}
+                    <div className="flex items-center justify-end">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="lg" className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/40">
+                            View Details
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Booking Details</DialogTitle>
+                            <DialogDescription>Complete information about your reservation</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm text-muted-foreground">Date</p>
+                                <p className="font-medium">{upcomingBookings[0].eventDate && format(new Date(upcomingBookings[0].eventDate), "MMMM d, yyyy")}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Time</p>
+                                <p className="font-medium">{upcomingBookings[0].eventTime}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Guests</p>
+                                <p className="font-medium">{upcomingBookings[0].guestCount}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-muted-foreground">Status</p>
+                                <Badge variant="outline" className={statusColors[upcomingBookings[0].status || "requested"]}>
+                                  {upcomingBookings[0].status}
+                                </Badge>
+                              </div>
+                            </div>
+                            {upcomingBookings[0].eventAddress && (
+                              <div>
+                                <p className="text-sm text-muted-foreground">Address</p>
+                                <p className="font-medium">{upcomingBookings[0].eventAddress}</p>
+                              </div>
+                            )}
+                            <div className="border-t pt-4 space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Subtotal</span>
+                                <span>${(parseFloat(upcomingBookings[0].subtotal || "0") / 100).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Service Fee</span>
+                                <span>${(parseFloat(upcomingBookings[0].serviceFee || "0") / 100).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between font-semibold text-lg">
+                                <span>Total</span>
+                                <span>${(parseFloat(upcomingBookings[0].total) / 100).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
-                  <Button variant="outline" onClick={() => setReviewBooking(needsReview[0])}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Leave Review
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+
+              {/* Action Cards Grid */}
+              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {/* My Bookings */}
+                <Card 
+                  className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-300 dark:hover:border-blue-700"
+                  onClick={() => handleSectionChange("upcoming")}
+                >
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="h-16 w-16 mx-auto rounded-2xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                      <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">My Bookings</h3>
+                  </CardContent>
+                </Card>
+
+                {/* Find Chefs */}
+                <Card 
+                  className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-amber-300 dark:hover:border-amber-700"
+                >
+                  <Link href="/chefs">
+                    <CardContent className="p-8 text-center space-y-4">
+                      <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                        <ChefHat className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground">Find Chefs</h3>
+                    </CardContent>
+                  </Link>
+                </Card>
+
+                {/* Favorites */}
+                <Card 
+                  className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-pink-300 dark:hover:border-pink-700"
+                  onClick={() => handleSectionChange("favorites")}
+                >
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="h-16 w-16 mx-auto rounded-2xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                      <Heart className="h-8 w-8 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">Favorites</h3>
+                  </CardContent>
+                </Card>
+
+                {/* My Reviews */}
+                <Card 
+                  className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-purple-300 dark:hover:border-purple-700"
+                  onClick={() => handleSectionChange("reviews")}
+                >
+                  <CardContent className="p-8 text-center space-y-4">
+                    <div className="h-16 w-16 mx-auto rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                      <Star className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">My Reviews</h3>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           )}
 
-          {/* Mobile-optimized Stats Grid - 2x2 on mobile */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{upcomingBookings.length}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Upcoming</p>
-                </div>
+          {/* Mobile Version - Cleaner Layout */}
+          {isMobile && (
+            <div className="space-y-6">
+              {/* Welcome Section */}
+              <div className="text-center space-y-3">
+                <h1 className="text-3xl font-serif font-bold text-foreground">
+                  Welcome back, {user?.firstName || "Guest"} 👋
+                </h1>
+                <p className="text-base text-muted-foreground">
+                  What would you like to plan today?
+                </p>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
-                  <CheckCircle className="h-6 w-6 sm:h-5 sm:w-5 text-green-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{completedBookings.length}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Completed</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">${(totalSpent / 100).toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Total Spent</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
-                  <Heart className="h-6 w-6 sm:h-5 sm:w-5 text-pink-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{favoriteChefs?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Favorites</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Quick Actions - Mobile optimized */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              onClick={() => handleSectionChange("upcoming")}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="text-sm font-medium text-left">View Bookings</span>
-                  {upcomingBookings.length > 0 && (
-                    <Badge variant="secondary" className="ml-2">
-                      {upcomingBookings.length}
-                    </Badge>
-                  )}
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              {/* Book a Chef Button */}
+              <div className="flex justify-center">
+                <Button 
+                  asChild 
+                  size="lg"
+                  className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-10 py-6 text-base rounded-full shadow-lg hover:shadow-xl transition-all w-full max-w-md"
+                  data-testid="button-new-booking"
+                >
+                  <Link href="/chefs">
+                    <Utensils className="mr-3 h-5 w-5" />
+                    Book a Chef
+                  </Link>
+                </Button>
               </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              asChild
-            >
-              <Link href="/chefs">
-                <div className="flex items-center gap-3 w-full">
-                  <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
-                    <ChefHat className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <span className="text-sm font-medium flex-1 text-left">Find Chefs</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              onClick={() => handleSectionChange("favorites")}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-10 w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
-                  <Heart className="h-5 w-5 text-pink-600" />
-                </div>
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="text-sm font-medium text-left">My Favorites</span>
-                  {(favoriteChefs?.length || 0) > 0 && (
-                    <Badge variant="secondary" className="ml-2">
-                      {favoriteChefs?.length}
-                    </Badge>
-                  )}
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+
+              {/* Next Experience Section */}
+              {upcomingBookings.length > 0 && (
+                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-100 dark:border-blue-900">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Next Experience</h2>
+                    </div>
+
+                    <div className="flex items-start gap-4 mb-4">
+                      <Avatar className="h-16 w-16 border-2 border-white dark:border-gray-800">
+                        <AvatarFallback className="bg-primary/10 text-lg">
+                          <ChefHat className="h-7 w-7 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-xl font-bold text-foreground">Chef Maria</p>
+                        <p className="text-base text-muted-foreground">
+                          {upcomingBookings[0].eventDate && format(new Date(upcomingBookings[0].eventDate), "EEE, MMM d")} · {upcomingBookings[0].eventTime}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/40">
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Booking Details</DialogTitle>
+                          <DialogDescription>Complete information about your reservation</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Date</p>
+                              <p className="font-medium">{upcomingBookings[0].eventDate && format(new Date(upcomingBookings[0].eventDate), "MMMM d, yyyy")}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Time</p>
+                              <p className="font-medium">{upcomingBookings[0].eventTime}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Guests</p>
+                              <p className="font-medium">{upcomingBookings[0].guestCount}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Status</p>
+                              <Badge variant="outline" className={statusColors[upcomingBookings[0].status || "requested"]}>
+                                {upcomingBookings[0].status}
+                              </Badge>
+                            </div>
+                          </div>
+                          {upcomingBookings[0].eventAddress && (
+                            <div>
+                              <p className="text-sm text-muted-foreground">Address</p>
+                              <p className="font-medium">{upcomingBookings[0].eventAddress}</p>
+                            </div>
+                          )}
+                          <div className="border-t pt-4 space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Subtotal</span>
+                              <span>${(parseFloat(upcomingBookings[0].subtotal || "0") / 100).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Service Fee</span>
+                              <span>${(parseFloat(upcomingBookings[0].serviceFee || "0") / 100).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between font-semibold text-lg">
+                              <span>Total</span>
+                              <span>${(parseFloat(upcomingBookings[0].total) / 100).toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Cards Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* My Bookings */}
+                <Card 
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                  onClick={() => handleSectionChange("upcoming")}
+                >
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className="h-14 w-14 mx-auto rounded-2xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                      <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">My Bookings</h3>
+                  </CardContent>
+                </Card>
+
+                {/* Find Chefs */}
+                <Card 
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  <Link href="/chefs">
+                    <CardContent className="p-6 text-center space-y-3">
+                      <div className="h-14 w-14 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                        <ChefHat className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground">Find Chefs</h3>
+                    </CardContent>
+                  </Link>
+                </Card>
+
+                {/* Favorites */}
+                <Card 
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                  onClick={() => handleSectionChange("favorites")}
+                >
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className="h-14 w-14 mx-auto rounded-2xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                      <Heart className="h-7 w-7 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">Favorites</h3>
+                  </CardContent>
+                </Card>
+
+                {/* My Reviews */}
+                <Card 
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                  onClick={() => handleSectionChange("reviews")}
+                >
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className="h-14 w-14 mx-auto rounded-2xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                      <Star className="h-7 w-7 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">My Reviews</h3>
+                  </CardContent>
+                </Card>
               </div>
-            </Button>
-          </CardContent>
-        </Card>
+            </div>
+          )}
         </section>
       )}
 
@@ -960,6 +1139,96 @@ export default function CustomerDashboard() {
           </div>
         </section>
       )}
+
+      {/* Review Dialog */}
+      <Dialog open={!!reviewBooking} onOpenChange={(open) => !open && setReviewBooking(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Leave a Review</DialogTitle>
+            <DialogDescription>
+              Share your experience from {reviewBooking?.eventDate && format(new Date(reviewBooking.eventDate), "MMMM d, yyyy")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div>
+              <p className="text-sm font-medium mb-3">Rating</p>
+              <div className="flex gap-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setReviewRating(i + 1)}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      className={`h-8 w-8 transition-colors ${i < reviewRating ? 'text-yellow-500 fill-yellow-500' : 'text-muted hover:text-yellow-300'}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-3">Your Review</p>
+              <Textarea
+                placeholder="Tell us about your dining experience..."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewBooking(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => reviewBooking && submitReview.mutate({
+                bookingId: reviewBooking.id,
+                rating: reviewRating,
+                comment: reviewComment
+              })}
+              disabled={submitReview.isPending || !reviewComment.trim()}
+            >
+              {submitReview.isPending ? "Submitting..." : "Submit Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
+  // Desktop layout without sidebar
+  if (!isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <CustomerDesktopHeader />
+        <main className="container py-8">
+          {sectionsContent}
+        </main>
+        
+        {/* Bottom Navigation for Desktop */}
+        <BottomNavigation
+          items={[
+            { id: "home", label: "Home", icon: Home, href: "/dashboard#overview" },
+            { id: "bookings", label: "Bookings", icon: Calendar, href: "/dashboard#upcoming" },
+            { id: "chefs", label: "Chefs", icon: ChefHat, href: "/chefs" },
+            { id: "favorites", label: "Favorites", icon: Heart, href: "/dashboard#favorites" },
+            { id: "profile", label: "Profile", icon: Settings, href: "/dashboard#more" },
+          ]}
+        />
+      </div>
+    );
+  }
+
+  // Mobile layout with sidebar
+  return (
+    <DashboardLayout
+      title="Customer Dashboard"
+      description={`Welcome back, ${user?.firstName || "Guest"}`}
+      navItems={customerNavItems}
+      activeItemId={activeSection}
+      onNavigate={handleSectionChange}
+    >
+      {sectionsContent}
     </DashboardLayout>
   );
 }

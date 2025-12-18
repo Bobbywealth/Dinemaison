@@ -177,7 +177,11 @@ export function TaskDialog({ open, onOpenChange, onSubmit, task, isSubmitting }:
                 <FormItem>
                   <FormLabel>Due Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input 
+                      type="date" 
+                      {...field} 
+                      value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value || ''} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

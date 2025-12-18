@@ -51,6 +51,33 @@ const TEST_ACCOUNTS = [
     },
   },
   {
+    email: "ameer.natson@dinemaison.com",
+    password: "chef123",
+    firstName: "Ameer",
+    lastName: "Natson",
+    role: "chef",
+    chefProfile: {
+      displayName: "Ameer Natson",
+      bio: "Visionary culinary artist blending bold international flavors with refined technique. With a passion for innovation and a deep respect for tradition, Chef Ameer crafts unforgettable dining experiences that celebrate the art of food. From contemporary fusion to classic comfort with a twist, his dynamic approach transforms every meal into a memorable journey. Known for his creative plating, locally-sourced ingredients, and warm hospitality, Chef Ameer brings both expertise and soul to your table.",
+      profileImageUrl: "https://freeimage.host/i/fl0CC0b",
+      yearsExperience: 12,
+      cuisines: ["Contemporary American", "Fusion", "Mediterranean", "Caribbean"],
+      dietarySpecialties: ["Vegan", "Vegetarian", "Gluten-Free", "Paleo"],
+      servicesOffered: ["Private Dinner", "Event Catering", "Meal Prep", "Cooking Class"],
+      minimumSpend: "300",
+      minimumGuests: 2,
+      maximumGuests: 16,
+      hourlyRate: "175",
+      verificationLevel: "certified",
+      isCertified: true,
+      isActive: true,
+      commissionRate: "15",
+      averageRating: "4.9",
+      totalReviews: 18,
+      completedBookings: 32,
+    },
+  },
+  {
     email: "customer@dinemaison.com",
     password: "customer123",
     firstName: "Sarah",
@@ -140,9 +167,14 @@ async function seed() {
   console.log("     Email:    admin@dinemaison.com");
   console.log("     Password: admin123");
   console.log("");
-  console.log("  👨‍🍳 CHEF");
+  console.log("  👨‍🍳 CHEF - Marco Rossi");
   console.log("     Email:    chef@dinemaison.com");
   console.log("     Password: chef123");
+  console.log("");
+  console.log("  👨‍🍳 CHEF - Ameer Natson");
+  console.log("     Email:    ameer.natson@dinemaison.com");
+  console.log("     Password: chef123");
+  console.log("     Image:    https://freeimage.host/i/fl0CC0b");
   console.log("");
   console.log("  🧑 CUSTOMER");
   console.log("     Email:    customer@dinemaison.com");

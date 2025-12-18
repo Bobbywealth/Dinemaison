@@ -103,9 +103,7 @@ export default function ChefDashboard() {
 
   const acceptBooking = useMutation({
     mutationFn: async (bookingId: string) => {
-      return apiRequest(`/api/chef/bookings/${bookingId}/accept`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/chef/bookings/${bookingId}/accept`);
     },
     onSuccess: () => {
       toast({ title: "Booking accepted!" });
@@ -118,9 +116,7 @@ export default function ChefDashboard() {
 
   const declineBooking = useMutation({
     mutationFn: async (bookingId: string) => {
-      return apiRequest(`/api/chef/bookings/${bookingId}/decline`, {
-        method: "POST",
-      });
+      return apiRequest("POST", `/api/chef/bookings/${bookingId}/decline`);
     },
     onSuccess: () => {
       toast({ title: "Booking declined" });
@@ -161,9 +157,9 @@ export default function ChefDashboard() {
     if (profile.displayName) score += 15;
     if (profile.bio && profile.bio.length > 50) score += 15;
     if (profile.profileImageUrl) score += 15;
-    if (profile.specialties && profile.specialties.length > 0) score += 15;
-    if (profile.cuisines && profile.cuisines.length > 0) score += 10;
-    if (profile.pricePerPerson) score += 15;
+    if (profile.cuisines && profile.cuisines.length > 0) score += 15;
+    if (profile.dietarySpecialties && profile.dietarySpecialties.length > 0) score += 10;
+    if (profile.hourlyRate) score += 15;
     if (stripeStatus?.onboarded) score += 15;
     return Math.min(score, 100);
   })();
@@ -253,12 +249,6 @@ export default function ChefDashboard() {
                     <ChefHat className="h-4 w-4" />
                     {profile?.completedBookings || 0} bookings
                   </span>
-                  {profile?.serviceAreas && profile.serviceAreas.length > 0 && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {profile.serviceAreas[0]}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
