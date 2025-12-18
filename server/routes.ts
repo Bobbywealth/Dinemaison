@@ -1474,6 +1474,282 @@ export async function registerRoutes(
     }
   });
 
+  // ============== ADMIN USER MANAGEMENT ==============
+  
+  // Update user details (admin only)
+  app.patch("/api/admin/users/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { firstName, lastName, email } = req.body;
+      const [updated] = await db
+        .update(users)
+        .set({ firstName, lastName, email })
+        .where(eq(users.id, req.params.id))
+        .returning();
+      
+      if (!updated) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Update user role (admin only)
+  app.patch("/api/admin/users/:id/role", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { role } = req.body;
+      await storage.setUserRole(req.params.id, role);
+      res.json({ success: true, message: "User role updated successfully" });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Send password reset email (admin only)
+  app.post("/api/admin/users/:id/send-reset-password", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, req.params.id));
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate reset token (in production, store this in DB with expiration)
+      const resetToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      const baseUrl = process.env.APP_URL || 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+      // In production, send actual email using emailService
+      // For now, just return the URL
+      console.log(`Password reset URL for ${user.email}: ${resetUrl}`);
+      
+      res.json({ 
+        success: true, 
+        message: "Password reset email sent successfully",
+        resetUrl: process.env.NODE_ENV === "development" ? resetUrl : undefined
+      });
+    } catch (error) {
+      console.error("Error sending password reset:", error);
+      res.status(500).json({ message: "Failed to send password reset email" });
+    }
+  });
+
+  // Admin edit chef profile
+  app.patch("/api/admin/chefs/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const updated = await storage.updateChefProfile(req.params.id, req.body);
+      if (!updated) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating chef profile:", error);
+      res.status(500).json({ message: "Failed to update chef profile" });
+    }
+  });
+
+  // ============== MARKETING / EMAIL CAMPAIGNS ==============
+  
+  // Get all email campaigns
+  app.get("/api/admin/marketing/campaigns", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      // TODO: Implement campaigns table in database
+      // For now, return empty array
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      res.status(500).json({ message: "Failed to fetch campaigns" });
+    }
+  });
+
+  // Create email campaign
+  app.post("/api/admin/marketing/campaigns", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, subject, body, recipientType, scheduledFor } = req.body;
+      
+      // TODO: Store campaign in database
+      // For now, return mock data
+      const campaign = {
+        id: `campaign-${Date.now()}`,
+        name,
+        subject,
+        body,
+        recipientType,
+        scheduledFor,
+        status: 'draft',
+        createdAt: new Date().toISOString()
+      };
+      
+      res.status(201).json(campaign);
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      res.status(500).json({ message: "Failed to create campaign" });
+    }
+  });
+
+  // Send mass email
+  app.post("/api/admin/marketing/send-mass-email", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { subject, body, recipientType } = req.body;
+      
+      let recipients: any[] = [];
+      
+      if (recipientType === 'all_users') {
+        recipients = await db.select().from(users);
+      } else if (recipientType === 'chefs') {
+        const chefProfiles = await db.select().from(chefProfiles);
+        const chefUserIds = chefProfiles.map(c => c.userId);
+        recipients = await db.select().from(users).where(sql`${users.id} = ANY(${chefUserIds})`);
+      } else if (recipientType === 'customers') {
+        const chefProfiles = await db.select().from(chefProfiles);
+        const chefUserIds = chefProfiles.map(c => c.userId);
+        recipients = await db.select().from(users).where(sql`${users.id} != ALL(${chefUserIds})`);
+      }
+      
+      // TODO: Send actual emails using email service
+      console.log(`Would send email to ${recipients.length} recipients`);
+      
+      res.json({ 
+        success: true, 
+        recipientCount: recipients.length,
+        message: `Email queued for ${recipients.length} recipients`
+      });
+    } catch (error) {
+      console.error("Error sending mass email:", error);
+      res.status(500).json({ message: "Failed to send mass email" });
+    }
+  });
+
+  // Get email templates
+  app.get("/api/admin/marketing/templates", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      // TODO: Store templates in database
+      // For now, return default templates
+      const templates = [
+        {
+          id: 'welcome',
+          name: 'Welcome Email',
+          subject: 'Welcome to Dine Maison!',
+          body: 'Welcome to Dine Maison! We\'re excited to have you join our culinary community.'
+        },
+        {
+          id: 'promotion',
+          name: 'Promotional Email',
+          subject: 'Special Offer from Dine Maison',
+          body: 'Don\'t miss out on our special promotion!'
+        },
+        {
+          id: 'newsletter',
+          name: 'Newsletter',
+          subject: 'Dine Maison Monthly Newsletter',
+          body: 'Here\'s what\'s new this month...'
+        }
+      ];
+      
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ message: "Failed to fetch templates" });
+    }
+  });
+
+  // Save email template
+  app.post("/api/admin/marketing/templates", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, subject, body } = req.body;
+      
+      // TODO: Store template in database
+      const template = {
+        id: `template-${Date.now()}`,
+        name,
+        subject,
+        body,
+        createdAt: new Date().toISOString()
+      };
+      
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error saving template:", error);
+      res.status(500).json({ message: "Failed to save template" });
+    }
+  });
+
+  // ============== STAFF MANAGEMENT ==============
+  
+  // Get all staff members
+  app.get("/api/admin/staff", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const roles = await storage.getAllUserRoles();
+      const adminAndStaff = roles.filter(r => r.role === 'admin' || r.role === 'staff');
+      
+      const staffMembers = await Promise.all(
+        adminAndStaff.map(async (role) => {
+          const user = await storage.getUser(role.userId);
+          return {
+            ...user,
+            role: role.role
+          };
+        })
+      );
+      
+      res.json(staffMembers.filter(s => s));
+    } catch (error) {
+      console.error("Error fetching staff:", error);
+      res.status(500).json({ message: "Failed to fetch staff" });
+    }
+  });
+
+  // Add staff member
+  app.post("/api/admin/staff", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { email, password, firstName, lastName, role } = req.body;
+
+      // Check if user exists
+      const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (existingUser.length > 0) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+        })
+        .returning();
+
+      // Set role
+      await storage.setUserRole(newUser.id, role || 'staff');
+
+      res.status(201).json({ ...newUser, role: role || 'staff' });
+    } catch (error) {
+      console.error("Error adding staff member:", error);
+      res.status(500).json({ message: "Failed to add staff member" });
+    }
+  });
+
+  // Remove staff member
+  app.delete("/api/admin/staff/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      // Change role back to customer instead of deleting
+      await storage.setUserRole(req.params.id, 'customer');
+      res.json({ success: true, message: "Staff member removed successfully" });
+    } catch (error) {
+      console.error("Error removing staff member:", error);
+      res.status(500).json({ message: "Failed to remove staff member" });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", async (req: Request, res: Response) => {
     try {

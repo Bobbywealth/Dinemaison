@@ -571,75 +571,174 @@ export default function ChefDashboard() {
         <section id="calendar" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Weekly Calendar</CardTitle>
-                <CardDescription>Your schedule for this week</CardDescription>
+                <CardTitle>Weekly Calendar & Availability</CardTitle>
+                <CardDescription>Manage your schedule and set your availability</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-2 mb-6">
-                  {weekDays.map((day, index) => {
-                    const dayBookings = getBookingsForDate(day);
-                    const hasBooking = dayBookings.length > 0;
-                    const isPast = day < new Date() && !isToday(day);
-                    
-                    return (
-                      <div
-                        key={index}
-                        className={`p-3 rounded-md border text-center cursor-pointer transition-colors ${
-                          isToday(day) 
-                            ? 'border-primary bg-primary/5' 
-                            : isPast 
-                              ? 'border-border bg-muted/50 opacity-50'
-                              : 'border-border hover-elevate'
-                        }`}
-                        onClick={() => setSelectedDate(day)}
-                      >
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {format(day, "EEE")}
-                        </p>
-                        <p className={`text-lg font-semibold ${isToday(day) ? 'text-primary' : ''}`}>
-                          {format(day, "d")}
-                        </p>
-                        {hasBooking && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs px-1">
-                              {dayBookings.length} event{dayBookings.length > 1 ? 's' : ''}
-                            </Badge>
+                <Tabs defaultValue="bookings" className="space-y-6">
+                  <TabsList className="grid w-full max-w-md grid-cols-2">
+                    <TabsTrigger value="bookings">My Bookings</TabsTrigger>
+                    <TabsTrigger value="availability">Set Availability</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="bookings" className="space-y-6">
+                    <div className="grid grid-cols-7 gap-2 mb-6">
+                      {weekDays.map((day, index) => {
+                        const dayBookings = getBookingsForDate(day);
+                        const hasBooking = dayBookings.length > 0;
+                        const isPast = day < new Date() && !isToday(day);
+                        
+                        return (
+                          <div
+                            key={index}
+                            className={`p-3 rounded-md border text-center cursor-pointer transition-colors ${
+                              isToday(day) 
+                                ? 'border-primary bg-primary/5' 
+                                : isPast 
+                                  ? 'border-border bg-muted/50 opacity-50'
+                                  : 'border-border hover-elevate'
+                            }`}
+                            onClick={() => setSelectedDate(day)}
+                          >
+                            <p className="text-xs text-muted-foreground mb-1">
+                              {format(day, "EEE")}
+                            </p>
+                            <p className={`text-lg font-semibold ${isToday(day) ? 'text-primary' : ''}`}>
+                              {format(day, "d")}
+                            </p>
+                            {hasBooking && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className="text-xs px-1">
+                                  {dayBookings.length} event{dayBookings.length > 1 ? 's' : ''}
+                                </Badge>
+                              </div>
+                            )}
                           </div>
+                        );
+                      })}
+                    </div>
+
+                    {selectedDate && (
+                      <div className="border-t border-border pt-6">
+                        <h4 className="font-semibold mb-4">
+                          {format(selectedDate, "EEEE, MMMM d")}
+                        </h4>
+                        {getBookingsForDate(selectedDate).length > 0 ? (
+                          <div className="space-y-3">
+                            {getBookingsForDate(selectedDate).map((booking) => (
+                              <div key={booking.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
+                                    <ChefHat className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{booking.eventTime} - {booking.guestCount} guests</p>
+                                    <p className="text-sm text-muted-foreground">{booking.eventAddress?.slice(0, 40)}...</p>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className={statusColors[booking.status || "confirmed"]}>
+                                  {booking.status}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-center py-6">No events scheduled</p>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-
-                {selectedDate && (
-                  <div className="border-t border-border pt-6">
-                    <h4 className="font-semibold mb-4">
-                      {format(selectedDate, "EEEE, MMMM d")}
-                    </h4>
-                    {getBookingsForDate(selectedDate).length > 0 ? (
-                      <div className="space-y-3">
-                        {getBookingsForDate(selectedDate).map((booking) => (
-                          <div key={booking.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                                <ChefHat className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-medium">{booking.eventTime} - {booking.guestCount} guests</p>
-                                <p className="text-sm text-muted-foreground">{booking.eventAddress?.slice(0, 40)}...</p>
-                              </div>
-                            </div>
-                            <Badge variant="outline" className={statusColors[booking.status || "confirmed"]}>
-                              {booking.status}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-6">No events scheduled</p>
                     )}
-                  </div>
-                )}
+                  </TabsContent>
+
+                  <TabsContent value="availability" className="space-y-6">
+                    <div className="p-6 rounded-lg border border-border bg-muted/20">
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                          <Calendar className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold mb-2">Set Your Availability</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Click on dates below to mark yourself as available or unavailable. Customers can only book dates when you're available.
+                          </p>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600">
+                              <div className="h-2 w-2 rounded-full bg-green-600" />
+                              Available
+                            </div>
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-600">
+                              <div className="h-2 w-2 rounded-full bg-red-600" />
+                              Unavailable
+                            </div>
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600">
+                              <div className="h-2 w-2 rounded-full bg-blue-600" />
+                              Booked
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-2">
+                      {weekDays.map((day, index) => {
+                        const dayBookings = getBookingsForDate(day);
+                        const hasBooking = dayBookings.length > 0;
+                        const isPast = day < new Date() && !isToday(day);
+                        // TODO: Get actual availability status from API
+                        const isAvailable = true; // Placeholder
+                        
+                        return (
+                          <button
+                            key={index}
+                            type="button"
+                            disabled={isPast}
+                            className={`p-3 rounded-md border text-center transition-all ${
+                              isPast 
+                                ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
+                                : hasBooking
+                                  ? 'border-blue-500 bg-blue-500/10 cursor-not-allowed'
+                                  : isAvailable
+                                    ? 'border-green-500 bg-green-500/10 hover:bg-green-500/20 cursor-pointer'
+                                    : 'border-red-500 bg-red-500/10 hover:bg-red-500/20 cursor-pointer'
+                            }`}
+                            onClick={() => {
+                              if (!isPast && !hasBooking) {
+                                // TODO: Toggle availability
+                                toast({ 
+                                  title: "Feature coming soon",
+                                  description: "Availability management will be available in the next update." 
+                                });
+                              }
+                            }}
+                          >
+                            <p className="text-xs text-muted-foreground mb-1">
+                              {format(day, "EEE")}
+                            </p>
+                            <p className={`text-lg font-semibold ${
+                              hasBooking ? 'text-blue-600' : 
+                              isAvailable ? 'text-green-600' : 
+                              'text-red-600'
+                            }`}>
+                              {format(day, "d")}
+                            </p>
+                            {hasBooking && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className="text-xs px-1 border-blue-500 text-blue-600">
+                                  Booked
+                                </Badge>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        <strong>Note:</strong> Full availability management with time slots and recurring schedules is coming soon. For now, you can accept or decline booking requests individually from the Requests page.
+                      </p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
         </section>

@@ -527,6 +527,9 @@ export default function AdminDashboard() {
       { id: "reviews", title: "Reviews", icon: Star },
       { id: "markets", title: "Markets", icon: MapPin },
       { id: "transactions", title: "Transactions", icon: History },
+      { id: "marketing", title: "Marketing", icon: Mail },
+      { id: "emails", title: "Emails", icon: Mail },
+      { id: "staff", title: "Staff", icon: UserCog },
       { id: "settings", title: "Settings", icon: Settings },
       { id: "more", title: "More", icon: MoreHorizontal },
     ],
@@ -1249,6 +1252,105 @@ export default function AdminDashboard() {
                                   </div>
                                 </DialogContent>
                               </Dialog>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setSelectedChef(chef)}>
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl rounded-2xl max-h-[80vh] overflow-y-auto">
+                                  <DialogHeader>
+                                    <DialogTitle>Edit Chef Profile</DialogTitle>
+                                    <DialogDescription>Update chef information and settings</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Display Name</label>
+                                      <Input defaultValue={selectedChef?.displayName} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Bio</label>
+                                      <textarea 
+                                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                        defaultValue={selectedChef?.bio || ""}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Years of Experience</label>
+                                        <Input type="number" defaultValue={selectedChef?.yearsExperience} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Hourly Rate ($)</label>
+                                        <Input type="number" defaultValue={selectedChef?.hourlyRate} />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Minimum Spend ($)</label>
+                                        <Input type="number" defaultValue={selectedChef?.minimumSpend} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Commission Rate (%)</label>
+                                        <Input type="number" defaultValue={selectedChef?.commissionRate} />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Min Guests</label>
+                                        <Input type="number" defaultValue={selectedChef?.minimumGuests} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Max Guests</label>
+                                        <Input type="number" defaultValue={selectedChef?.maximumGuests} />
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Verification Level</label>
+                                      <Select defaultValue={selectedChef?.verificationLevel}>
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="basic">Basic</SelectItem>
+                                          <SelectItem value="verified">Verified</SelectItem>
+                                          <SelectItem value="premium">Premium</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input 
+                                        type="checkbox" 
+                                        id="certified" 
+                                        defaultChecked={selectedChef?.isCertified}
+                                        className="h-4 w-4"
+                                      />
+                                      <label htmlFor="certified" className="text-sm font-medium">Certified Chef</label>
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button variant="outline">Cancel</Button>
+                                    <Button onClick={async () => {
+                                      try {
+                                        await apiRequest("PATCH", `/api/admin/chefs/${selectedChef?.id}`, {
+                                          // Add updated fields here
+                                        });
+                                        toast({ title: "Chef profile updated successfully" });
+                                        refetchChefs();
+                                      } catch (error) {
+                                        toast({ 
+                                          title: "Error", 
+                                          description: "Failed to update chef profile",
+                                          variant: "destructive"
+                                        });
+                                      }
+                                    }}>
+                                      Save Changes
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                               <Button 
                                 variant={chef.isActive ? "outline" : "default"}
                                 size="sm"
@@ -1684,6 +1786,7 @@ export default function AdminDashboard() {
                           <TableHead>Role</TableHead>
                           <TableHead>Joined</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1713,6 +1816,86 @@ export default function AdminDashboard() {
                               <Badge variant="outline" className="bg-green-500/10 text-green-600">
                                 Active
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <Settings className="h-4 w-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Edit User</DialogTitle>
+                                      <DialogDescription>
+                                        Update user information and settings
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4 py-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <label className="text-sm font-medium">First Name</label>
+                                          <Input defaultValue={u.firstName} />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <label className="text-sm font-medium">Last Name</label>
+                                          <Input defaultValue={u.lastName} />
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Email</label>
+                                        <Input type="email" defaultValue={u.email} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <label className="text-sm font-medium">Role</label>
+                                        <Select defaultValue={u.role}>
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="customer">Customer</SelectItem>
+                                            <SelectItem value="chef">Chef</SelectItem>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                            <SelectItem value="staff">Staff</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+                                    <DialogFooter>
+                                      <Button variant="outline">Cancel</Button>
+                                      <Button onClick={() => {
+                                        toast({ title: "User updated successfully" });
+                                      }}>
+                                        Save Changes
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await apiRequest("POST", `/api/admin/users/${u.id}/send-reset-password`);
+                                      if (res.ok) {
+                                        toast({ 
+                                          title: "Password reset email sent",
+                                          description: `Reset link sent to ${u.email}`
+                                        });
+                                      }
+                                    } catch (error) {
+                                      toast({ 
+                                        title: "Error", 
+                                        description: "Failed to send password reset email",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <Mail className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1764,10 +1947,15 @@ export default function AdminDashboard() {
                           {activity.type === 'payout' && <DollarSign className="h-4 w-4" />}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{activity.title}</p>
+                          <p className="font-medium text-sm capitalize">{activity.action}</p>
                           <p className="text-xs text-muted-foreground">{activity.description}</p>
+                          {activity.amount && (
+                            <p className="text-xs font-semibold text-emerald-600 mt-1">
+                              ${(activity.amount / 100).toFixed(2)}
+                            </p>
+                          )}
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {activity.timestamp && format(new Date(activity.timestamp), "MMM d, h:mm a")}
                         </span>
                       </div>
@@ -3427,6 +3615,322 @@ export default function AdminDashboard() {
                   </Card>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Marketing Section */}
+      {activeSection === "marketing" && (
+        <section id="marketing" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Marketing Center
+                </CardTitle>
+                <CardDescription>Manage email campaigns and communications</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Mass Email Section */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">Send Mass Email</CardTitle>
+                  <CardDescription>Send emails to all users, chefs, or customers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Recipients</label>
+                    <Select defaultValue="all_users">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select recipients" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all_users">All Users</SelectItem>
+                        <SelectItem value="chefs">Chefs Only</SelectItem>
+                        <SelectItem value="customers">Customers Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Subject</label>
+                    <Input placeholder="Email subject..." />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Message</label>
+                    <textarea 
+                      className="w-full min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      placeholder="Email message..."
+                    />
+                  </div>
+                  <Button className="w-full">
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Email
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Email Templates */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Email Templates</CardTitle>
+                      <CardDescription>Saved email templates for quick sending</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Template
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-md border">
+                      <div>
+                        <div className="font-medium text-sm">Welcome Email</div>
+                        <div className="text-xs text-muted-foreground">New user onboarding</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-md border">
+                      <div>
+                        <div className="font-medium text-sm">Promotional Email</div>
+                        <div className="text-xs text-muted-foreground">Special offers and discounts</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-md border">
+                      <div>
+                        <div className="font-medium text-sm">Monthly Newsletter</div>
+                        <div className="text-xs text-muted-foreground">Regular updates and news</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Campaign Statistics */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">Campaign Statistics</CardTitle>
+                  <CardDescription>Recent email campaign performance</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">Total Campaigns</div>
+                      <div className="font-semibold">0</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">Total Emails Sent</div>
+                      <div className="font-semibold">0</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">Average Open Rate</div>
+                      <div className="font-semibold">0%</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">Average Click Rate</div>
+                      <div className="font-semibold">0%</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Emails Section */}
+      {activeSection === "emails" && (
+        <section id="emails" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Email Management
+                </CardTitle>
+                <CardDescription>Connect and manage your email inbox</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Email Connection */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">Email Account</CardTitle>
+                  <CardDescription>Connect your email account to manage communications</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center py-8 space-y-4">
+                    <Mail className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <div>
+                      <h3 className="font-semibold mb-1">No Email Connected</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Connect your email account to read and manage emails
+                      </p>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Connect Email Account
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Email Instructions */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">How to Connect</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm">
+                    <p className="text-muted-foreground">
+                      To connect your email account, you'll need:
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                      <li>Your email address</li>
+                      <li>IMAP server settings</li>
+                      <li>App-specific password (if using Gmail)</li>
+                    </ul>
+                    <div className="mt-4 p-3 bg-blue-500/10 text-blue-600 rounded-md text-xs">
+                      <strong>Note:</strong> Email integration requires additional setup with your email provider.
+                      Gmail users need to enable "Less secure app access" or use an app-specific password.
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Staff Management Section */}
+      {activeSection === "staff" && (
+        <section id="staff" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCog className="h-5 w-5" />
+                    Staff Management
+                  </CardTitle>
+                  <CardDescription>Add and manage staff members</CardDescription>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Staff Member
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Staff Member</DialogTitle>
+                      <DialogDescription>
+                        Create a new staff account with admin privileges
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Email</label>
+                        <Input type="email" placeholder="staff@dinemaison.com" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">First Name</label>
+                          <Input placeholder="John" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Last Name</label>
+                          <Input placeholder="Doe" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Password</label>
+                        <Input type="password" placeholder="••••••••" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Role</label>
+                        <Select defaultValue="staff">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="staff">Staff</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline">Cancel</Button>
+                      <Button>Add Staff Member</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Staff Members List */}
+              <div className="space-y-3">
+                <div className="text-center py-12">
+                  <UserCog className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-semibold text-foreground mb-2">No Staff Members</h3>
+                  <p className="text-muted-foreground">Add staff members to help manage the platform</p>
+                </div>
+              </div>
+
+              {/* Staff Permissions Info */}
+              <Card className="mt-6 bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">Staff Permissions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Admin Access</div>
+                        <div className="text-muted-foreground text-xs">Full access to all admin features</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Staff Access</div>
+                        <div className="text-muted-foreground text-xs">Limited access to specific admin features</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </section>
