@@ -26,14 +26,14 @@ async function generateIcons() {
       await sharp(inputIcon)
         .resize(paddedSize, paddedSize, {
           fit: "contain",
-          background: { r: 10, g: 10, b: 10, alpha: 1 }, // #0a0a0a
+          background: { r: 30, g: 58, b: 95, alpha: 1 }, // #1e3a5f
         })
         .extend({
           top: padding,
           bottom: padding,
           left: padding,
           right: padding,
-          background: { r: 10, g: 10, b: 10, alpha: 1 },
+          background: { r: 30, g: 58, b: 95, alpha: 1 },
         })
         .toFile(outputPath);
       
@@ -42,7 +42,7 @@ async function generateIcons() {
       await sharp(inputIcon)
         .resize(size, size, {
           fit: "contain",
-          background: { r: 10, g: 10, b: 10, alpha: 1 },
+          background: { r: 30, g: 58, b: 95, alpha: 1 },
         })
         .toFile(outputPath);
       
