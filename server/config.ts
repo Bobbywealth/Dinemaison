@@ -91,9 +91,9 @@ export const config = {
   // Rate limiting
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // requests per window
+    max: 1000, // requests per window - increased for SPAs
     standardDelay: 0,
-    delayAfter: 50,
+    delayAfter: 500,
     delayMs: 500,
   },
 

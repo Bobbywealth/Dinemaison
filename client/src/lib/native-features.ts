@@ -215,13 +215,56 @@ export async function pickImage(accept: string = "image/*"): Promise<File | null
 
 /**
  * Check if device is in standalone mode (PWA installed)
+ * This function checks multiple indicators to ensure it only returns true
+ * when the app is actually running as an installed PWA, not just mobile web
  */
 export function isStandalone(): boolean {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as any).standalone === true ||
-    document.referrer.includes("android-app://")
-  );
+  // Check for iOS standalone mode (Safari Add to Home Screen)
+  const isIOSStandalone = (window.navigator as any).standalone === true;
+  
+  // Check for Android TWA (Trusted Web Activity) or installed PWA
+  const isAndroidApp = document.referrer.includes("android-app://");
+  
+  // Check for display-mode: standalone (works for Chrome/Edge PWA)
+  const isDisplayStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  
+  // Check if we're on a mobile device
+  const isMobileDevice = isIOS() || isAndroid();
+  
+  // For debugging: log the detection results
+  debug.log("PWA detection:", {
+    isIOSStandalone,
+    isAndroidApp,
+    isDisplayStandalone,
+    isMobileDevice,
+    userAgent: navigator.userAgent.substring(0, 80),
+  });
+  
+  // Conservative approach to PWA detection:
+  // 1. iOS: Only trust navigator.standalone (very reliable)
+  // 2. Android: Trust android-app:// referrer OR display-mode if on Android
+  // 3. Desktop: Trust display-mode standalone (less critical as desktop web is fine)
+  
+  if (isIOSStandalone) {
+    return true; // iOS Add to Home Screen
+  }
+  
+  if (isAndroidApp) {
+    return true; // Android TWA
+  }
+  
+  // For Android mobile, only trust display-mode if we're actually on Android
+  // This prevents mobile browsers from incorrectly being detected as PWA
+  if (isDisplayStandalone && isAndroid()) {
+    return true; // Android PWA
+  }
+  
+  // For desktop or non-mobile, we can trust display-mode
+  if (isDisplayStandalone && !isMobileDevice) {
+    return true; // Desktop PWA
+  }
+  
+  return false; // Mobile web browser
 }
 
 /**

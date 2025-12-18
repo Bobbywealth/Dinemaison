@@ -66,19 +66,28 @@ export default function SignupPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.message || "Signup failed");
+        // Handle rate limiting errors specifically
+        if (response.status === 429) {
+          const retryAfter = result.retryAfter ? Math.ceil(result.retryAfter / 60) : 15;
+          setError(`Too many sign up attempts. Please try again in ${retryAfter} minutes.`);
+          toast({
+            title: "Rate limit exceeded",
+            description: `Please wait ${retryAfter} minutes before trying again.`,
+            variant: "destructive",
+          });
+        } else {
+          setError(result.message || "Signup failed");
+        }
         return;
       }
 
       if (!result.user) {
-        console.error("Signup succeeded but no user data returned:", result);
         setError("Signup failed: No user data received");
         return;
       }
 
       // Set user data in cache immediately to avoid race condition
       queryClient.setQueryData(["/api/auth/user"], result.user);
-      console.log("User data cached after signup, navigating to dashboard:", result.user);
 
       toast({
         title: "Account created!",

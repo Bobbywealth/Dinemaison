@@ -47,10 +47,26 @@ function Router() {
       const isAuthPage = location === "/login" || location === "/signup" || location === "/forgot-password" || location.startsWith("/reset-password");
       const isPWA = isStandalone();
       
+      debug.log("Navigation check:", {
+        isFirstVisit,
+        isAuthPage,
+        isPWA,
+        hasUser: !!user,
+        location,
+        willRedirect: isFirstVisit && !user && !isAuthPage && location === "/" && isPWA
+      });
+      
       // Only redirect to login if running as PWA (standalone mode)
       if (isFirstVisit && !user && !isAuthPage && location === "/" && isPWA) {
         debug.log("First visit detected in PWA mode, redirecting to login");
         setLocation("/login");
+      } else if (isFirstVisit && !isPWA) {
+        debug.log("First visit on mobile web, staying on homepage");
+      }
+      
+      // Mark as visited after check
+      if (!sessionStorage.getItem("dinemaison-visited")) {
+        sessionStorage.setItem("dinemaison-visited", "true");
       }
     }
   }, [isLoading, user, location, setLocation]);

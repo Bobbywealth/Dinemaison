@@ -9,6 +9,8 @@ import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { logger } from "./lib/logger";
+import { authRateLimitMiddleware } from "./middleware/rateLimiter";
 
 // Session configuration
 export function getSession() {
@@ -16,7 +18,7 @@ export function getSession() {
   const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-change-in-production';
   
   // Log environment status for debugging
-  console.log('Auth setup - Environment check:', {
+  logger.debug('Auth setup - Environment check', {
     hasSessionSecret: !!process.env.SESSION_SECRET,
     hasDatabaseUrl: !!process.env.DATABASE_URL,
     nodeEnv: process.env.NODE_ENV,
@@ -34,19 +36,19 @@ export function getSession() {
         ttl: sessionTtl,
         tableName: "sessions",
       });
-      console.log('Using PostgreSQL session store');
+      logger.info('Using PostgreSQL session store');
     } catch (error) {
-      console.error('Failed to create PostgreSQL session store:', error);
+      logger.error('Failed to create PostgreSQL session store', error);
       // Fall back to memory store
       const MemStore = MemoryStore(session);
       store = new MemStore({ checkPeriod: sessionTtl });
-      console.log('Falling back to memory session store');
+      logger.warn('Falling back to memory session store');
     }
   } else {
     // Use memory store for development or when DATABASE_URL is not set
     const MemStore = MemoryStore(session);
     store = new MemStore({ checkPeriod: sessionTtl });
-    console.log('Using memory session store (no DATABASE_URL)');
+    logger.info('Using memory session store (no DATABASE_URL)');
   }
   
   const isProduction = process.env.NODE_ENV === "production";
@@ -67,14 +69,14 @@ export function getSession() {
 
 // Setup authentication
 export async function setupAuth(app: Express) {
-  console.log('Setting up authentication...');
+  logger.info('Setting up authentication...');
   
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
   
-  console.log('Session middleware configured');
+  logger.info('Session middleware configured');
 
   // Passport Local Strategy
   passport.use(
@@ -139,6 +141,12 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
 
 // Auth routes
 export function registerAuthRoutes(app: Express) {
+  // Apply stricter rate limiting to all auth endpoints
+  app.use("/api/auth/signup", authRateLimitMiddleware());
+  app.use("/api/auth/login", authRateLimitMiddleware());
+  app.use("/api/auth/forgot-password", authRateLimitMiddleware());
+  app.use("/api/auth/reset-password", authRateLimitMiddleware());
+
   // Signup
   app.post("/api/auth/signup", async (req, res) => {
     try {
@@ -181,30 +189,30 @@ export function registerAuthRoutes(app: Express) {
         res.json({ user: userWithoutPassword });
       });
     } catch (error: any) {
-      console.error("Signup error:", error);
+      logger.error("Signup error", error);
       res.status(500).json({ message: "Error creating account" });
     }
   });
 
   // Login
   app.post("/api/auth/login", (req, res, next) => {
-    console.log('Login attempt:', { email: req.body.email });
+    logger.debug('Login attempt', { email: req.body.email });
     
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
-        console.error('Login error:', err);
+        logger.error('Login error', err);
         return res.status(500).json({ message: "Error logging in" });
       }
       if (!user) {
-        console.log('Login failed:', info?.message);
+        logger.debug('Login failed', { reason: info?.message });
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
       req.login(user, (err) => {
         if (err) {
-          console.error('Session error:', err);
+          logger.error('Session error', err);
           return res.status(500).json({ message: "Error logging in" });
         }
-        console.log('Login successful:', user.email);
+        logger.info('Login successful', { email: user.email });
         res.json({ user });
       });
     })(req, res, next);
@@ -265,9 +273,10 @@ export function registerAuthRoutes(app: Express) {
 
       // TODO: Send email with reset link
       // For now, log it to console (replace with actual email service)
-      console.log(`\n🔐 Password Reset Link:`);
-      console.log(`http://localhost:${process.env.PORT || 5000}/reset-password/${resetToken}`);
-      console.log(`\nThis link expires in 1 hour.\n`);
+      logger.info('Password reset link generated', {
+        resetLink: `http://localhost:${process.env.PORT || 5000}/reset-password/${resetToken}`,
+        expiresIn: '1 hour',
+      });
 
       res.json({ 
         message: "If an account exists with that email, a password reset link has been sent.",
@@ -275,7 +284,7 @@ export function registerAuthRoutes(app: Express) {
         resetToken: process.env.NODE_ENV === "development" ? resetToken : undefined
       });
     } catch (error: any) {
-      console.error("Forgot password error:", error);
+      logger.error("Forgot password error", error);
       res.status(500).json({ message: "Error processing request" });
     }
   });
@@ -324,7 +333,7 @@ export function registerAuthRoutes(app: Express) {
 
       res.json({ message: "Password has been reset successfully" });
     } catch (error: any) {
-      console.error("Reset password error:", error);
+      logger.error("Reset password error", error);
       res.status(500).json({ message: "Error resetting password" });
     }
   });

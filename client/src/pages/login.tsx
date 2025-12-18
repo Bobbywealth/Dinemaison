@@ -51,19 +51,28 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.message || "Login failed");
+        // Handle rate limiting errors specifically
+        if (response.status === 429) {
+          const retryAfter = result.retryAfter ? Math.ceil(result.retryAfter / 60) : 15;
+          setError(`Too many login attempts. Please try again in ${retryAfter} minutes.`);
+          toast({
+            title: "Rate limit exceeded",
+            description: `Please wait ${retryAfter} minutes before trying again.`,
+            variant: "destructive",
+          });
+        } else {
+          setError(result.message || "Login failed");
+        }
         return;
       }
 
       if (!result.user) {
-        console.error("Login succeeded but no user data returned:", result);
         setError("Login failed: No user data received");
         return;
       }
 
       // Set user data in cache immediately to avoid race condition
       queryClient.setQueryData(["/api/auth/user"], result.user);
-      console.log("User data cached, navigating to dashboard:", result.user);
 
       toast({
         title: "Welcome back!",

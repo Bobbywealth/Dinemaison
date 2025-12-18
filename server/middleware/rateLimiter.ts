@@ -37,6 +37,13 @@ class RateLimiter {
 
   public middleware() {
     return (req: Request, res: Response, next: NextFunction) => {
+      // Skip rate limiting for static assets
+      if (req.path.match(/\.(jpg|jpeg|png|gif|svg|ico|css|js|woff|woff2|ttf|eot)$/i) || 
+          req.path.startsWith('/public/') ||
+          req.path.startsWith('/assets/')) {
+        return next();
+      }
+
       const key = this.getKey(req);
       const now = Date.now();
       const windowMs = config.rateLimit.windowMs;
