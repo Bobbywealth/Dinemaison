@@ -8,6 +8,8 @@ const outputDir = join(import.meta.dirname, "../client/public");
 const sizes = [
   { name: "pwa-64x64.png", size: 64 },
   { name: "pwa-192x192.png", size: 192 },
+  { name: "pwa-256x256.png", size: 256 },
+  { name: "pwa-384x384.png", size: 384 },
   { name: "pwa-512x512.png", size: 512 },
   { name: "maskable-icon-512x512.png", size: 512 },
 ];

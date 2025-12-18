@@ -8,9 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "*.jpg"],
+      includeAssets: ["favicon.png", "*.jpg", "offline.html"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,woff,woff2}"],
+        navigateFallback: "/offline.html",
+        navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         runtimeCaching: [
           {
             // Cache API calls with NetworkFirst strategy
@@ -74,15 +76,19 @@ export default defineConfig({
         disableDevLogs: false,
       },
       manifest: {
+        id: "/",
         name: "Dine Maison - Private Chef Experiences",
         short_name: "Dine Maison",
         description: "Book professional private chefs for unforgettable intimate dining experiences in your home or venue",
         theme_color: "#1e3a5f",
         background_color: "#1e3a5f",
         display: "standalone",
+        display_override: ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
         orientation: "portrait",
+        dir: "ltr",
+        lang: "en-US",
         scope: "/",
-        start_url: "/login",
+        start_url: "/",
         categories: ["food", "lifestyle", "business"],
         icons: [
           {
@@ -93,6 +99,16 @@ export default defineConfig({
           {
             src: "/pwa-192x192.png",
             sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-256x256.png",
+            sizes: "256x256",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-384x384.png",
+            sizes: "384x384",
             type: "image/png",
           },
           {
@@ -122,6 +138,82 @@ export default defineConfig({
             form_factor: "wide",
           },
         ],
+        shortcuts: [
+          {
+            name: "Book a Chef",
+            short_name: "Book",
+            description: "Book a private chef for your event",
+            url: "/chefs",
+            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }],
+          },
+          {
+            name: "View Menu",
+            short_name: "Menu",
+            description: "Browse available menus",
+            url: "/menu",
+            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }],
+          },
+          {
+            name: "My Reservations",
+            short_name: "Bookings",
+            description: "View your bookings",
+            url: "/bookings",
+            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }],
+          },
+          {
+            name: "Messages",
+            short_name: "Chat",
+            description: "View your messages",
+            url: "/messages",
+            icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }],
+          },
+        ],
+        share_target: {
+          action: "/share",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: {
+            title: "title",
+            text: "text",
+            url: "url",
+            files: [
+              {
+                name: "images",
+                accept: ["image/*"],
+              },
+            ],
+          },
+        },
+        launch_handler: {
+          client_mode: ["navigate-existing", "auto"],
+        },
+        protocol_handlers: [
+          {
+            protocol: "web+dinemaison",
+            url: "/?action=%s",
+          },
+        ],
+        // Store readiness features
+        // Note: Add your actual app store IDs when you have native apps
+        related_applications: [
+          // Example structure - update with actual app IDs when available
+          // {
+          //   platform: "play",
+          //   url: "https://play.google.com/store/apps/details?id=com.dinemaison.app",
+          //   id: "com.dinemaison.app",
+          // },
+          // {
+          //   platform: "itunes",
+          //   url: "https://apps.apple.com/app/dine-maison/id123456789",
+          //   id: "123456789",
+          // },
+        ],
+        // Set to false to prefer PWA installation
+        // Set to true if you want users to prefer native app
+        prefer_related_applications: false,
+        // IARC rating - obtain from https://www.globalratings.com/
+        // Add your IARC rating ID here when you get one for app store submissions
+        // iarc_rating_id: "your-iarc-rating-id",
       },
       devOptions: {
         enabled: true,

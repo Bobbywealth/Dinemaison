@@ -4,6 +4,7 @@ import App from "./App";
 import "./index.css";
 import { debug } from "./utils/debug";
 import { registerSW } from "virtual:pwa-register";
+import { initProtocolHandler } from "./lib/protocol-handler";
 
 // Log app initialization
 debug.log("App initialization started", {
@@ -49,6 +50,9 @@ const updateSW = registerSW({
 
 // Expose update function globally for manual updates if needed
 (window as any).updatePWA = updateSW;
+
+// Initialize protocol handler for custom URL scheme
+initProtocolHandler();
 
 // Check for updates when app becomes visible (user returns to app)
 document.addEventListener("visibilitychange", () => {
