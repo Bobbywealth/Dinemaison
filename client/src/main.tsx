@@ -3,6 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./index.css";
 import { debug } from "./utils/debug";
+import { registerSW } from "virtual:pwa-register";
 
 // Log app initialization
 debug.log("App initialization started", {
@@ -10,32 +11,29 @@ debug.log("App initialization started", {
   timestamp: Date.now()
 });
 
-// Remove any stale service workers that might have been registered previously.
-// We don't ship a service worker today, so old registrations can break fetches.
-const cleanupServiceWorkers = () => {
-  if (!("serviceWorker" in navigator)) return;
+// Register service worker for PWA functionality
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    debug.log("PWA: New content available, prompting for update");
+    // Dispatch custom event for update prompt component
+    window.dispatchEvent(new CustomEvent("pwa-update-available"));
+  },
+  onOfflineReady() {
+    debug.log("PWA: App ready for offline use");
+    // Dispatch custom event for offline notification
+    window.dispatchEvent(new CustomEvent("pwa-offline-ready"));
+  },
+  onRegistered(registration) {
+    debug.log("PWA: Service Worker registered", { scope: registration?.scope });
+  },
+  onRegisterError(error) {
+    debug.error("PWA: Service Worker registration failed", error);
+  },
+});
 
-  navigator.serviceWorker.getRegistrations()
-    .then((registrations) => {
-      registrations.forEach((registration) => {
-        debug.log("Unregistering stale service worker", { scope: registration.scope });
-        registration.unregister();
-      });
-    })
-    .catch((error) => {
-      debug.error("Failed to unregister service workers", error);
-    });
-
-  if ("caches" in window) {
-    caches.keys()
-      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-      .catch((error) => {
-        debug.error("Failed to clear service worker caches", error);
-      });
-  }
-};
-
-cleanupServiceWorkers();
+// Expose update function globally for update prompt component
+(window as any).updatePWA = updateSW;
 
 // Ensure the DOM is fully loaded
 const renderApp = () => {

@@ -1441,5 +1441,90 @@ export async function registerRoutes(
     });
   });
 
+  // ============== PUSH NOTIFICATION ROUTES ==============
+  const pushNotificationService = await import("./pushNotificationService");
+
+  // Get VAPID public key for client subscription
+  app.get("/api/notifications/vapid-public-key", (req: Request, res: Response) => {
+    try {
+      const publicKey = pushNotificationService.getVapidPublicKey();
+      res.json({ publicKey });
+    } catch (error) {
+      console.error("Error getting VAPID public key:", error);
+      res.status(500).json({ message: "Failed to get VAPID key" });
+    }
+  });
+
+  // Subscribe to push notifications
+  app.post("/api/notifications/subscribe", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { endpoint, keys } = req.body;
+      
+      if (!endpoint || !keys?.p256dh || !keys?.auth) {
+        return res.status(400).json({ message: "Invalid subscription data" });
+      }
+
+      await pushNotificationService.savePushSubscription(userId, {
+        endpoint,
+        keys: {
+          p256dh: keys.p256dh,
+          auth: keys.auth,
+        },
+      });
+
+      res.json({ message: "Subscription saved successfully" });
+    } catch (error) {
+      console.error("Error saving subscription:", error);
+      res.status(500).json({ message: "Failed to save subscription" });
+    }
+  });
+
+  // Unsubscribe from push notifications
+  app.post("/api/notifications/unsubscribe", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { endpoint } = req.body;
+      
+      if (!endpoint) {
+        return res.status(400).json({ message: "Endpoint required" });
+      }
+
+      await pushNotificationService.removePushSubscription(userId, endpoint);
+      res.json({ message: "Unsubscribed successfully" });
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      res.status(500).json({ message: "Failed to unsubscribe" });
+    }
+  });
+
+  // Test notification endpoint (for testing purposes)
+  app.post("/api/notifications/test", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      await pushNotificationService.sendPushNotification(userId, {
+        title: "Test Notification",
+        body: "This is a test notification from Dine Maison!",
+        tag: "test",
+      });
+      res.json({ message: "Test notification sent" });
+    } catch (error) {
+      console.error("Error sending test notification:", error);
+      res.status(500).json({ message: "Failed to send test notification" });
+    }
+  });
+
   return httpServer;
 }

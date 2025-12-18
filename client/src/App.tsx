@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { InstallPrompt, UpdatePrompt } from "@/components/pwa";
+import { NetworkStatus } from "@/components/pwa/network-status";
 import LandingPage from "@/pages/landing";
 import ChefsPage from "@/pages/chefs";
 import ChefProfilePage from "@/pages/chef-profile";
@@ -68,6 +70,9 @@ function App() {
         <ThemeProvider defaultTheme="dark">
           <TooltipProvider>
             <Toaster />
+            <NetworkStatus />
+            <InstallPrompt />
+            <UpdatePrompt />
             <Router />
           </TooltipProvider>
         </ThemeProvider>

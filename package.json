@@ -13,7 +13,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "pwa:icons": "npx tsx script/generate-pwa-icons.ts",
+    "pwa:screenshots": "npx tsx script/generate-screenshots.ts",
+    "pwa:vapid": "npx tsx script/generate-vapid-keys.ts",
+    "pwa:setup": "npm run pwa:icons && npm run pwa:screenshots && npm run pwa:vapid"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -94,6 +98,7 @@
     "typescript": "5.6.3",
     "vaul": "^1.1.2",
     "vite": "^5.4.20",
+    "web-push": "^3.6.7",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "zod": "^3.24.2",
@@ -120,7 +125,9 @@
     "drizzle-kit": "^0.31.4",
     "happy-dom": "^20.0.11",
     "jsdom": "^27.3.0",
-    "vitest": "^4.0.16"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.16",
+    "workbox-window": "^7.4.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
