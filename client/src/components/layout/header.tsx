@@ -16,6 +16,7 @@ import logoImage from "@assets/dinemaison-logo.png";
 import { useTheme } from "@/lib/theme-provider";
 import { queryClient } from "@/lib/queryClient";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 export function Header() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -61,6 +62,11 @@ export function Header() {
     { label: "Contact", href: "/contact", icon: Phone },
   ];
 
+  const handlePrefetch = (href?: string) => {
+    if (!href) return;
+    prefetchRoute(href);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 safe-top ${
@@ -99,7 +105,13 @@ export function Header() {
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               link.href ? (
-                <Link key={link.label} href={link.href} data-testid={`link-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                <Link 
+                  key={link.label} 
+                  href={link.href} 
+                  data-testid={`link-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  onMouseEnter={() => handlePrefetch(link.href)}
+                  onFocus={() => handlePrefetch(link.href)}
+                >
                   <span className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 cursor-pointer ${
                     scrolled 
                       ? 'text-slate-600 hover:text-primary hover:bg-primary/10 dark:text-slate-300 dark:hover:text-primary' 
@@ -234,7 +246,14 @@ export function Header() {
         }`}>
           {navLinks.map((link) => (
             link.href ? (
-              <Link key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)}>
+              <Link 
+                key={link.label} 
+                href={link.href} 
+                onClick={() => setMobileMenuOpen(false)}
+                onMouseEnter={() => handlePrefetch(link.href)}
+                onFocus={() => handlePrefetch(link.href)}
+                onTouchStart={() => handlePrefetch(link.href)}
+              >
                 <span className={`flex items-center gap-3 py-3.5 px-4 text-base font-medium rounded-xl transition-colors touch-manipulation active:scale-95 ${
                   scrolled 
                     ? 'text-slate-600 hover:text-primary hover:bg-primary/10 dark:text-slate-300' 

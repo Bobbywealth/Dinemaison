@@ -10,6 +10,9 @@ import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import bcrypt from "bcryptjs";
 
+const chefListCache = new Map<string, { data: unknown; expires: number }>();
+const CHEF_CACHE_TTL_MS = 30_000;
+
 function getUserId(req: Request): string | null {
   const user = req.user as any;
   return user?.id || null;
@@ -59,7 +62,15 @@ export async function registerRoutes(
         marketId: req.query.market as string,
         isActive: true,
       };
+      const cacheKey = JSON.stringify(filters);
+      const cached = chefListCache.get(cacheKey);
+      const now = Date.now();
+      if (cached && cached.expires > now) {
+        res.setHeader("X-Cache", "HIT");
+        return res.json(cached.data);
+      }
       const chefs = await storage.getChefs(filters);
+      chefListCache.set(cacheKey, { data: chefs, expires: now + CHEF_CACHE_TTL_MS });
       res.json(chefs);
     } catch (error) {
       console.error("Error fetching chefs:", error);

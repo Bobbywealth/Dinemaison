@@ -12,7 +12,15 @@ export function serveStatic(app: Express) {
 
   // Serve static files with proper MIME types
   app.use(express.static(distPath, {
+    maxAge: "1d",
     setHeaders: (res, path) => {
+      if (path.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      } else if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?)$/i.test(path)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=300');
+      }
       // Ensure CSS files are served with correct MIME type
       if (path.endsWith('.css')) {
         res.setHeader('Content-Type', 'text/css');

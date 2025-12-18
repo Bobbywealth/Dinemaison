@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
   Table,
@@ -29,6 +29,44 @@ interface TaskListViewProps {
 }
 
 export function TaskListView({ tasks, onEdit, onDelete, onView }: TaskListViewProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const rowHeight = 88;
+  const buffer = 5;
+  const [range, setRange] = useState({ start: 0, end: Math.min(tasks.length, 20) });
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const updateRange = () => {
+      const scrollTop = node.scrollTop;
+      const viewportHeight = node.clientHeight;
+      const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+      const endIndex = Math.min(
+        tasks.length,
+        startIndex + Math.ceil(viewportHeight / rowHeight) + buffer * 2,
+      );
+
+      setRange((prev) => {
+        if (prev.start === startIndex && prev.end === endIndex) return prev;
+        return { start: startIndex, end: endIndex };
+      });
+    };
+
+    updateRange();
+    node.addEventListener("scroll", updateRange);
+    window.addEventListener("resize", updateRange);
+
+    return () => {
+      node.removeEventListener("scroll", updateRange);
+      window.removeEventListener("resize", updateRange);
+    };
+  }, [tasks.length]);
+
+  const visibleTasks = tasks.slice(range.start, range.end);
+  const paddingTop = range.start * rowHeight;
+  const paddingBottom = Math.max(tasks.length - range.end, 0) * rowHeight;
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case TaskStatus.TODO:
@@ -81,9 +119,9 @@ export function TaskListView({ tasks, onEdit, onDelete, onView }: TaskListViewPr
   }
 
   return (
-    <div className="rounded-md border">
+    <div ref={containerRef} className="rounded-md border max-h-[70vh] overflow-auto">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-background z-10">
           <TableRow>
             <TableHead>Task</TableHead>
             <TableHead>Status</TableHead>
@@ -94,7 +132,12 @@ export function TaskListView({ tasks, onEdit, onDelete, onView }: TaskListViewPr
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => (
+          {paddingTop > 0 && (
+            <TableRow aria-hidden style={{ height: paddingTop }}>
+              <TableCell colSpan={6} />
+            </TableRow>
+          )}
+          {visibleTasks.map((task) => (
             <TableRow key={task.id} className="cursor-pointer" onClick={() => onView(task)}>
               <TableCell>
                 <div className="space-y-1">
@@ -178,6 +221,11 @@ export function TaskListView({ tasks, onEdit, onDelete, onView }: TaskListViewPr
               </TableCell>
             </TableRow>
           ))}
+          {paddingBottom > 0 && (
+            <TableRow aria-hidden style={{ height: paddingBottom }}>
+              <TableCell colSpan={6} />
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

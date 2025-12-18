@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { LucideIcon, Home, Calendar, ChefHat, BarChart3, Menu as MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { prefetchRoute } from "@/lib/route-prefetch";
 
 export type BottomNavItem = {
   id: string;
@@ -84,6 +85,8 @@ export function BottomNavigation({ items = defaultItems, className }: BottomNavi
                   }, 50);
                 }
               }}
+              onMouseEnter={() => prefetchRoute(item.href.split("#")[0])}
+              onTouchStart={() => prefetchRoute(item.href.split("#")[0])}
             >
               {/* Active indicator */}
               {active && (

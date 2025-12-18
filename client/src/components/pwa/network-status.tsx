@@ -8,6 +8,10 @@ export function NetworkStatus() {
   const [showOffline, setShowOffline] = useState(!online);
   const [showReconnected, setShowReconnected] = useState(false);
 
+  const containerClass =
+    "fixed z-50 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md " +
+    "top-[calc(env(safe-area-inset-top)+1.25rem)] animate-in slide-in-from-top-4 pointer-events-none";
+
   useEffect(() => {
     if (!online) {
       setShowOffline(true);
@@ -34,8 +38,11 @@ export function NetworkStatus() {
 
   if (showOffline) {
     return (
-      <div className="fixed top-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md animate-in slide-in-from-top-4">
-        <Alert variant="destructive" className="bg-destructive/95 backdrop-blur-sm border-destructive">
+      <div className={containerClass}>
+        <Alert
+          variant="destructive"
+          className="pointer-events-auto bg-destructive/95 backdrop-blur-sm border-destructive shadow-lg"
+        >
           <WifiOff className="h-4 w-4" />
           <AlertDescription>
             <strong>You're offline</strong>
@@ -49,8 +56,8 @@ export function NetworkStatus() {
 
   if (showReconnected) {
     return (
-      <div className="fixed top-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md animate-in slide-in-from-top-4">
-        <Alert className="bg-green-500/95 backdrop-blur-sm border-green-600 text-white">
+      <div className={containerClass}>
+        <Alert className="pointer-events-auto bg-green-500/95 backdrop-blur-sm border-green-600 text-white shadow-lg">
           <Wifi className="h-4 w-4" />
           <AlertDescription>
             <strong>Back online</strong>
