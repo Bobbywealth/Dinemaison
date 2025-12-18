@@ -248,8 +248,8 @@ export function Header() {
               </button>
             )
           ))}
-          {!isAuthenticated && (
-            <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2">
+          <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2">
+            {!isAuthenticated && (
               <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                 <span className={`flex items-center justify-center gap-3 py-3.5 px-4 text-base font-medium rounded-xl transition-colors touch-manipulation active:scale-95 ${
                   scrolled ? 'bg-primary/10 text-primary' : 'bg-white/10 text-white'
@@ -258,11 +258,11 @@ export function Header() {
                   Sign In
                 </span>
               </Link>
-              <div className="sm:hidden">
-                <ThemeToggle />
-              </div>
+            )}
+            <div className="sm:hidden flex justify-center">
+              <ThemeToggle />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </header>
