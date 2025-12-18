@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { useLocation } from "wouter";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TourStep {
   title: string;
@@ -44,23 +45,29 @@ const tourSteps: TourStep[] = [
 export function AppTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Check if user has seen the tour
+    // Only show tour on mobile devices and on the home page
     const hasSeenTour = localStorage.getItem("dinemaison-tour-completed");
-    const isFirstVisit = !sessionStorage.getItem("dinemaison-visited");
+    const hasVisitedBefore = localStorage.getItem("dinemaison-has-visited");
+    const isHomePage = location === "/" || location === "/login";
 
-    if (!hasSeenTour && isFirstVisit) {
+    // Mark as visited immediately to prevent showing again
+    if (!hasVisitedBefore) {
+      localStorage.setItem("dinemaison-has-visited", "true");
+    }
+
+    // Show tour only if: mobile + home page + haven't seen it + first visit
+    if (isMobile && isHomePage && !hasSeenTour && !hasVisitedBefore) {
       // Show tour after a short delay to let splash screen finish
       const timer = setTimeout(() => {
         setIsOpen(true);
-      }, 500);
+      }, 3000); // Increased delay to 3s to let splash finish
       return () => clearTimeout(timer);
     }
-    
-    sessionStorage.setItem("dinemaison-visited", "true");
-  }, []);
+  }, [location, isMobile]);
 
   const handleNext = () => {
     if (currentStep < tourSteps.length - 1) {
@@ -258,7 +265,7 @@ export function useAppTour() {
 
   const resetTour = () => {
     localStorage.removeItem("dinemaison-tour-completed");
-    sessionStorage.removeItem("dinemaison-visited");
+    localStorage.removeItem("dinemaison-has-visited");
   };
 
   return { showTour, startTour, resetTour };
