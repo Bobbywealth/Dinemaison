@@ -28,6 +28,7 @@ import AboutPage from "@/pages/about";
 import FAQPage from "@/pages/faq";
 import StyleGuidePage from "@/pages/styleguide";
 import NotificationSettingsPage from "@/pages/notification-settings";
+import TasksPage from "@/pages/tasks";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { debug } from "./utils/debug";
@@ -86,6 +87,7 @@ function Router() {
       <Route path="/styleguide" component={StyleGuidePage} />
       <Route path="/dashboard" component={DashboardRouter} />
       <Route path="/notification-settings" component={NotificationSettingsPage} />
+      <Route path="/tasks" component={TasksPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -419,3 +419,52 @@ export const insertNotificationDeliveryLogSchema = createInsertSchema(notificati
 
 export type InsertNotificationDeliveryLog = z.infer<typeof insertNotificationDeliveryLogSchema>;
 export type NotificationDeliveryLog = typeof notificationDeliveryLog.$inferSelect;
+
+// ============== TASKS ==============
+export const tasks = pgTable("tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  status: varchar("status").notNull().default("todo"), // todo, in_progress, review, done
+  priority: varchar("priority").notNull().default("medium"), // low, medium, high, urgent
+  assignedTo: varchar("assigned_to"),
+  createdBy: varchar("created_by").notNull(),
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  statusIdx: index("tasks_status_idx").on(table.status),
+  assignedToIdx: index("tasks_assigned_to_idx").on(table.assignedTo),
+  createdByIdx: index("tasks_created_by_idx").on(table.createdBy),
+  dueDateIdx: index("tasks_due_date_idx").on(table.dueDate),
+  createdAtIdx: index("tasks_created_at_idx").on(table.createdAt),
+}));
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTask = z.infer<typeof insertTaskSchema>;
+export type Task = typeof tasks.$inferSelect;
+
+// ============== TASK COMMENTS ==============
+export const taskComments = pgTable("task_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskId: varchar("task_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  taskIdIdx: index("task_comments_task_id_idx").on(table.taskId),
+  createdAtIdx: index("task_comments_created_at_idx").on(table.createdAt),
+}));
+
+export const insertTaskCommentSchema = createInsertSchema(taskComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTaskComment = z.infer<typeof insertTaskCommentSchema>;
+export type TaskComment = typeof taskComments.$inferSelect;

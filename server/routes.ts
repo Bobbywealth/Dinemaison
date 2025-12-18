@@ -14,6 +14,25 @@ function getUserId(req: Request): string | null {
   return user?.id || null;
 }
 
+// Middleware to check if user is admin
+async function isAdmin(req: Request, res: Response, next: Function) {
+  const userId = getUserId(req);
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  
+  try {
+    const userRole = await storage.getUserRole(userId);
+    if (userRole?.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    next();
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return res.status(500).json({ message: "Failed to verify admin status" });
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -1791,6 +1810,144 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error sending test SMS:", error);
       res.status(500).json({ message: "Failed to send test SMS" });
+    }
+  });
+
+  // ============== TASK MANAGEMENT API ROUTES (Admin Only) ==============
+  const taskService = await import("./taskService");
+
+  // Get all tasks
+  app.get("/api/tasks", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const filters = {
+        status: req.query.status as string,
+        priority: req.query.priority as string,
+        assignedTo: req.query.assignedTo as string,
+        createdBy: req.query.createdBy as string,
+        search: req.query.search as string,
+      };
+
+      const tasks = await taskService.getTasks(filters);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  // Get task statistics
+  app.get("/api/tasks/stats", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const stats = await taskService.getTaskStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching task stats:", error);
+      res.status(500).json({ message: "Failed to fetch task stats" });
+    }
+  });
+
+  // Get a single task
+  app.get("/api/tasks/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const task = await taskService.getTaskById(req.params.id);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error fetching task:", error);
+      res.status(500).json({ message: "Failed to fetch task" });
+    }
+  });
+
+  // Create a new task
+  app.post("/api/tasks", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const task = await taskService.createTask(req.body, userId);
+      res.status(201).json(task);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  // Update a task
+  app.patch("/api/tasks/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const task = await taskService.updateTask(req.params.id, req.body);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error updating task:", error);
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  // Delete a task
+  app.delete("/api/tasks/:id", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const success = await taskService.deleteTask(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Get task comments
+  app.get("/api/tasks/:id/comments", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const comments = await taskService.getTaskComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching task comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Add a comment to a task
+  app.post("/api/tasks/:id/comments", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { comment } = req.body;
+      if (!comment || typeof comment !== "string") {
+        return res.status(400).json({ message: "Comment is required" });
+      }
+
+      const newComment = await taskService.addTaskComment(req.params.id, userId, comment);
+      res.status(201).json(newComment);
+    } catch (error) {
+      console.error("Error adding task comment:", error);
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
+  // Delete a comment
+  app.delete("/api/tasks/:taskId/comments/:commentId", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const success = await taskService.deleteTaskComment(req.params.commentId);
+      if (!success) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Failed to delete comment" });
     }
   });
 

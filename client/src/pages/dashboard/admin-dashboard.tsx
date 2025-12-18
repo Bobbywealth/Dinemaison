@@ -75,6 +75,7 @@ import {
   TrendingDown,
   UserPlus,
   LayoutDashboard,
+  CheckSquare,
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -398,6 +399,7 @@ export default function AdminDashboard() {
     () => [
       { id: "overview", title: "Overview", icon: LayoutDashboard },
       { id: "activity", title: "Activity Feed", icon: Activity },
+      { id: "tasks", title: "Tasks", icon: CheckSquare, href: "/tasks" },
       {
         id: "verifications",
         title: "Verifications",
