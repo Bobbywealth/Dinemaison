@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
@@ -485,7 +484,7 @@ export default function AdminDashboard() {
       activeItemId={activeSection}
       onNavigate={handleSectionChange}
     >
-      {activeSection === "overview" ? (
+      {activeSection === "overview" && (
         <section id="overview" className="space-y-6">
         {/* Stats Grid - Clean 2x2 on mobile, 4 columns on desktop */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -709,9 +708,10 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
         </section>
-      ) : (
-        <Tabs value={activeSection} onValueChange={handleSectionChange} className="space-y-6">
-          <TabsContent value="verifications" id="verifications">
+      )}
+
+      {activeSection === "verifications" && (
+        <section id="verifications" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -786,9 +786,11 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="bookings" id="bookings">
+      {activeSection === "bookings" && (
+        <section id="bookings" className="space-y-6">
             <Card className="rounded-2xl">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -899,9 +901,11 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="chefs" id="chefs">
+      {activeSection === "chefs" && (
+        <section id="chefs" className="space-y-6">
             <Card className="rounded-2xl">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1127,9 +1131,11 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="payouts" id="payouts">
+      {activeSection === "payouts" && (
+        <section id="payouts" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Pending Payouts</CardTitle>
@@ -1183,9 +1189,11 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="users" id="users">
+      {activeSection === "users" && (
+        <section id="users" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1259,10 +1267,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Activity Feed Tab */}
-          <TabsContent value="activity" id="activity">
+      {/* Activity Feed Section */}
+      {activeSection === "activity" && (
+        <section id="activity" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1311,10 +1321,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Analytics Tab - Mobile Optimized */}
-          <TabsContent value="analytics" id="analytics">
+      {/* Analytics Section - Mobile Optimized */}
+      {activeSection === "analytics" && (
+        <section id="analytics" className="space-y-6">
             <div className="space-y-4 md:space-y-6">
               {/* Revenue Overview Chart */}
               <Card className="rounded-2xl">
@@ -1604,10 +1616,12 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Reviews Tab */}
-          <TabsContent value="reviews" id="reviews">
+      {/* Reviews Section */}
+      {activeSection === "reviews" && (
+        <section id="reviews" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1673,10 +1687,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Markets Tab */}
-          <TabsContent value="markets" id="markets">
+      {/* Markets Section */}
+      {activeSection === "markets" && (
+        <section id="markets" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1799,10 +1815,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Transactions Tab */}
-          <TabsContent value="transactions" id="transactions">
+      {/* Transactions Section */}
+      {activeSection === "transactions" && (
+        <section id="transactions" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -1859,10 +1877,12 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* More Tab - Mobile Settings Style */}
-          <TabsContent value="more" id="more">
+      {/* More Section - Mobile Settings Style */}
+      {activeSection === "more" && (
+        <section id="more" className="space-y-6">
             <div className="space-y-4 md:space-y-6">
               {/* Account Section */}
               <Card className="rounded-2xl">
@@ -1998,10 +2018,12 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+        </section>
+      )}
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" id="settings">
+      {/* Settings Section */}
+      {activeSection === "settings" && (
+        <section id="settings" className="space-y-6">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -2093,8 +2115,7 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+        </section>
       )}
     </DashboardLayout>
   );
