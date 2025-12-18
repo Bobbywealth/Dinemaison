@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/loading";
 import { ChefHat, ArrowRight, Sparkles, Mail, Lock } from "lucide-react";
 import logoImage from "@assets/dinemaison-logo.png";
 import { mediaUrls } from "@/config/media";
+import { queryClient } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
@@ -52,6 +53,16 @@ export default function LoginPage() {
         setError(result.message || "Login failed");
         return;
       }
+
+      if (!result.user) {
+        console.error("Login succeeded but no user data returned:", result);
+        setError("Login failed: No user data received");
+        return;
+      }
+
+      // Set user data in cache immediately to avoid race condition
+      queryClient.setQueryData(["/api/auth/user"], result.user);
+      console.log("User data cached, navigating to dashboard:", result.user);
 
       toast({
         title: "Welcome back!",

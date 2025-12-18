@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import logoImage from "@assets/dinemaison-logo.png";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/lib/theme-provider";
+import { queryClient } from "@/lib/queryClient";
 
 export type DashboardNavItem = {
   id: string;
@@ -208,6 +209,7 @@ function DashboardSidebar({
           )}
           onClick={async () => {
             await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+            queryClient.setQueryData(["/api/auth/user"], null);
             window.location.href = "/";
           }}
         >

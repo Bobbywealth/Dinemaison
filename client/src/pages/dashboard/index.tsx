@@ -15,6 +15,8 @@ export default function DashboardRouter() {
     enabled: isAuthenticated,
   });
 
+  console.log("DashboardRouter state:", { user, authLoading, isAuthenticated, roleLoading });
+
   if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background p-8">
@@ -32,6 +34,7 @@ export default function DashboardRouter() {
   }
 
   if (!isAuthenticated) {
+    console.log("Not authenticated, redirecting to home");
     return <Redirect to="/" />;
   }
 

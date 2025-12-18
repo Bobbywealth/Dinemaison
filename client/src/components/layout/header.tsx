@@ -14,6 +14,7 @@ import { ChefHat, User, LogOut, LayoutDashboard, Menu, X, Home, Info, Utensils, 
 import { useState, useEffect } from "react";
 import logoImage from "@assets/dinemaison-logo.png";
 import { useTheme } from "@/lib/theme-provider";
+import { queryClient } from "@/lib/queryClient";
 
 export function Header() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -164,6 +165,7 @@ export function Header() {
                     <button
                       onClick={async () => {
                         await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                        queryClient.setQueryData(["/api/auth/user"], null);
                         window.location.href = "/";
                       }}
                       className="w-full cursor-pointer"

@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { ChefHat, ArrowRight, Check, Sparkles } from "lucide-react";
 import logoImage from "@assets/dinemaison-logo.png";
+import { queryClient } from "@/lib/queryClient";
 
 const signupSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
@@ -68,6 +69,16 @@ export default function SignupPage() {
         setError(result.message || "Signup failed");
         return;
       }
+
+      if (!result.user) {
+        console.error("Signup succeeded but no user data returned:", result);
+        setError("Signup failed: No user data received");
+        return;
+      }
+
+      // Set user data in cache immediately to avoid race condition
+      queryClient.setQueryData(["/api/auth/user"], result.user);
+      console.log("User data cached after signup, navigating to dashboard:", result.user);
 
       toast({
         title: "Account created!",
