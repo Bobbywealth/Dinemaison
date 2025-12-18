@@ -1380,16 +1380,76 @@ export default function AdminDashboard() {
                   <CardTitle>Market Management</CardTitle>
                   <CardDescription>Manage available service markets</CardDescription>
                 </div>
-                <Button size="sm" onClick={() => {
-                  const name = prompt("Enter market name:");
-                  if (name) {
-                    const slug = name.toLowerCase().replace(/\s+/g, '-');
-                    createMarket.mutate({ name, slug });
-                  }
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Market
-                </Button>
+                <Dialog open={addMarketOpen} onOpenChange={setAddMarketOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Market
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Market</DialogTitle>
+                      <DialogDescription>
+                        Create a new geographic market for chef services
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label htmlFor="market-name" className="text-sm font-medium">
+                          Market Name <span className="text-destructive">*</span>
+                        </label>
+                        <Input
+                          id="market-name"
+                          placeholder="e.g., New York City"
+                          value={newMarketName}
+                          onChange={(e) => setNewMarketName(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="market-description" className="text-sm font-medium">
+                          Description (optional)
+                        </label>
+                        <Input
+                          id="market-description"
+                          placeholder="e.g., Manhattan, Brooklyn, Queens, Bronx"
+                          value={newMarketDescription}
+                          onChange={(e) => setNewMarketDescription(e.target.value)}
+                        />
+                      </div>
+                      <div className="p-3 bg-muted rounded-md">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Slug:</strong> {newMarketName ? newMarketName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : '(auto-generated)'}
+                        </p>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddMarketOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (!newMarketName.trim()) {
+                            toast({
+                              title: "Market name is required",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          const slug = newMarketName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                          createMarket.mutate({
+                            name: newMarketName.trim(),
+                            slug: slug,
+                            description: newMarketDescription.trim() || undefined,
+                          });
+                        }}
+                        disabled={createMarket.isPending || !newMarketName.trim()}
+                      >
+                        {createMarket.isPending ? "Creating..." : "Create Market"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 {(allMarkets?.length || 0) > 0 ? (
