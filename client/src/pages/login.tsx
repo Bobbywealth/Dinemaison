@@ -5,16 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { EnhancedInput } from "@/components/ui/enhanced-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ChefHat, ArrowRight, Sparkles } from "lucide-react";
+import { Spinner } from "@/components/ui/loading";
+import { ChefHat, ArrowRight, Sparkles, Mail, Lock } from "lucide-react";
 import logoImage from "@assets/dinemaison-logo.png";
 import { mediaUrls } from "@/config/media";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().trim().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -225,71 +225,71 @@ export default function LoginPage() {
             )}
             
             <motion.div 
-              className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <Label htmlFor="email" className="text-foreground">Email</Label>
-              <Input
+              <EnhancedInput
                 id="email"
+                label="Email Address"
                 type="email"
                 placeholder="chef@dinemaison.com"
-                className="h-12 bg-muted/50 border-border/50 focus:border-primary transition-colors"
+                icon={<Mail className="h-4 w-4" />}
+                error={form.formState.errors.email?.message}
+                showValidation
+                isValid={!form.formState.errors.email && form.watch("email").length > 0}
+                required
                 {...form.register("email")}
               />
-              {form.formState.errors.email && (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-              )}
             </motion.div>
             
             <motion.div 
-              className="space-y-2"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-foreground">Password</Label>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Password</span>
                 <button
                   type="button"
                   onClick={() => setLocation("/forgot-password")}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  className="text-sm text-primary hover:text-primary/80 transition-colors underline-grow"
                 >
                   Forgot password?
                 </button>
               </div>
-              <Input
+              <EnhancedInput
                 id="password"
                 type="password"
-                placeholder="••••••••"
-                className="h-12 bg-muted/50 border-border/50 focus:border-primary transition-colors"
+                placeholder="Enter your password"
+                error={form.formState.errors.password?.message}
+                required
                 {...form.register("password")}
               />
-              {form.formState.errors.password && (
-                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
-              )}
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.5 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <Button 
-                type="submit" 
-                className="w-full h-12 text-base font-medium group" 
+                type="submit"
+                variant="gradient"
+                size="lg"
+                className="w-full text-base font-semibold group relative overflow-hidden" 
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
-                  />
+                  <span className="flex items-center gap-2">
+                    <Spinner size="sm" className="text-white" />
+                    Signing in...
+                  </span>
                 ) : (
                   <>
-                    Sign in
+                    Sign in to your account
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}

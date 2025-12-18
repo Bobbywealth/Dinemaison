@@ -14,12 +14,18 @@ import BecomeChefPage from "@/pages/become-chef";
 import BookingPage from "@/pages/booking";
 import ChefOnboardingPage from "@/pages/chef-onboarding";
 import AddMenuItemPage from "@/pages/chef/add-menu-item";
+import EditChefProfilePage from "@/pages/chef/edit-profile";
 import DashboardRouter from "@/pages/dashboard";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import ContactPage from "@/pages/contact";
+import TermsPage from "@/pages/terms";
+import PrivacyPage from "@/pages/privacy";
+import AboutPage from "@/pages/about";
+import FAQPage from "@/pages/faq";
+import StyleGuidePage from "@/pages/styleguide";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { debug } from "./utils/debug";
@@ -42,7 +48,13 @@ function Router() {
       <Route path="/book/:id" component={BookingPage} />
       <Route path="/chef/onboarding" component={ChefOnboardingPage} />
       <Route path="/chef/menu/add" component={AddMenuItemPage} />
+      <Route path="/chef/profile/edit" component={EditChefProfilePage} />
       <Route path="/contact" component={ContactPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/faq" component={FAQPage} />
+      <Route path="/styleguide" component={StyleGuidePage} />
       <Route path="/dashboard" component={DashboardRouter} />
       <Route component={NotFound} />
     </Switch>

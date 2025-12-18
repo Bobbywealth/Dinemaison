@@ -73,6 +73,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <a href="mailto:support@dinemaison.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  support@dinemaison.com
+                </a>
+              </li>
+              <li>
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
                 </Link>

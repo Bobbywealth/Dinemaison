@@ -23,6 +23,6 @@ export const mediaUrls = {
   login: {
     // Alternative free video
     video: "https://cdn.pixabay.com/video/2019/09/25/27669-362593985_large.mp4",
-    poster: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2940",
+    poster: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2940&fit=crop",
   },
 };

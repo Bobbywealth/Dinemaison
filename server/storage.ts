@@ -18,6 +18,7 @@ import {
   type Market,
   type InsertMarket,
   markets,
+  chefMarkets,
   type Booking,
   type InsertBooking,
   bookings,
@@ -224,6 +225,25 @@ export class DatabaseStorage implements IStorage {
     
     let results = await query.orderBy(desc(chefProfiles.averageRating));
     
+    // Filter by market (if provided)
+    // Note: This requires a JOIN with chefMarkets table
+    // For now, we skip market filtering if no markets are configured
+    // TODO: Implement proper market JOIN when markets are set up
+    if (filters?.marketId) {
+      const chefMarketsData = await db
+        .select()
+        .from(chefMarkets)
+        .where(eq(chefMarkets.marketId, filters.marketId));
+      
+      const chefIdsInMarket = new Set(chefMarketsData.map(cm => cm.chefId));
+      
+      // Only filter if we have chefs in this market
+      if (chefIdsInMarket.size > 0) {
+        results = results.filter(chef => chefIdsInMarket.has(chef.id));
+      }
+      // If no chefs in market, return all chefs (graceful degradation)
+    }
+    
     // Apply client-side filters for arrays and text search
     // (These are harder to do efficiently in SQL with the current schema)
     if (filters?.search) {
@@ -231,14 +251,14 @@ export class DatabaseStorage implements IStorage {
       results = results.filter(chef => 
         chef.displayName.toLowerCase().includes(searchLower) ||
         chef.bio?.toLowerCase().includes(searchLower) ||
-        chef.cuisines?.some(c => c.toLowerCase().includes(searchLower))
+        chef.cuisines?.some(c => c && c.toLowerCase().includes(searchLower))
       );
     }
     
     if (filters?.cuisine) {
       const cuisineLower = filters.cuisine.toLowerCase();
       results = results.filter(chef =>
-        chef.cuisines?.some(c => c.toLowerCase() === cuisineLower)
+        chef.cuisines?.some(c => c && c.toLowerCase() === cuisineLower)
       );
     }
     

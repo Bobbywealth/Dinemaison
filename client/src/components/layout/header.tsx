@@ -56,6 +56,7 @@ export function Header() {
     { label: "How It Works", action: () => scrollToSection("how-it-works"), icon: HelpCircle },
     { label: "About", action: () => scrollToSection("testimonials"), icon: Info },
     { label: "Become a Chef", href: "/become-chef", icon: ChefHat },
+    { label: "Contact", href: "/contact", icon: Phone },
   ];
 
   return (

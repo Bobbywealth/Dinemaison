@@ -38,6 +38,26 @@ export default function ChefsPage() {
 
   const { data: chefs, isLoading } = useQuery<ChefProfile[]>({
     queryKey: ["/api/chefs", filters],
+    queryFn: async () => {
+      // Build query parameters from filters
+      const params = new URLSearchParams();
+      
+      if (filters.search) params.append("search", filters.search);
+      if (filters.cuisine && filters.cuisine !== "all") params.append("cuisine", filters.cuisine);
+      if (filters.market && filters.market !== "all") params.append("market", filters.market);
+      if (filters.minRating > 0) params.append("minRating", filters.minRating.toString());
+      if (filters.priceRange[0] > 0) params.append("minPrice", filters.priceRange[0].toString());
+      if (filters.priceRange[1] < 500) params.append("maxPrice", filters.priceRange[1].toString());
+      
+      const queryString = params.toString();
+      const url = `/api/chefs${queryString ? `?${queryString}` : ""}`;
+      
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch chefs: ${res.statusText}`);
+      }
+      return res.json();
+    },
   });
 
   const filteredChefs = chefs || [];

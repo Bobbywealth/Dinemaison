@@ -120,6 +120,9 @@ export default function AdminDashboard() {
   const [userFilter, setUserFilter] = useState<string>("all");
   const [revenuePeriod, setRevenuePeriod] = useState<string>("weekly");
   const [activeSection, setActiveSection] = useState<string>("overview");
+  const [addMarketOpen, setAddMarketOpen] = useState(false);
+  const [newMarketName, setNewMarketName] = useState("");
+  const [newMarketDescription, setNewMarketDescription] = useState("");
 
   const { data: stats, isLoading: statsLoading } = useQuery<{
     totalUsers: number;
@@ -282,11 +285,18 @@ export default function AdminDashboard() {
       return apiRequest("POST", "/api/admin/markets", data);
     },
     onSuccess: () => {
-      toast({ title: "Market created" });
+      toast({ title: "Market created successfully!" });
+      setAddMarketOpen(false);
+      setNewMarketName("");
+      setNewMarketDescription("");
       refetchMarkets();
     },
-    onError: () => {
-      toast({ title: "Failed to create market", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to create market", 
+        description: error.message || "Please check your input and try again",
+        variant: "destructive" 
+      });
     },
   });
 
