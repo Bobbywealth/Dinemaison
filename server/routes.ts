@@ -886,6 +886,66 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/chef/menu", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const menuItem = await storage.createMenuItem({
+        ...req.body,
+        chefId: profile.id,
+      });
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error creating menu item:", error);
+      res.status(500).json({ message: "Failed to create menu item" });
+    }
+  });
+
+  app.patch("/api/chef/menu/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      const menuItem = await storage.updateMenuItem(req.params.id, req.body);
+      if (!menuItem) {
+        return res.status(404).json({ message: "Menu item not found" });
+      }
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error updating menu item:", error);
+      res.status(500).json({ message: "Failed to update menu item" });
+    }
+  });
+
+  app.delete("/api/chef/menu/:id", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const profile = await storage.getChefByUserId(userId);
+      if (!profile) {
+        return res.status(404).json({ message: "Chef profile not found" });
+      }
+      await storage.deleteMenuItem(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting menu item:", error);
+      res.status(500).json({ message: "Failed to delete menu item" });
+    }
+  });
+
   app.get("/api/chef/earnings", isAuthenticated, async (req: Request, res: Response) => {
     const userId = getUserId(req);
     if (!userId) {

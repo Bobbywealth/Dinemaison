@@ -267,3 +267,38 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
     references: [bookings.id],
   }),
 }));
+
+// ============== MENU ITEMS ==============
+export const menuItems = pgTable("menu_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chefId: varchar("chef_id").notNull().references(() => chefProfiles.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  category: varchar("category", { length: 100 }),
+  dietaryInfo: text("dietary_info").array(),
+  imageUrl: varchar("image_url"),
+  isAvailable: boolean("is_available").default(true),
+  prepTime: integer("prep_time"),
+  servingSize: integer("serving_size"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  chefIdIdx: index("menu_items_chef_id_idx").on(table.chefId),
+}));
+
+export const insertMenuItemSchema = createInsertSchema(menuItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
+export type MenuItem = typeof menuItems.$inferSelect;
+
+export const menuItemsRelations = relations(menuItems, ({ one }) => ({
+  chef: one(chefProfiles, {
+    fields: [menuItems.chefId],
+    references: [chefProfiles.id],
+  }),
+}));

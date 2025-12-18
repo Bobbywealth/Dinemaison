@@ -27,6 +27,9 @@ import {
   type UserRole,
   type InsertUserRole,
   userRoles,
+  type MenuItem,
+  type InsertMenuItem,
+  menuItems,
   type PlatformSetting,
   platformSettings,
 } from "@shared/schema";
@@ -92,7 +95,10 @@ export interface IStorage {
   
   getAllUserRoles(): Promise<UserRole[]>;
   
-  getChefMenuItems(chefId: string): Promise<any[]>;
+  getChefMenuItems(chefId: string): Promise<MenuItem[]>;
+  createMenuItem(data: InsertMenuItem): Promise<MenuItem>;
+  updateMenuItem(id: string, data: Partial<InsertMenuItem>): Promise<MenuItem | undefined>;
+  deleteMenuItem(id: string): Promise<void>;
   
   getCustomerFavorites(customerId: string): Promise<ChefProfile[]>;
   addCustomerFavorite(customerId: string, chefId: string): Promise<void>;
@@ -192,21 +198,51 @@ export class DatabaseStorage implements IStorage {
     
     const conditions = [];
     
+    // Filter by active status
     if (filters?.isActive !== undefined) {
       conditions.push(eq(chefProfiles.isActive, filters.isActive));
     } else {
       conditions.push(eq(chefProfiles.isActive, true));
     }
     
+    // Filter by minimum rating
     if (filters?.minRating) {
       conditions.push(gte(chefProfiles.averageRating, String(filters.minRating)));
+    }
+    
+    // Filter by hourly rate range
+    if (filters?.minPrice) {
+      conditions.push(gte(chefProfiles.hourlyRate, String(filters.minPrice)));
+    }
+    if (filters?.maxPrice) {
+      conditions.push(lte(chefProfiles.hourlyRate, String(filters.maxPrice)));
     }
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as typeof query;
     }
     
-    return query.orderBy(desc(chefProfiles.averageRating));
+    let results = await query.orderBy(desc(chefProfiles.averageRating));
+    
+    // Apply client-side filters for arrays and text search
+    // (These are harder to do efficiently in SQL with the current schema)
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      results = results.filter(chef => 
+        chef.displayName.toLowerCase().includes(searchLower) ||
+        chef.bio?.toLowerCase().includes(searchLower) ||
+        chef.cuisines?.some(c => c.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (filters?.cuisine) {
+      const cuisineLower = filters.cuisine.toLowerCase();
+      results = results.filter(chef =>
+        chef.cuisines?.some(c => c.toLowerCase() === cuisineLower)
+      );
+    }
+    
+    return results;
   }
 
   async getChefById(id: string): Promise<ChefProfile | undefined> {
@@ -577,8 +613,22 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(userRoles);
   }
 
-  async getChefMenuItems(chefId: string): Promise<any[]> {
-    return [];
+  async getChefMenuItems(chefId: string): Promise<MenuItem[]> {
+    return db.select().from(menuItems).where(eq(menuItems.chefId, chefId));
+  }
+
+  async createMenuItem(data: InsertMenuItem): Promise<MenuItem> {
+    const [item] = await db.insert(menuItems).values(data).returning();
+    return item;
+  }
+
+  async updateMenuItem(id: string, data: Partial<InsertMenuItem>): Promise<MenuItem | undefined> {
+    const [item] = await db.update(menuItems).set({ ...data, updatedAt: new Date() }).where(eq(menuItems.id, id)).returning();
+    return item;
+  }
+
+  async deleteMenuItem(id: string): Promise<void> {
+    await db.delete(menuItems).where(eq(menuItems.id, id));
   }
 
   async getCustomerFavorites(customerId: string): Promise<ChefProfile[]> {
