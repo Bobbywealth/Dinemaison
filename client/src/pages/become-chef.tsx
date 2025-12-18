@@ -145,7 +145,7 @@ export default function BecomeChefPage() {
         throw new Error(body.message || "Failed to create chef profile");
       }
 
-      return res.json();
+      return await res.json();
     },
     onSuccess: () => {
       toast({

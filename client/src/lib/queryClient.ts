@@ -2,7 +2,9 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
+    // Clone the response before consuming it to avoid "body already used" errors
+    const clonedRes = res.clone();
+    const text = (await clonedRes.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -37,7 +39,8 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
-    await throwIfResNotOk(res);
+    // Clone response before checking if it's OK to avoid consuming the body
+    await throwIfResNotOk(res.clone());
     return await res.json();
   };
 
