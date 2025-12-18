@@ -53,7 +53,7 @@ const itemVariants = {
 
 export function ServicesSection() {
   return (
-    <section id="services" className="py-24 bg-gradient-to-b from-card/30 via-card/50 to-background relative overflow-hidden">
+    <section id="services" className="py-16 sm:py-20 bg-gradient-to-b from-card/30 via-card/50 to-background relative overflow-hidden">
       {/* Enhanced Background decoration */}
       <div className="absolute inset-0 opacity-30">
         <motion.div 
@@ -94,7 +94,7 @@ export function ServicesSection() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
-          className="text-center mb-20"
+          className="text-center mb-12 sm:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
