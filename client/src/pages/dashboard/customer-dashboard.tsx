@@ -52,13 +52,11 @@ import {
   ArrowRight,
   CheckCircle,
   LayoutDashboard,
-  Utensils,
-  Home
+  Utensils
 } from "lucide-react";
 import { format, isAfter, isBefore, addHours } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { BottomNavigation } from "@/components/mobile/bottom-navigation";
 
 const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
@@ -1204,17 +1202,6 @@ export default function CustomerDashboard() {
         <main className="container py-8">
           {sectionsContent}
         </main>
-        
-        {/* Bottom Navigation for Desktop */}
-        <BottomNavigation
-          items={[
-            { id: "home", label: "Home", icon: Home, href: "/dashboard#overview" },
-            { id: "bookings", label: "Bookings", icon: Calendar, href: "/dashboard#upcoming" },
-            { id: "chefs", label: "Chefs", icon: ChefHat, href: "/chefs" },
-            { id: "favorites", label: "Favorites", icon: Heart, href: "/dashboard#favorites" },
-            { id: "profile", label: "Profile", icon: Settings, href: "/dashboard#more" },
-          ]}
-        />
       </div>
     );
   }
