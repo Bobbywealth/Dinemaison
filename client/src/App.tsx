@@ -46,21 +46,29 @@ function Router() {
 
   // Redirect to login for unauthenticated users - ONLY for PWA app
   useEffect(() => {
-    if (!isLoading) {
-      const isAuthPage = location === "/login" || location === "/signup" || location === "/forgot-password" || location.startsWith("/reset-password");
-      const isPWA = isStandalone();
-      
-      debug.log("Navigation check:", {
-        isAuthPage,
-        isPWA,
-        hasUser: !!user,
-        location,
-        willRedirect: !user && !isAuthPage && location === "/" && isPWA
-      });
-      
-      // PWA mode: Always redirect to login if on root and not authenticated
-      if (!user && !isAuthPage && location === "/" && isPWA) {
-        debug.log("PWA mode detected, redirecting unauthenticated user to login");
+    if (isLoading) return;
+
+    const isAuthPage =
+      location === "/login" ||
+      location === "/signup" ||
+      location === "/forgot-password" ||
+      location.startsWith("/reset-password");
+    const isPWA = isStandalone();
+
+    debug.log("Navigation check:", {
+      isAuthPage,
+      isPWA,
+      hasUser: !!user,
+      location,
+      willRedirectToLogin: isPWA && !user && !isAuthPage && location === "/",
+      willRedirectToDashboard: isPWA && !!user && location === "/",
+    });
+
+    if (isPWA && location === "/") {
+      // In PWA mode, never land on marketing home. Go to dashboard if authed, else login.
+      if (user) {
+        setLocation("/dashboard");
+      } else if (!isAuthPage) {
         setLocation("/login");
       }
     }

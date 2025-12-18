@@ -79,7 +79,7 @@ export default defineConfig({
         name: "Dine Maison - Private Chef Experiences",
         short_name: "Dine Maison",
         description: "Book professional private chefs for unforgettable intimate dining experiences in your home or venue",
-        start_url: "/",
+        start_url: "/dashboard",
         scope: "/",
         id: "/?source=pwa",
         display: "standalone",
