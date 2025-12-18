@@ -35,12 +35,14 @@ app.use(helmet({
         "'self'", 
         "'unsafe-inline'", 
         "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
+        "https://fonts.gstatic.com",
+        "https://r2cdn.perplexity.ai"
       ],
       fontSrc: [
         "'self'", 
         "https://fonts.gstatic.com", 
         "https://fonts.googleapis.com",
+        "https://r2cdn.perplexity.ai",
         "data:"
       ],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
