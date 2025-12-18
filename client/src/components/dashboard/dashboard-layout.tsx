@@ -213,16 +213,16 @@ function DashboardSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarSeparator />
+      <SidebarSeparator className={cn(isDark ? "bg-white/10" : "bg-border")} />
 
-      <SidebarFooter>
+      <SidebarFooter className="px-3 py-4">
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start text-sm",
+            "w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium rounded-lg",
             isDark
-              ? "text-white/80 hover:text-white hover:bg-white/10"
-              : "text-slate-700 hover:bg-slate-100"
+              ? "text-white/70 hover:text-white hover:bg-white/5"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           )}
           onClick={async () => {
             await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
@@ -230,8 +230,8 @@ function DashboardSidebar({
             window.location.href = "/";
           }}
         >
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout
+          <LogOut className="h-4 w-4" />
+          <span>Logout</span>
         </Button>
       </SidebarFooter>
     </Sidebar>
