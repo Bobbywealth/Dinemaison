@@ -242,29 +242,31 @@ export function isStandalone(): boolean {
   
   // Conservative approach to PWA detection:
   // 1. iOS: Only trust navigator.standalone (very reliable)
-  // 2. Android: Trust android-app:// referrer OR display-mode if on Android
-  // 3. Desktop: Trust display-mode standalone (less critical as desktop web is fine)
+  // 2. Android: ONLY trust android-app:// referrer (most reliable)
+  // 3. Desktop: Trust display-mode standalone
+  //
+  // NOTE: We do NOT trust display-mode: standalone on mobile devices
+  // because it can incorrectly match in mobile browsers on some devices
   
   if (isIOSStandalone) {
+    debug.log("Detected as PWA: iOS standalone mode");
     return true; // iOS Add to Home Screen
   }
   
   if (isAndroidApp) {
+    debug.log("Detected as PWA: Android app referrer");
     return true; // Android TWA
   }
   
-  // For Android mobile, only trust display-mode if we're actually on Android
-  // This prevents mobile browsers from incorrectly being detected as PWA
-  if (isDisplayStandalone && isAndroid()) {
-    return true; // Android PWA
-  }
-  
-  // For desktop or non-mobile, we can trust display-mode
+  // For desktop (non-mobile), we can trust display-mode standalone
   if (isDisplayStandalone && !isMobileDevice) {
+    debug.log("Detected as PWA: Desktop standalone mode");
     return true; // Desktop PWA
   }
   
-  return false; // Mobile web browser
+  // For mobile browsers, always return false to ensure they get the web experience
+  debug.log("Detected as mobile web browser (not PWA)");
+  return false;
 }
 
 /**
