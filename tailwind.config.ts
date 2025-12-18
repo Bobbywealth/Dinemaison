@@ -6,9 +6,11 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        'xl': '1rem', /* 16px - mobile-first rounded corners */
+        '2xl': '1.25rem', /* 20px - cards and modals */
+        lg: '0.75rem', /* 12px */
+        md: '0.5rem', /* 8px */
+        sm: '0.25rem', /* 4px */
       },
       colors: {
         // Flat / base colors (regular buttons)
@@ -101,7 +103,36 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      spacing: {
+        'safe': 'env(safe-area-inset-bottom)', /* iOS safe area */
+      },
+      boxShadow: {
+        'elevated': '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
+        'elevated-lg': '0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    function({ addUtilities }: any) {
+      addUtilities({
+        '.scrollbar-hide': {
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          /* Hide scrollbar for IE, Edge and Firefox */
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+        },
+        '.touch-manipulation': {
+          'touch-action': 'manipulation',
+        },
+        '.pb-safe': {
+          'padding-bottom': 'env(safe-area-inset-bottom)',
+        },
+      })
+    }
+  ],
 } satisfies Config;

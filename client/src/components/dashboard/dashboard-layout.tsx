@@ -25,6 +25,9 @@ import logoImage from "@assets/dinemaison-logo.png";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/lib/theme-provider";
 import { queryClient } from "@/lib/queryClient";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { BottomNavigation } from "@/components/mobile/bottom-navigation";
+import { HamburgerDrawer } from "@/components/mobile/hamburger-drawer";
 
 export type DashboardNavItem = {
   id: string;
@@ -66,57 +69,57 @@ function DashboardSidebar({
 
   return (
     <Sidebar className={sidebarClasses}>
-      <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border")}>
-        <Link href="/" className="flex flex-col items-center py-6">
-          <img
-            src={logoImage}
-            alt="Dine Maison"
-            className={cn(
-              "h-32 w-auto object-contain",
-              isDark ? "brightness-0 invert" : "brightness-100"
-            )}
-          />
-          <div className="flex flex-col items-center -mt-10">
-            <span
-              className={cn(
-                "text-[9px] tracking-[0.3em] uppercase",
-                isDark ? "text-white/70" : "text-slate-900"
-              )}
-            >
-              The Art of
-            </span>
-            <span
-              className={cn(
-                "text-[9px] tracking-[0.3em] uppercase",
-                isDark ? "text-white/70" : "text-slate-900"
-              )}
-            >
-              Intimate Dining
-            </span>
+      <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border", "px-6 py-6")}>
+        <Link href="/" className="flex flex-col items-start mb-6">
+          <div className="mb-3">
+            <h1 className={cn(
+              "text-3xl font-serif italic",
+              isDark ? "text-white" : "text-slate-900"
+            )}>
+              Maison
+            </h1>
+            <div className={cn(
+              "text-[10px] tracking-[0.2em] uppercase mt-1",
+              isDark ? "text-white/60" : "text-slate-500"
+            )}>
+              THE ART OF
+            </div>
+            <div className={cn(
+              "text-[10px] tracking-[0.2em] uppercase",
+              isDark ? "text-white/60" : "text-slate-500"
+            )}>
+              INTIMATE DINING
+            </div>
           </div>
         </Link>
         {user && (
           <div
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3 py-2",
-              isDark ? "bg-white/10" : "bg-slate-100"
+              "flex items-center gap-3 rounded-lg px-3 py-2.5",
+              isDark ? "bg-white/5" : "bg-slate-50"
             )}
           >
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-9 w-9">
               <AvatarImage src={user.profileImageUrl || undefined} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              <AvatarFallback className={cn(
+                "text-xs font-semibold",
+                isDark ? "bg-primary/20 text-primary-foreground" : "bg-primary/10 text-primary"
+              )}>
                 {user.firstName?.charAt(0)}
                 {user.lastName?.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold leading-tight truncate">
-                {user.firstName} {user.lastName}
+            <div className="min-w-0 flex-1">
+              <p className={cn(
+                "text-sm font-semibold leading-tight truncate",
+                isDark ? "text-white" : "text-slate-900"
+              )}>
+                {user.role === "admin" ? "Admin User" : `${user.firstName} ${user.lastName}`}
               </p>
               <p
                 className={cn(
                   "text-xs truncate",
-                  isDark ? "text-white/70" : "text-slate-500"
+                  isDark ? "text-white/50" : "text-slate-500"
                 )}
               >
                 {user.email}
@@ -126,11 +129,16 @@ function DashboardSidebar({
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-3">
         <SidebarGroup>
-          <SidebarGroupLabel className={navLabelClass}>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className={cn(
+            "text-xs font-semibold uppercase tracking-wider mb-2 px-3",
+            isDark ? "text-white/50" : "text-slate-500"
+          )}>
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                 {onNavigate ? (
@@ -144,12 +152,24 @@ function DashboardSidebar({
                   >
                     <button
                       type="button"
-                      className={cn("flex items-center w-full", navLinkClass)}
+                      className={cn(
+                        "flex items-center w-full gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                        activeItemId === item.id
+                          ? isDark 
+                            ? "bg-white/10 text-white" 
+                            : "bg-slate-100 text-slate-900"
+                          : isDark
+                          ? "text-white/70 hover:bg-white/5 hover:text-white"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1 text-left">{item.title}</span>
                       {item.badge && (
-                        <span className={cn("ml-auto rounded-full px-2 text-xs", badgeClass)}>
+                        <span className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-semibold",
+                          isDark ? "bg-primary/20 text-primary-foreground" : "bg-primary/10 text-primary"
+                        )}>
                           {item.badge}
                         </span>
                       )}
@@ -162,12 +182,24 @@ function DashboardSidebar({
                   >
                     <a
                       href={item.href || `#${item.id}`}
-                      className={navLinkClass}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                        hash === `#${item.id}`
+                          ? isDark 
+                            ? "bg-white/10 text-white" 
+                            : "bg-slate-100 text-slate-900"
+                          : isDark
+                          ? "text-white/70 hover:bg-white/5 hover:text-white"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{item.title}</span>
                       {item.badge && (
-                        <span className={cn("ml-auto rounded-full px-2 text-xs", badgeClass)}>
+                        <span className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-semibold",
+                          isDark ? "bg-primary/20 text-primary-foreground" : "bg-primary/10 text-primary"
+                        )}>
                           {item.badge}
                         </span>
                       )}
@@ -206,25 +238,46 @@ function DashboardSidebar({
   );
 }
 
-function DashboardTopBar({ title, description }: Pick<DashboardLayoutProps, "title" | "description">) {
+function DashboardTopBar({ 
+  title, 
+  description,
+  navItems,
+  activeItemId,
+  onNavigate,
+}: Pick<DashboardLayoutProps, "title" | "description" | "navItems" | "activeItemId" | "onNavigate">) {
   const { toggleSidebar } = useSidebar();
+  const isMobile = useIsMobile();
 
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            className="md:hidden"
-            onClick={toggleSidebar}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
+          {isMobile ? (
+            <HamburgerDrawer
+              navItems={navItems.map(item => ({
+                id: item.id,
+                title: item.title,
+                icon: item.icon,
+                href: item.href,
+                badge: item.badge,
+              }))}
+              activeItemId={activeItemId}
+              onNavigate={onNavigate}
+            />
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={toggleSidebar}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
           <div>
             <h1 className="text-lg font-semibold">{title}</h1>
             {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground hidden sm:block">{description}</p>
             )}
           </div>
         </div>
@@ -243,17 +296,67 @@ export function DashboardLayout({
   activeItemId,
   onNavigate,
 }: DashboardLayoutProps) {
+  const isMobile = useIsMobile();
+
   return (
     <SidebarProvider className="min-h-screen bg-background">
-      <DashboardSidebar
-        navItems={navItems}
-        activeItemId={activeItemId}
-        onNavigate={onNavigate}
-      />
+      {/* Hide sidebar on mobile */}
+      {!isMobile && (
+        <DashboardSidebar
+          navItems={navItems}
+          activeItemId={activeItemId}
+          onNavigate={onNavigate}
+        />
+      )}
       <SidebarInset className="flex-1">
-        <DashboardTopBar title={title} description={description} />
-        <div className={cn("px-4 md:px-6 lg:px-8 py-6 space-y-8", className)}>{children}</div>
+        <DashboardTopBar 
+          title={title} 
+          description={description}
+          navItems={navItems}
+          activeItemId={activeItemId}
+          onNavigate={onNavigate}
+        />
+        <div className={cn(
+          "px-4 md:px-6 lg:px-8 py-6 space-y-8",
+          isMobile && "pb-24", // Add padding for bottom navigation
+          className
+        )}>
+          {children}
+        </div>
       </SidebarInset>
+
+      {/* Show bottom navigation on mobile */}
+      {isMobile && (
+        <BottomNavigation
+          items={[
+            { id: "home", label: "Home", icon: navItems[0]?.icon || Menu, href: "/dashboard#overview" },
+            { 
+              id: "bookings", 
+              label: "Bookings", 
+              icon: navItems.find(i => i.id === "bookings")?.icon || Menu, 
+              href: "/dashboard#bookings" 
+            },
+            { 
+              id: "chefs", 
+              label: "Chefs", 
+              icon: navItems.find(i => i.id === "chefs")?.icon || Menu, 
+              href: "/dashboard#chefs" 
+            },
+            { 
+              id: "analytics", 
+              label: "Analytics", 
+              icon: navItems.find(i => i.id === "analytics")?.icon || Menu, 
+              href: "/dashboard#analytics" 
+            },
+            { 
+              id: "more", 
+              label: "More", 
+              icon: Menu, 
+              href: "/dashboard#more" 
+            },
+          ]}
+        />
+      )}
     </SidebarProvider>
   );
 }

@@ -79,6 +79,7 @@ import {
 } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -413,6 +414,7 @@ export default function AdminDashboard() {
       { id: "markets", title: "Markets", icon: MapPin },
       { id: "transactions", title: "Transactions", icon: History },
       { id: "settings", title: "Settings", icon: Settings },
+      { id: "more", title: "More", icon: MoreHorizontal },
     ],
     [pendingVerifications?.length]
   );
@@ -485,291 +487,227 @@ export default function AdminDashboard() {
     >
       {activeSection === "overview" ? (
         <section id="overview" className="space-y-6">
-        {/* Mobile-optimized Stats Grid - 2x2 on mobile, expanding on larger screens */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Users className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalUsers || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Users</p>
+        {/* Stats Grid - Clean 2x2 on mobile, 4 columns on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
               </div>
+              <div className="text-3xl font-bold mb-1">{stats?.totalUsers || 0}</div>
+              <div className="text-sm text-muted-foreground">Total Users</div>
             </CardContent>
           </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
-                  <ChefHat className="h-6 w-6 sm:h-5 sm:w-5 text-orange-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalChefs || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Chefs</p>
+
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                  <ChefHat className="h-5 w-5 text-orange-600" />
                 </div>
               </div>
+              <div className="text-3xl font-bold mb-1">{stats?.totalChefs || 0}</div>
+              <div className="text-sm text-muted-foreground">Active Chefs</div>
             </CardContent>
           </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-6 w-6 sm:h-5 sm:w-5 text-green-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalBookings || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Bookings</p>
+
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-green-600" />
                 </div>
               </div>
+              <div className="text-3xl font-bold mb-1">{stats?.totalBookings || 0}</div>
+              <div className="text-sm text-muted-foreground">Total Bookings</div>
             </CardContent>
           </Card>
-          <Card className="hover-elevate">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-6 w-6 sm:h-5 sm:w-5 text-emerald-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">${((stats?.totalRevenue || 0) / 100).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">GMV</p>
+
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-emerald-600" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-elevate col-span-2 lg:col-span-1">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
-                  <Shield className="h-6 w-6 sm:h-5 sm:w-5 text-yellow-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.pendingVerifications || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Pending Reviews</p>
-                </div>
-              </div>
+              <div className="text-3xl font-bold mb-1">${((stats?.totalRevenue || 0) / 100).toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">GMV</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Revenue This Week - Mobile optimized */}
-        <Card className="hover-elevate">
-          <CardContent className="p-5 sm:p-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+        {/* Two Column Layout for Revenue and Booking Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue This Week */}
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold">Revenue This Week</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold mb-6">
+                ${((stats?.totalRevenue || 0) / 100).toLocaleString()}
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">Revenue This Week</p>
-                <p className="text-3xl font-bold text-foreground mb-3">
-                  ${((stats?.totalRevenue || 0) / 100).toFixed(2)}
-                </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full sm:w-auto"
-                  onClick={() => handleSectionChange("analytics")}
-                >
-                  View Analytics
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Button>
+              {/* Mini Revenue Chart */}
+              <div className="h-24 mb-4 -mx-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData?.slice(-7) || mockRevenueData}>
+                    <Line 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            </div>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-between group hover:bg-transparent"
+                onClick={() => handleSectionChange("analytics")}
+              >
+                <span>View Analytics</span>
+                <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Booking Status */}
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold">Booking Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span className="text-sm text-muted-foreground">Completed</span>
+                </div>
+                <span className="font-semibold">
+                  {allBookings?.filter(b => b.status === "completed").length || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-amber-500" />
+                  <span className="text-sm text-muted-foreground">Pending</span>
+                </div>
+                <span className="font-semibold">
+                  {allBookings?.filter(b => b.status === "requested").length || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <span className="text-sm text-muted-foreground">Confirmed</span>
+                </div>
+                <span className="font-semibold">
+                  {allBookings?.filter(b => b.status === "confirmed").length || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-red-500" />
+                  <span className="text-sm text-muted-foreground">Cancelled</span>
+                </div>
+                <span className="font-semibold">
+                  {allBookings?.filter(b => b.status === "cancelled").length || 0}
+                </span>
+              </div>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-between group hover:bg-transparent mt-2"
+                onClick={() => handleSectionChange("bookings")}
+              >
+                <span>View Bookings</span>
+                <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Bookings */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Recent Bookings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(recentBookings?.length || 0) > 0 ? (
+              <div className="space-y-3">
+                {(recentBookings || []).slice(0, 2).map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-accent/50 transition-colors cursor-pointer group"
+                    onClick={() => handleSectionChange("bookings")}
+                  >
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {booking.customerId.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium">Booking #{booking.id.slice(0, 8)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy 'at' h:mm a")}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={cn("shrink-0", statusColors[booking.status || "requested"])}>
+                      {booking.status}
+                    </Badge>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No recent bookings
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Quick Actions - Mobile optimized */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+        {/* Quick Actions */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              onClick={() => handleSectionChange("bookings")}
+            <button
+              onClick={() => handleSectionChange("verifications")}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-accent transition-colors group"
             >
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium flex-1 text-left">View Bookings</span>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              onClick={() => handleSectionChange("chefs")}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
                   <ChefHat className="h-5 w-5 text-orange-600" />
                 </div>
-                <span className="text-sm font-medium flex-1 text-left">Review Chefs</span>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Approve Chefs</span>
               </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-auto py-4 hover-elevate"
-              onClick={() => handleSectionChange("verifications")}
+              <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+
+            <button
+              onClick={() => handleSectionChange("reviews")}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-accent transition-colors group"
             >
-              <div className="flex items-center gap-3 w-full">
-                <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
-                  <Shield className="h-5 w-5 text-yellow-600" />
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-amber-600" />
                 </div>
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="text-sm font-medium text-left">Pending Reviews</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Pending Reviews</span>
                   {pendingVerifications && pendingVerifications.length > 0 && (
-                    <Badge variant="secondary" className="ml-2">
+                    <Badge variant="secondary" className="rounded-full">
                       {pendingVerifications.length}
                     </Badge>
                   )}
                 </div>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
               </div>
-            </Button>
+              <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
           </CardContent>
         </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <CardTitle className="text-base">Revenue Overview</CardTitle>
-                  <CardDescription>
-                    {revenuePeriod === "daily" ? "Last 7 days" : revenuePeriod === "monthly" ? "Last 6 months" : "Weekly"} booking revenue
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex rounded-md overflow-hidden border border-border">
-                    <Button 
-                      variant={revenuePeriod === "daily" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="rounded-none text-xs px-3"
-                      onClick={() => setRevenuePeriod("daily")}
-                      data-testid="button-revenue-daily"
-                    >
-                      Daily
-                    </Button>
-                    <Button 
-                      variant={revenuePeriod === "weekly" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="rounded-none text-xs px-3 border-x border-border"
-                      onClick={() => setRevenuePeriod("weekly")}
-                      data-testid="button-revenue-weekly"
-                    >
-                      Weekly
-                    </Button>
-                    <Button 
-                      variant={revenuePeriod === "monthly" ? "default" : "ghost"} 
-                      size="sm" 
-                      className="rounded-none text-xs px-3"
-                      onClick={() => setRevenuePeriod("monthly")}
-                      data-testid="button-revenue-monthly"
-                    >
-                      Monthly
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueData || mockRevenueData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                    <YAxis 
-                      className="text-xs" 
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      domain={['auto', 'auto']}
-                      tickFormatter={(value: number) => value < 0 ? `-$${Math.abs(value)}` : `$${value}`}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value: number) => {
-                        if (value < 0) {
-                          return [`-$${Math.abs(value).toLocaleString()}`, 'Loss'];
-                        }
-                        return [`$${value.toLocaleString()}`, 'Revenue'];
-                      }}
-                    />
-                    <ReferenceLine y={0} stroke="hsl(var(--border))" strokeWidth={1} />
-                    <Bar 
-                      dataKey="revenue" 
-                      radius={[4, 4, 0, 0]}
-                      fill="hsl(var(--primary))"
-                    >
-                      {(revenueData || mockRevenueData).map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={entry.revenue < 0 ? '#ef4444' : 'hsl(var(--primary))'}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex items-center justify-center gap-4 mt-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-primary" />
-                  <span className="text-muted-foreground">Revenue</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-red-500" />
-                  <span className="text-muted-foreground">Refunds/Loss</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Booking Status</CardTitle>
-              <CardDescription>Current distribution</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={bookingStatusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {bookingStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {bookingStatusData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2 text-sm">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-muted-foreground">{item.name}</span>
-                    <span className="font-medium ml-auto">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
         </section>
       ) : (
         <Tabs value={activeSection} onValueChange={handleSectionChange} className="space-y-6">
@@ -851,62 +789,112 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="bookings" id="bookings">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <CardTitle>All Bookings</CardTitle>
-                  <CardDescription>View and manage platform bookings</CardDescription>
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-base md:text-lg">All Bookings</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">View and manage platform bookings</CardDescription>
+                  </div>
+                  <Select defaultValue="all">
+                    <SelectTrigger className="w-full sm:w-40 rounded-xl">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Bookings</SelectItem>
+                      <SelectItem value="requested">Requested</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Bookings</SelectItem>
-                    <SelectItem value="requested">Requested</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
+                
+                {/* Mobile: Horizontal filter chips */}
+                <div className="flex gap-2 overflow-x-auto pb-2 md:hidden scrollbar-hide">
+                  <button className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium whitespace-nowrap">
+                    All
+                  </button>
+                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
+                    Pending
+                  </button>
+                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
+                    Confirmed
+                  </button>
+                  <button className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap hover:bg-primary/10">
+                    Cancelled
+                  </button>
+                </div>
               </CardHeader>
               <CardContent>
                 {(allBookings?.length || 0) > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Booking ID</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Chef</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(allBookings || []).slice(0, 10).map((booking) => (
-                          <TableRow key={booking.id}>
-                            <TableCell className="font-mono text-xs">{booking.id.slice(0, 8)}...</TableCell>
-                            <TableCell>{booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy")}</TableCell>
-                            <TableCell>{booking.customerId.slice(0, 8)}...</TableCell>
-                            <TableCell>{booking.chefId.slice(0, 8)}...</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={statusColors[booking.status || "requested"]}>
+                  <>
+                    {/* Mobile: Card list view */}
+                    <div className="space-y-3 md:hidden">
+                      {(allBookings || []).slice(0, 10).map((booking) => (
+                        <div key={booking.id} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <Calendar className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div>
+                                <p className="font-semibold text-sm">{booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy")}</p>
+                                <p className="text-xs text-muted-foreground font-mono">ID: {booking.id.slice(0, 8)}</p>
+                              </div>
+                              <Badge variant="outline" className={cn("text-xs shrink-0", statusColors[booking.status || "requested"])}>
                                 {booking.status}
                               </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-medium">${(parseFloat(booking.total) / 100).toFixed(2)}</TableCell>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Chef: {booking.chefId.slice(0, 8)}</span>
+                              <span className="font-semibold text-foreground text-sm">${(parseFloat(booking.total) / 100).toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <button className="text-muted-foreground hover:text-foreground">
+                            <ArrowUpRight className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop: Table view */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Booking ID</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Chef</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {(allBookings || []).slice(0, 10).map((booking) => (
+                            <TableRow key={booking.id}>
+                              <TableCell className="font-mono text-xs">{booking.id.slice(0, 8)}...</TableCell>
+                              <TableCell>{booking.eventDate && format(new Date(booking.eventDate), "MMM d, yyyy")}</TableCell>
+                              <TableCell>{booking.customerId.slice(0, 8)}...</TableCell>
+                              <TableCell>{booking.chefId.slice(0, 8)}...</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={statusColors[booking.status || "requested"]}>
+                                  {booking.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">${(parseFloat(booking.total) / 100).toFixed(2)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-12">
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No bookings yet</h3>
-                    <p className="text-muted-foreground">Bookings will appear here once customers start booking</p>
+                    <h3 className="font-semibold text-foreground mb-2 text-sm md:text-base">No bookings yet</h3>
+                    <p className="text-muted-foreground text-xs md:text-sm">Bookings will appear here once customers start booking</p>
                   </div>
                 )}
               </CardContent>
@@ -914,147 +902,216 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="chefs" id="chefs">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <CardTitle>Chef Management</CardTitle>
-                  <CardDescription>View and manage registered chefs</CardDescription>
-                </div>
-                <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search chefs..." 
-                    className="pl-9"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    data-testid="input-search-chefs"
-                  />
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-base md:text-lg">Chef Management</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">View and manage registered chefs</CardDescription>
+                  </div>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search chefs..." 
+                      className="pl-9 rounded-xl"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      data-testid="input-search-chefs"
+                    />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 {filteredChefs.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {filteredChefs.map((chef) => (
-                      <div key={chef.id} className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 rounded-md border border-border">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={chef.profileImageUrl || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {chef.displayName?.charAt(0) || "C"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium">{chef.displayName}</p>
-                              <Badge variant="outline" className={verificationBadgeColors[chef.verificationLevel || "none"]}>
-                                {chef.isCertified ? "Certified" : chef.verificationLevel}
-                              </Badge>
-                              {!chef.isActive && (
-                                <Badge variant="destructive">Inactive</Badge>
-                              )}
+                      <div key={chef.id} className="flex items-start gap-3 md:gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                        <Avatar className="h-12 w-12 md:h-14 md:w-14 shrink-0">
+                          <AvatarImage src={chef.profileImageUrl || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                            {chef.displayName?.charAt(0) || "C"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm md:text-base truncate">{chef.displayName}</p>
+                              <div className="flex items-center gap-2 flex-wrap mt-1">
+                                <Badge variant="outline" className={cn("text-xs", verificationBadgeColors[chef.verificationLevel || "none"])}>
+                                  {chef.isCertified ? "Certified" : chef.verificationLevel}
+                                </Badge>
+                                {!chef.isActive && (
+                                  <Badge variant="destructive" className="text-xs">Inactive</Badge>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Activity className="h-3 w-3" />
-                                {chef.completedBookings || 0} bookings
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <TrendingUp className="h-3 w-3" />
-                                {parseFloat(chef.averageRating || "0").toFixed(1)} rating
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3" />
-                                ${(parseFloat(chef.minimumSpend || "0")).toFixed(0)} min
-                              </span>
+                            {/* Desktop actions */}
+                            <div className="hidden lg:flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setSelectedChef(chef)}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-lg rounded-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>{selectedChef?.displayName}</DialogTitle>
+                                    <DialogDescription>Chef profile details</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                      <Avatar className="h-16 w-16">
+                                        <AvatarImage src={selectedChef?.profileImageUrl || undefined} />
+                                        <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                                          {selectedChef?.displayName?.charAt(0) || "C"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-semibold text-lg">{selectedChef?.displayName}</p>
+                                        <Badge variant="outline" className={verificationBadgeColors[selectedChef?.verificationLevel || "none"]}>
+                                          {selectedChef?.isCertified ? "Certified" : selectedChef?.verificationLevel}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-muted-foreground mb-1">Bio</p>
+                                      <p className="text-sm">{selectedChef?.bio || "No bio provided"}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">Cuisines</p>
+                                        <div className="flex flex-wrap gap-1">
+                                          {(selectedChef?.cuisines || []).map((s: string, i: number) => (
+                                            <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">Dietary</p>
+                                        <div className="flex flex-wrap gap-1">
+                                          {(selectedChef?.dietarySpecialties || []).map((c: string, i: number) => (
+                                            <Badge key={i} variant="outline" className="text-xs">{c}</Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3 text-center">
+                                      <div className="p-3 rounded-xl bg-muted">
+                                        <p className="text-xl font-semibold">{selectedChef?.completedBookings || 0}</p>
+                                        <p className="text-xs text-muted-foreground">Bookings</p>
+                                      </div>
+                                      <div className="p-3 rounded-xl bg-muted">
+                                        <p className="text-xl font-semibold">{parseFloat(selectedChef?.averageRating || "0").toFixed(1)}</p>
+                                        <p className="text-xs text-muted-foreground">Rating</p>
+                                      </div>
+                                      <div className="p-3 rounded-xl bg-muted">
+                                        <p className="text-xl font-semibold">${(parseFloat(selectedChef?.minimumSpend || "0")).toFixed(0)}</p>
+                                        <p className="text-xs text-muted-foreground">Minimum</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button 
+                                variant={chef.isActive ? "outline" : "default"}
+                                size="sm"
+                                className="rounded-xl"
+                                onClick={() => toggleChefStatus.mutate({ chefId: chef.id, isActive: !chef.isActive })}
+                                disabled={toggleChefStatus.isPending}
+                              >
+                                {chef.isActive ? (
+                                  <>
+                                    <Ban className="mr-2 h-4 w-4" />
+                                    Suspend
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="mr-2 h-4 w-4" />
+                                    Activate
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex gap-2 w-full lg:w-auto">
+                          <div className="grid grid-cols-3 gap-2 md:gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Activity className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{chef.completedBookings || 0} bookings</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 shrink-0 text-amber-500" />
+                              <span>{parseFloat(chef.averageRating || "0").toFixed(1)}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 shrink-0" />
+                              <span className="truncate">${(parseFloat(chef.minimumSpend || "0")).toFixed(0)}</span>
+                            </div>
+                          </div>
+                          {/* Mobile: Tap to view more */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="flex-1 lg:flex-none" onClick={() => setSelectedChef(chef)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </Button>
+                              <button 
+                                className="lg:hidden mt-2 text-xs text-primary font-medium flex items-center gap-1"
+                                onClick={() => setSelectedChef(chef)}
+                              >
+                                View Details <ArrowUpRight className="h-3 w-3" />
+                              </button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-lg">
+                            <DialogContent className="max-w-[90vw] rounded-2xl">
                               <DialogHeader>
-                                <DialogTitle>{selectedChef?.displayName}</DialogTitle>
-                                <DialogDescription>Chef profile details</DialogDescription>
+                                <DialogTitle className="text-base">{selectedChef?.displayName}</DialogTitle>
+                                <DialogDescription className="text-xs">Chef profile details</DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                  <Avatar className="h-16 w-16">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-14 w-14">
                                     <AvatarImage src={selectedChef?.profileImageUrl || undefined} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                                    <AvatarFallback className="bg-primary/10 text-primary">
                                       {selectedChef?.displayName?.charAt(0) || "C"}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <p className="font-semibold text-lg">{selectedChef?.displayName}</p>
-                                    <Badge variant="outline" className={verificationBadgeColors[selectedChef?.verificationLevel || "none"]}>
+                                    <p className="font-semibold">{selectedChef?.displayName}</p>
+                                    <Badge variant="outline" className={cn("text-xs", verificationBadgeColors[selectedChef?.verificationLevel || "none"])}>
                                       {selectedChef?.isCertified ? "Certified" : selectedChef?.verificationLevel}
                                     </Badge>
                                   </div>
                                 </div>
                                 <div>
-                                  <p className="text-sm font-medium text-muted-foreground mb-1">Bio</p>
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Bio</p>
                                   <p className="text-sm">{selectedChef?.bio || "No bio provided"}</p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-1">Cuisines</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {(selectedChef?.cuisines || []).map((s: string, i: number) => (
-                                        <Badge key={i} variant="secondary">{s}</Badge>
-                                      ))}
-                                    </div>
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                  <div className="p-2 rounded-xl bg-muted">
+                                    <p className="text-lg font-semibold">{selectedChef?.completedBookings || 0}</p>
+                                    <p className="text-[10px] text-muted-foreground">Bookings</p>
                                   </div>
-                                  <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-1">Dietary</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {(selectedChef?.dietarySpecialties || []).map((c: string, i: number) => (
-                                        <Badge key={i} variant="outline">{c}</Badge>
-                                      ))}
-                                    </div>
+                                  <div className="p-2 rounded-xl bg-muted">
+                                    <p className="text-lg font-semibold">{parseFloat(selectedChef?.averageRating || "0").toFixed(1)}</p>
+                                    <p className="text-[10px] text-muted-foreground">Rating</p>
+                                  </div>
+                                  <div className="p-2 rounded-xl bg-muted">
+                                    <p className="text-lg font-semibold">${(parseFloat(selectedChef?.minimumSpend || "0")).toFixed(0)}</p>
+                                    <p className="text-[10px] text-muted-foreground">Min</p>
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 text-center">
-                                  <div className="p-3 rounded-md bg-muted">
-                                    <p className="text-xl font-semibold">{selectedChef?.completedBookings || 0}</p>
-                                    <p className="text-xs text-muted-foreground">Bookings</p>
-                                  </div>
-                                  <div className="p-3 rounded-md bg-muted">
-                                    <p className="text-xl font-semibold">{parseFloat(selectedChef?.averageRating || "0").toFixed(1)}</p>
-                                    <p className="text-xs text-muted-foreground">Rating</p>
-                                  </div>
-                                  <div className="p-3 rounded-md bg-muted">
-                                    <p className="text-xl font-semibold">${(parseFloat(selectedChef?.minimumSpend || "0")).toFixed(0)}</p>
-                                    <p className="text-xs text-muted-foreground">Minimum</p>
-                                  </div>
-                                </div>
+                                <Button 
+                                  variant={selectedChef?.isActive ? "outline" : "default"}
+                                  size="sm"
+                                  className="w-full rounded-xl"
+                                  onClick={() => {
+                                    if (selectedChef) {
+                                      toggleChefStatus.mutate({ chefId: selectedChef.id, isActive: !selectedChef.isActive });
+                                    }
+                                  }}
+                                  disabled={toggleChefStatus.isPending}
+                                >
+                                  {selectedChef?.isActive ? "Suspend Chef" : "Activate Chef"}
+                                </Button>
                               </div>
                             </DialogContent>
                           </Dialog>
-                          <Button 
-                            variant={chef.isActive ? "outline" : "default"}
-                            size="sm"
-                            className="flex-1 lg:flex-none"
-                            onClick={() => toggleChefStatus.mutate({ chefId: chef.id, isActive: !chef.isActive })}
-                            disabled={toggleChefStatus.isPending}
-                          >
-                            {chef.isActive ? (
-                              <>
-                                <Ban className="mr-2 h-4 w-4" />
-                                Suspend
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="mr-2 h-4 w-4" />
-                                Activate
-                              </>
-                            )}
-                          </Button>
                         </div>
                       </div>
                     ))}
@@ -1062,8 +1119,8 @@ export default function AdminDashboard() {
                 ) : (
                   <div className="text-center py-12">
                     <ChefHat className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No chefs found</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="font-semibold text-foreground mb-2 text-sm md:text-base">No chefs found</h3>
+                    <p className="text-muted-foreground text-xs md:text-sm">
                       {searchQuery ? "Try a different search term" : "No chefs registered yet"}
                     </p>
                   </div>
@@ -1256,30 +1313,166 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab */}
+          {/* Analytics Tab - Mobile Optimized */}
           <TabsContent value="analytics" id="analytics">
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
+              {/* Revenue Overview Chart */}
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <CardTitle className="text-base md:text-lg">Revenue Overview</CardTitle>
+                      <CardDescription className="text-xs md:text-sm">
+                        {revenuePeriod === "daily" ? "Last 7 days" : revenuePeriod === "monthly" ? "Last 6 months" : "Weekly"} booking revenue
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex rounded-xl overflow-hidden border border-border">
+                        <Button 
+                          variant={revenuePeriod === "daily" ? "default" : "ghost"} 
+                          size="sm" 
+                          className="rounded-none text-xs px-2 md:px-3"
+                          onClick={() => setRevenuePeriod("daily")}
+                          data-testid="button-revenue-daily"
+                        >
+                          Daily
+                        </Button>
+                        <Button 
+                          variant={revenuePeriod === "weekly" ? "default" : "ghost"} 
+                          size="sm" 
+                          className="rounded-none text-xs px-2 md:px-3 border-x border-border"
+                          onClick={() => setRevenuePeriod("weekly")}
+                          data-testid="button-revenue-weekly"
+                        >
+                          Weekly
+                        </Button>
+                        <Button 
+                          variant={revenuePeriod === "monthly" ? "default" : "ghost"} 
+                          size="sm" 
+                          className="rounded-none text-xs px-2 md:px-3"
+                          onClick={() => setRevenuePeriod("monthly")}
+                          data-testid="button-revenue-monthly"
+                        >
+                          Monthly
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 md:h-80 -mx-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={revenueData || mockRevenueData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                        <YAxis 
+                          className="text-xs" 
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                          domain={['auto', 'auto']}
+                          tickFormatter={(value: number) => value < 0 ? `-$${Math.abs(value)}` : `$${value}`}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '12px'
+                          }}
+                          formatter={(value: number) => {
+                            if (value < 0) {
+                              return [`-$${Math.abs(value).toLocaleString()}`, 'Loss'];
+                            }
+                            return [`$${value.toLocaleString()}`, 'Revenue'];
+                          }}
+                        />
+                        <ReferenceLine y={0} stroke="hsl(var(--border))" strokeWidth={1} />
+                        <Bar 
+                          dataKey="revenue" 
+                          radius={[6, 6, 0, 0]}
+                          fill="hsl(var(--primary))"
+                        >
+                          {(revenueData || mockRevenueData).map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={entry.revenue < 0 ? '#ef4444' : 'hsl(var(--primary))'}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex items-center justify-center gap-4 mt-4 text-xs md:text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-primary" />
+                      <span className="text-muted-foreground">Revenue</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-red-500" />
+                      <span className="text-muted-foreground">Refunds/Loss</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Booking Status Distribution */}
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base md:text-lg">Booking Status Distribution</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">Current breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-56 md:h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={bookingStatusData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={4}
+                          dataKey="value"
+                        >
+                          {bookingStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    {bookingStatusData.map((item) => (
+                      <div key={item.name} className="flex items-center gap-2 text-sm">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="text-muted-foreground text-xs md:text-sm">{item.name}</span>
+                        <span className="font-semibold ml-auto">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* User Growth Chart */}
-              <Card>
+              <Card className="rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                   <div>
-                    <CardTitle>User Growth</CardTitle>
-                    <CardDescription>New users over time</CardDescription>
+                    <CardTitle className="text-base md:text-lg">User Growth</CardTitle>
+                    <CardDescription className="text-xs md:text-sm">New users over time</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => handleExport('users')}>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('users')} className="rounded-xl">
                     <Download className="h-4 w-4 mr-2" />
-                    Export Users
+                    Export
                   </Button>
                 </CardHeader>
                 <CardContent>
                   {userGrowthData && userGrowthData.length > 0 ? (
-                    <div className="h-64">
+                    <div className="h-64 -mx-2">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={userGrowthData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                          <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                          <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} className="text-xs" />
+                          <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} className="text-xs" />
+                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
                           <Line type="monotone" dataKey="users" stroke="hsl(var(--primary))" strokeWidth={2} />
                           <Line type="monotone" dataKey="chefs" stroke="hsl(var(--accent))" strokeWidth={2} />
                         </LineChart>
@@ -1288,95 +1481,123 @@ export default function AdminDashboard() {
                   ) : (
                     <div className="text-center py-12">
                       <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No user growth data available</p>
+                      <p className="text-muted-foreground text-sm">No user growth data available</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Platform Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Conversion Rate</p>
-                        <p className="text-2xl font-bold">{platformMetrics?.conversionRate?.toFixed(1) || 0}%</p>
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <Card className="rounded-2xl">
+                  <CardContent className="p-5">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs md:text-sm text-muted-foreground">Conversion</p>
+                        <Target className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <Target className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-2xl md:text-3xl font-bold">{platformMetrics?.conversionRate?.toFixed(1) || 0}%</p>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Avg Booking Value</p>
-                        <p className="text-2xl font-bold">${platformMetrics?.avgBookingValue?.toFixed(0) || 0}</p>
+                <Card className="rounded-2xl">
+                  <CardContent className="p-5">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs md:text-sm text-muted-foreground">Avg Value</p>
+                        <DollarSign className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <DollarSign className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-2xl md:text-3xl font-bold">${platformMetrics?.avgBookingValue?.toFixed(0) || 0}</p>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Chef Retention</p>
-                        <p className="text-2xl font-bold">{platformMetrics?.chefRetention?.toFixed(1) || 0}%</p>
+                <Card className="rounded-2xl">
+                  <CardContent className="p-5">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs md:text-sm text-muted-foreground">Retention</p>
+                        <UserCheck className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <UserCheck className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-2xl md:text-3xl font-bold">{platformMetrics?.chefRetention?.toFixed(1) || 0}%</p>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Platform Fee</p>
-                        <p className="text-2xl font-bold">{platformMetrics?.platformFeeRate || 15}%</p>
+                <Card className="rounded-2xl">
+                  <CardContent className="p-5">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs md:text-sm text-muted-foreground">Platform Fee</p>
+                        <Percent className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <Percent className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-2xl md:text-3xl font-bold">{platformMetrics?.platformFeeRate || 15}%</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Chef Performance */}
-              <Card>
+              {/* Chef Performance - Mobile Optimized */}
+              <Card className="rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Top Performing Chefs</CardTitle>
-                  <CardDescription>Ranked by bookings and ratings</CardDescription>
+                  <CardTitle className="text-base md:text-lg">Top Performing Chefs</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">Ranked by bookings and ratings</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {(chefPerformance?.length || 0) > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Chef</TableHead>
-                          <TableHead>Bookings</TableHead>
-                          <TableHead>Revenue</TableHead>
-                          <TableHead>Rating</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(chefPerformance || []).slice(0, 10).map((chef: any) => (
-                          <TableRow key={chef.id}>
-                            <TableCell className="font-medium">{chef.displayName}</TableCell>
-                            <TableCell>{chef.completedBookings}</TableCell>
-                            <TableCell>${(chef.totalRevenue || 0).toFixed(0)}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Star className="h-4 w-4 text-amber-500" />
-                                {parseFloat(chef.averageRating || "0").toFixed(1)}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="space-y-3 md:hidden">
+                      {/* Mobile: Card list */}
+                      {(chefPerformance || []).slice(0, 10).map((chef: any) => (
+                        <div key={chef.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{chef.displayName}</p>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                              <span>{chef.completedBookings} bookings</span>
+                              <span>${(chef.totalRevenue || 0).toFixed(0)}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm font-semibold">
+                            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                            {parseFloat(chef.averageRating || "0").toFixed(1)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-8 md:hidden">
+                      <p className="text-muted-foreground text-sm">No chef performance data available</p>
+                    </div>
+                  )}
+                  
+                  {/* Desktop: Table */}
+                  {(chefPerformance?.length || 0) > 0 ? (
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Chef</TableHead>
+                            <TableHead>Bookings</TableHead>
+                            <TableHead>Revenue</TableHead>
+                            <TableHead>Rating</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(chefPerformance || []).slice(0, 10).map((chef: any) => (
+                            <TableRow key={chef.id}>
+                              <TableCell className="font-medium">{chef.displayName}</TableCell>
+                              <TableCell>{chef.completedBookings}</TableCell>
+                              <TableCell>${(chef.totalRevenue || 0).toFixed(0)}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                                  {parseFloat(chef.averageRating || "0").toFixed(1)}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 hidden md:block">
                       <p className="text-muted-foreground">No chef performance data available</p>
                     </div>
                   )}
@@ -1638,6 +1859,145 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* More Tab - Mobile Settings Style */}
+          <TabsContent value="more" id="more">
+            <div className="space-y-4 md:space-y-6">
+              {/* Account Section */}
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Account
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 p-0">
+                  <button
+                    onClick={() => handleSectionChange("users")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <span className="font-medium text-sm">Users</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                </CardContent>
+              </Card>
+
+              {/* Operations Section */}
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Operations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 p-0">
+                  <button
+                    onClick={() => handleSectionChange("payouts")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                        <Wallet className="h-5 w-5 text-green-600" />
+                      </div>
+                      <span className="font-medium text-sm">Payouts</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange("transactions")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                        <History className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <span className="font-medium text-sm">Transactions</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange("reviews")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                        <Star className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <span className="font-medium text-sm">Reviews</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange("markets")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-red-600" />
+                      </div>
+                      <span className="font-medium text-sm">Markets</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                </CardContent>
+              </Card>
+
+              {/* System Section */}
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    System
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 p-0">
+                  <button
+                    onClick={() => handleSectionChange("settings")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-slate-500/10 flex items-center justify-center">
+                        <Settings className="h-5 w-5 text-slate-600" />
+                      </div>
+                      <span className="font-medium text-sm">Settings</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleSectionChange("activity")}
+                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                        <Activity className="h-5 w-5 text-indigo-600" />
+                      </div>
+                      <span className="font-medium text-sm">Activity Log</span>
+                    </div>
+                    <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
+                  </button>
+                </CardContent>
+              </Card>
+
+              {/* Logout */}
+              <Card className="rounded-2xl border-destructive/20">
+                <CardContent className="p-0">
+                  <button
+                    onClick={async () => {
+                      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                      queryClient.setQueryData(["/api/auth/user"], null);
+                      window.location.href = "/";
+                    }}
+                    className="w-full flex items-center justify-center gap-3 px-6 py-4 text-destructive hover:bg-destructive/10 transition-colors rounded-2xl"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span className="font-semibold text-sm">Logout</span>
+                  </button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Settings Tab */}
