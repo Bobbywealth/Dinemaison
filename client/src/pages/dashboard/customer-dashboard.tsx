@@ -262,60 +262,125 @@ export default function CustomerDashboard() {
             </Card>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-primary" />
+          {/* Mobile-optimized Stats Grid - 2x2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-6 w-6 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{upcomingBookings.length}</p>
-                  <p className="text-xs text-muted-foreground truncate">Upcoming</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-green-500/10 flex items-center justify-center shrink-0">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{completedBookings.length}</p>
-                  <p className="text-xs text-muted-foreground truncate">Completed</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{upcomingBookings.length}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Upcoming</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                  <CheckCircle className="h-6 w-6 sm:h-5 sm:w-5 text-green-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">${(totalSpent / 100).toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground truncate">Total Spent</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{completedBookings.length}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Completed</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-pink-500/10 flex items-center justify-center shrink-0">
-                  <Heart className="h-5 w-5 text-pink-600" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <DollarSign className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{favoriteChefs?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground truncate">Favorites</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">${(totalSpent / 100).toFixed(0)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Total Spent</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
+                  <Heart className="h-6 w-6 sm:h-5 sm:w-5 text-pink-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{favoriteChefs?.length || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Favorites</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions - Mobile optimized */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("upcoming")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-sm font-medium text-left">View Bookings</span>
+                  {upcomingBookings.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {upcomingBookings.length}
+                    </Badge>
+                  )}
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              asChild
+            >
+              <Link href="/chefs">
+                <div className="flex items-center gap-3 w-full">
+                  <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                    <ChefHat className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <span className="text-sm font-medium flex-1 text-left">Find Chefs</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("favorites")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
+                  <Heart className="h-5 w-5 text-pink-600" />
+                </div>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-sm font-medium text-left">My Favorites</span>
+                  {(favoriteChefs?.length || 0) > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {favoriteChefs?.length}
+                    </Badge>
+                  )}
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
         </section>
       )}
 

@@ -484,74 +484,156 @@ export default function AdminDashboard() {
       onNavigate={handleSectionChange}
     >
       {activeSection === "overview" ? (
-        <section id="overview" className="space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Users className="h-5 w-5 text-blue-600" />
+        <section id="overview" className="space-y-6">
+        {/* Mobile-optimized Stats Grid - 2x2 on mobile, expanding on larger screens */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Users className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{stats?.totalUsers || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total Users</p>
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalUsers || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Users</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                  <ChefHat className="h-5 w-5 text-primary" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <ChefHat className="h-6 w-6 sm:h-5 sm:w-5 text-orange-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{stats?.totalChefs || 0}</p>
-                  <p className="text-xs text-muted-foreground">Active Chefs</p>
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalChefs || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Chefs</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-green-500/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-green-600" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-6 w-6 sm:h-5 sm:w-5 text-green-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{stats?.totalBookings || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total Bookings</p>
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.totalBookings || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Bookings</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-5 w-5 text-emerald-600" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <DollarSign className="h-6 w-6 sm:h-5 sm:w-5 text-emerald-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-semibold text-foreground">${((stats?.totalRevenue || 0) / 100).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">GMV</p>
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">${((stats?.totalRevenue || 0) / 100).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">GMV</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-yellow-500/10 flex items-center justify-center shrink-0">
-                  <Shield className="h-5 w-5 text-yellow-600" />
+          <Card className="hover-elevate col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
+                  <Shield className="h-6 w-6 sm:h-5 sm:w-5 text-yellow-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{stats?.pendingVerifications || 0}</p>
-                  <p className="text-xs text-muted-foreground">Pending Reviews</p>
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{stats?.pendingVerifications || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pending Reviews</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Revenue This Week - Mobile optimized */}
+        <Card className="hover-elevate">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-1">Revenue This Week</p>
+                <p className="text-3xl font-bold text-foreground mb-3">
+                  ${((stats?.totalRevenue || 0) / 100).toFixed(2)}
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full sm:w-auto"
+                  onClick={() => handleSectionChange("analytics")}
+                >
+                  View Analytics
+                  <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions - Mobile optimized */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("bookings")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">View Bookings</span>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("chefs")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <ChefHat className="h-5 w-5 text-orange-600" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">Review Chefs</span>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("verifications")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
+                  <Shield className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-sm font-medium text-left">Pending Reviews</span>
+                  {pendingVerifications && pendingVerifications.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {pendingVerifications.length}
+                    </Badge>
+                  )}
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2">

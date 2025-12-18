@@ -32,6 +32,7 @@ import {
   Edit,
   Plus,
   ArrowUpRight,
+  ArrowRight,
   Wallet,
   Receipt,
   Eye,
@@ -317,60 +318,116 @@ export default function ChefDashboard() {
             </Card>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-yellow-500/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5 text-yellow-600" />
+          {/* Mobile-optimized Stats Grid - 2x2 on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-6 w-6 sm:h-5 sm:w-5 text-yellow-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{pendingRequests.length}</p>
-                  <p className="text-xs text-muted-foreground truncate">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{upcomingBookings.length}</p>
-                  <p className="text-xs text-muted-foreground truncate">Upcoming</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{pendingRequests.length}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pending</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-green-500/10 flex items-center justify-center shrink-0">
-                  <DollarSign className="h-5 w-5 text-green-600" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">${(thisMonthEarnings / 100).toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground truncate">This Month</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{upcomingBookings.length}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Upcoming</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                  <Star className="h-5 w-5 text-primary" />
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                  <DollarSign className="h-6 w-6 sm:h-5 sm:w-5 text-green-600" />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xl font-semibold text-foreground">{parseFloat(profile?.averageRating || "0").toFixed(1)}</p>
-                  <p className="text-xs text-muted-foreground truncate">Rating</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">${(thisMonthEarnings / 100).toFixed(0)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">This Month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="hover-elevate">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="h-12 w-12 sm:h-10 sm:w-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <Star className="h-6 w-6 sm:h-5 sm:w-5 text-amber-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-2xl sm:text-xl font-bold text-foreground">{parseFloat(profile?.averageRating || "0").toFixed(1)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Rating</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions - Mobile optimized */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("requests")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-sm font-medium text-left">Pending Requests</span>
+                  {pendingRequests.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {pendingRequests.length}
+                    </Badge>
+                  )}
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("upcoming")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">View Schedule</span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-auto py-4 hover-elevate"
+              onClick={() => handleSectionChange("earnings")}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                  <Wallet className="h-5 w-5 text-green-600" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">View Earnings</span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
         </section>
       )}
 
