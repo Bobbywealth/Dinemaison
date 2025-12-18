@@ -49,18 +49,21 @@ export function AppTour() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Wait for isMobile to be determined (starts as undefined)
+    if (isMobile === undefined) {
+      return;
+    }
+
     // Only show tour on mobile devices and on the home page
     const hasSeenTour = localStorage.getItem("dinemaison-tour-completed");
     const hasVisitedBefore = localStorage.getItem("dinemaison-has-visited");
     const isHomePage = location === "/" || location === "/login";
 
-    // Mark as visited immediately to prevent showing again
-    if (!hasVisitedBefore) {
-      localStorage.setItem("dinemaison-has-visited", "true");
-    }
-
     // Show tour only if: mobile + home page + haven't seen it + first visit
     if (isMobile && isHomePage && !hasSeenTour && !hasVisitedBefore) {
+      // Mark as visited now that we're showing the tour
+      localStorage.setItem("dinemaison-has-visited", "true");
+      
       // Show tour after a short delay to let splash screen finish
       const timer = setTimeout(() => {
         setIsOpen(true);

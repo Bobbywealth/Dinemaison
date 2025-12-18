@@ -114,7 +114,7 @@ function DashboardSidebar({
                 "text-sm font-semibold leading-tight truncate",
                 isDark ? "text-white" : "text-slate-900"
               )}>
-                {user.role === "admin" ? "Admin User" : `${user.firstName} ${user.lastName}`}
+                {user.firstName} {user.lastName}
               </p>
               <p
                 className={cn(
