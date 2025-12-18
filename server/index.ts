@@ -32,8 +32,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://r2cdn.perplexity.ai"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
+      mediaSrc: ["'self'", "https:", "blob:"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       connectSrc: ["'self'", "wss:", "ws:", "https://api.stripe.com"],
     },
@@ -148,11 +149,8 @@ app.use(requestLoggerMiddleware);
 
     // Start server
     httpServer.listen(
-      {
-        port: config.server.port,
-        host: config.server.host,
-        reusePort: true,
-      },
+      config.server.port,
+      config.server.host,
       () => {
         logger.info('Server started successfully', {
           port: config.server.port,

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChefHat, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { mediaUrls } from "@/config/media";
 
 export function CTASection() {
   return (
@@ -14,9 +15,9 @@ export function CTASection() {
           muted 
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          poster="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&h=1080&fit=crop"
+          poster={mediaUrls.cta.poster}
         >
-          <source src="https://videos.pexels.com/video-files/3297379/3297379-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+          <source src={mediaUrls.cta.video} type="video/mp4" />
         </video>
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80" />

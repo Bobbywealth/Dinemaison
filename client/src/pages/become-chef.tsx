@@ -19,6 +19,7 @@ import {
   Sparkles,
   Play
 } from "lucide-react";
+import { mediaUrls } from "@/config/media";
 
 const benefits = [
   {
@@ -176,9 +177,9 @@ export default function BecomeChefPage() {
               muted 
               playsInline
               className="absolute inset-0 w-full h-full object-cover"
-              poster="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1920&h=1080&fit=crop"
+              poster={mediaUrls.becomeChef.poster}
             >
-              <source src="https://videos.pexels.com/video-files/3298210/3298210-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+              <source src={mediaUrls.becomeChef.video} type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-background" />
           </div>
