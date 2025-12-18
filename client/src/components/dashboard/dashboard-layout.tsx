@@ -252,11 +252,20 @@ function DashboardTopBar({
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Mobile header with centered logo
+  // Mobile header with centered logo and notification icons
   if (isMobile) {
     return (
       <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
-        <div className="flex flex-col items-center py-4 px-4">
+        {/* Top row with icons */}
+        <div className="flex items-center justify-end px-4 pt-3 pb-2">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <NotificationCenter />
+          </div>
+        </div>
+        
+        {/* Logo section */}
+        <div className="flex flex-col items-center pb-4 px-4">
           <Link href="/" className="flex flex-col items-center gap-1">
             <img 
               src={logoImage} 
