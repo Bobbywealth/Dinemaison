@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { ChefHat, ArrowRight, Check, Sparkles } from "lucide-react";
-import { Logo } from "@/components/logo";
+import logoImage from "@assets/dinemaison-logo.png";
 
 const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -123,11 +123,8 @@ export default function SignupPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <button onClick={() => setLocation("/")} className="cursor-pointer">
-              <Logo 
-                variant="default"
-                textColor="text-white"
-              />
+            <button onClick={() => setLocation("/")} className="flex items-center gap-3 group">
+              <img src={logoImage} alt="Dine Maison" className="h-10 w-auto brightness-0 invert" />
             </button>
           </motion.div>
           

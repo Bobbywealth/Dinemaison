@@ -15,7 +15,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { Booking, ChefProfile, Review, MenuItem } from "@shared/schema";
-import { Logo } from "@/components/logo";
+import logoImage from "@assets/dinemaison-logo.png";
 import { 
   Calendar, 
   DollarSign, 
@@ -187,9 +187,10 @@ export default function ChefDashboard() {
             <div className="flex items-center gap-4">
               <Link href="/">
                 <div className="flex flex-col items-center cursor-pointer">
-                  <Logo 
-                    variant="large"
-                    textColor="text-white"
+                  <img
+                    src={logoImage}
+                    alt="Dine Maison"
+                    className="h-28 w-auto object-contain brightness-0 invert"
                   />
                   <div className="flex flex-col items-center -mt-10">
                     <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChefHat, User, LogOut, LayoutDashboard, Menu, X, Home, Info, Utensils, Users, HelpCircle, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Logo } from "@/components/logo";
+import logoImage from "@assets/dinemaison-logo.png";
 import { useTheme } from "@/lib/theme-provider";
 
 export function Header() {
@@ -69,12 +69,28 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <Link href="/" data-testid="link-home">
-            <Logo 
-              variant="default"
-              showTagline={true}
-              textColor={scrolled ? 'text-slate-900 dark:text-white' : 'text-white'}
-              className="cursor-pointer"
-            />
+            <div className="flex flex-col items-center cursor-pointer group">
+              <img 
+                src={logoImage} 
+                alt="Dine Maison" 
+                className={`h-16 w-auto object-contain transition-all duration-300 group-hover:scale-105 ${
+                  scrolled ? 'dark:brightness-0 dark:invert' : 'brightness-0 invert'
+                }`}
+                data-testid="img-logo"
+              />
+              <div className="flex flex-col items-center -mt-4">
+                <span className={`text-[8px] tracking-[0.25em] uppercase leading-tight transition-colors ${
+                  scrolled ? 'text-slate-900 dark:text-slate-400' : 'text-white/70'
+                }`}>
+                  The Art of
+                </span>
+                <span className={`text-[8px] tracking-[0.25em] uppercase leading-tight transition-colors ${
+                  scrolled ? 'text-slate-900 dark:text-slate-400' : 'text-white/70'
+                }`}>
+                  Intimate Dining
+                </span>
+              </div>
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">

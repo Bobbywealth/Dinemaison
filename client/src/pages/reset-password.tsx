@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { ChefHat, CheckCircle2, ArrowRight, Lock, AlertCircle } from "lucide-react";
-import { Logo } from "@/components/logo";
+import logoImage from "@assets/dinemaison-logo.png";
 
 const resetPasswordSchema = z.object({
   newPassword: z.string().min(6, "Password must be at least 6 characters"),
@@ -91,11 +91,8 @@ export default function ResetPasswordPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-primary/30" />
           
           <div className="relative z-10 flex flex-col justify-between p-12 text-white">
-            <button onClick={() => setLocation("/")} className="cursor-pointer">
-              <Logo 
-                variant="default"
-                textColor="text-white"
-              />
+            <button onClick={() => setLocation("/")} className="flex items-center gap-3 group">
+              <img src={logoImage} alt="Dine Maison" className="h-10 w-auto brightness-0 invert" />
             </button>
             <div />
             <div />
@@ -148,11 +145,8 @@ export default function ResetPasswordPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-primary/30" />
           
           <div className="relative z-10 flex flex-col justify-between p-12 text-white">
-            <button onClick={() => setLocation("/")} className="cursor-pointer">
-              <Logo 
-                variant="default"
-                textColor="text-white"
-              />
+            <button onClick={() => setLocation("/")} className="flex items-center gap-3 group">
+              <img src={logoImage} alt="Dine Maison" className="h-10 w-auto brightness-0 invert" />
             </button>
             
             <div className="space-y-6">
@@ -233,11 +227,8 @@ export default function ResetPasswordPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <button onClick={() => setLocation("/")} className="cursor-pointer">
-              <Logo 
-                variant="default"
-                textColor="text-white"
-              />
+            <button onClick={() => setLocation("/")} className="flex items-center gap-3 group">
+              <img src={logoImage} alt="Dine Maison" className="h-10 w-auto brightness-0 invert" />
             </button>
           </motion.div>
           

@@ -1,84 +1,56 @@
 import { cn } from "@/lib/utils";
 
+type LogoVariant = "default" | "compact" | "large";
+
 interface LogoProps {
-  className?: string;
-  variant?: "default" | "small" | "large";
+  variant?: LogoVariant;
   showTagline?: boolean;
   textColor?: string;
+  className?: string;
 }
 
-export function Logo({ 
-  className = "", 
+const variantClasses: Record<LogoVariant, string> = {
+  compact: "text-lg leading-none",
+  default: "text-xl md:text-2xl leading-tight",
+  large: "text-3xl md:text-4xl leading-tight",
+};
+
+/**
+ * Brand logo component used across dashboards and auth flows.
+ * Supports optional tagline and sizing presets to keep usage consistent.
+ */
+export function Logo({
   variant = "default",
   showTagline = false,
-  textColor = "text-white"
+  textColor,
+  className,
 }: LogoProps) {
-  const sizes = {
-    small: {
-      text: "text-xl",
-      diamond: "text-2xl",
-      tagline: "text-[8px]",
-      spacing: "gap-1",
-    },
-    default: {
-      text: "text-2xl",
-      diamond: "text-3xl",
-      tagline: "text-[9px]",
-      spacing: "gap-2",
-    },
-    large: {
-      text: "text-4xl",
-      diamond: "text-5xl",
-      tagline: "text-xs",
-      spacing: "gap-3",
-    },
-  };
-
-  const size = sizes[variant];
+  const baseColor =
+    textColor ??
+    "text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-500";
 
   return (
-    <div className={cn("flex flex-col items-center", className)}>
-      <div className={cn("flex items-center", size.spacing, "group")}>
-        <span className={cn(
-          "font-serif font-medium tracking-wider transition-all duration-300 group-hover:scale-105",
-          size.text,
-          textColor
-        )}>
-          DINE
-        </span>
-        <span className={cn(
-          size.diamond,
-          "transition-all duration-300 group-hover:rotate-12 group-hover:scale-110",
-          textColor
-        )}>
-          ◆
-        </span>
-        <span className={cn(
-          "font-serif font-medium tracking-wider transition-all duration-300 group-hover:scale-105",
-          size.text,
-          textColor
-        )}>
-          MAISON
-        </span>
+    <div className={cn("flex flex-col items-center gap-1", className)}>
+      <div
+        className={cn(
+          "font-serif font-semibold uppercase tracking-[0.28em]",
+          variantClasses[variant],
+          baseColor
+        )}
+      >
+        <span className="block">DINE</span>
+        <span className="block">MAISON</span>
       </div>
+
       {showTagline && (
-        <div className="flex flex-col items-center -mt-1">
-          <span className={cn(
-            size.tagline,
-            "tracking-[0.25em] uppercase leading-tight transition-colors",
-            textColor,
-            "opacity-70"
-          )}>
-            The Art of
-          </span>
-          <span className={cn(
-            size.tagline,
-            "tracking-[0.25em] uppercase leading-tight transition-colors",
-            textColor,
-            "opacity-70"
-          )}>
-            Intimate Dining
-          </span>
+        <div
+          className={cn(
+            "flex flex-col items-center text-[10px] tracking-[0.32em] uppercase",
+            textColor ? `${textColor} opacity-70` : "text-muted-foreground"
+          )}
+        >
+          <span>The Art of</span>
+          <span>Intimate Dining</span>
         </div>
       )}
     </div>

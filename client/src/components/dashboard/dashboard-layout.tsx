@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/logo";
+import logoImage from "@assets/dinemaison-logo.png";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/lib/theme-provider";
 
@@ -67,11 +67,32 @@ function DashboardSidebar({
     <Sidebar className={sidebarClasses}>
       <SidebarHeader className={cn("border-b", isDark ? "border-white/10" : "border-border")}>
         <Link href="/" className="flex flex-col items-center py-4">
-          <Logo 
-            variant="large"
-            showTagline={true}
-            textColor={isDark ? "text-white" : "text-slate-900"}
+          <img
+            src={logoImage}
+            alt="Dine Maison"
+            className={cn(
+              "h-24 w-auto object-contain",
+              isDark ? "brightness-0 invert" : "brightness-100"
+            )}
           />
+          <div className="flex flex-col items-center -mt-8">
+            <span
+              className={cn(
+                "text-[8px] tracking-[0.3em] uppercase",
+                isDark ? "text-white/70" : "text-slate-900"
+              )}
+            >
+              The Art of
+            </span>
+            <span
+              className={cn(
+                "text-[8px] tracking-[0.3em] uppercase",
+                isDark ? "text-white/70" : "text-slate-900"
+              )}
+            >
+              Intimate Dining
+            </span>
+          </div>
         </Link>
         {user && (
           <div
