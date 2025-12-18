@@ -9,21 +9,18 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { Booking, ChefProfile, Review, MenuItem } from "@shared/schema";
-import logoImage from "@assets/dinemaison-logo.png";
 import { 
   Calendar, 
   DollarSign, 
   Clock, 
   Users, 
   Star,
-  LogOut,
-  LogIn,
   CheckCircle,
   XCircle,
   Settings,
@@ -41,10 +38,10 @@ import {
   MessageSquare,
   Utensils,
   CalendarDays,
-  CalendarCheck
+  LayoutDashboard
 } from "lucide-react";
 import { format, addDays, startOfWeek, isToday, isSameDay, parseISO } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -69,6 +66,7 @@ export default function ChefDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("overview");
 
   const { data: profile, isLoading: profileLoading } = useQuery<ChefProfile>({
     queryKey: ["/api/chef/profile"],
@@ -179,151 +177,147 @@ export default function ChefDashboard() {
     });
   };
 
+  const chefNavItems = useMemo<DashboardNavItem[]>(
+    () => [
+      { id: "overview", title: "Overview", icon: LayoutDashboard },
+      { 
+        id: "requests", 
+        title: "Requests", 
+        icon: Clock,
+        badge: pendingRequests.length > 0 ? pendingRequests.length : undefined,
+      },
+      { id: "upcoming", title: "Upcoming", icon: Calendar },
+      { id: "calendar", title: "Calendar", icon: CalendarDays },
+      { id: "earnings", title: "Earnings", icon: Wallet },
+      { id: "reviews", title: "Reviews", icon: MessageSquare },
+      { id: "menu", title: "Menu", icon: Utensils },
+      { id: "profile", title: "Profile", icon: Settings },
+    ],
+    [pendingRequests.length]
+  );
+
+  const handleSectionChange = useCallback(
+    (sectionId: string) => {
+      if (!chefNavItems.some((item) => item.id === sectionId)) {
+        return;
+      }
+      setActiveSection(sectionId);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `#${sectionId}`);
+      }
+    },
+    [chefNavItems]
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hashValue = window.location.hash.replace("#", "");
+      if (hashValue && chefNavItems.some((item) => item.id === hashValue)) {
+        setActiveSection(hashValue);
+      } else if (!hashValue) {
+        setActiveSection("overview");
+      }
+    }
+  }, [chefNavItems]);
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-28">
+    <DashboardLayout
+      title="Chef Dashboard"
+      description={`Welcome back, ${profile?.displayName || user?.firstName || "Chef"}`}
+      navItems={chefNavItems}
+      activeItemId={activeSection}
+      onNavigate={handleSectionChange}
+    >
+      {activeSection === "overview" && (
+        <section id="overview" className="space-y-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <Link href="/">
-                <div className="flex flex-col items-center cursor-pointer">
-                  <img
-                    src={logoImage}
-                    alt="Dine Maison"
-                    className="h-28 w-auto object-contain brightness-0 invert"
-                  />
-                  <div className="flex flex-col items-center -mt-10">
-                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                      The Art of
-                    </span>
-                    <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                      Intimate Dining
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              {profile?.isCertified && (
-                <Badge className="bg-primary/10 text-primary border-primary/20">Certified Chef</Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" asChild className="text-white border-white/20 hover:bg-white/10">
-                <Link href="/login">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
-                <Link href="/chef/settings">
-                  <Settings className="h-4 w-4" />
-                </Link>
-              </Button>
-              <ThemeToggle />
-              <Avatar className="h-9 w-9">
+              <Avatar className="h-16 w-16 border-2 border-primary/20">
                 <AvatarImage src={profile?.profileImageUrl || user?.profileImageUrl || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xl">
                   {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
-                <a href="/api/logout">
-                  <LogOut className="h-4 w-4" />
-                </a>
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  {profile?.displayName || `${user?.firstName} ${user?.lastName}`}
+                </h2>
+                <div className="flex items-center gap-3 text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    {parseFloat(profile?.averageRating || "0").toFixed(1)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <ChefHat className="h-4 w-4" />
+                    {profile?.completedBookings || 0} bookings
+                  </span>
+                  {profile?.serviceAreas && profile.serviceAreas.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {profile.serviceAreas[0]}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" asChild data-testid="button-view-profile">
+                <Link href={`/chefs/${profile?.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Public Profile
+                </Link>
+              </Button>
+              <Button asChild data-testid="button-edit-profile">
+                <Link href="/chef/profile/edit">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Profile
+                </Link>
               </Button>
             </div>
           </div>
-        </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 border-2 border-primary/20">
-              <AvatarImage src={profile?.profileImageUrl || user?.profileImageUrl || undefined} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">
-                {profile?.displayName || `${user?.firstName} ${user?.lastName}`}
-              </h1>
-              <div className="flex items-center gap-3 text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                  {parseFloat(profile?.averageRating || "0").toFixed(1)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <ChefHat className="h-4 w-4" />
-                  {profile?.completedBookings || 0} bookings
-                </span>
-                {profile?.serviceAreas && profile.serviceAreas.length > 0 && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {profile.serviceAreas[0]}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" asChild data-testid="button-view-profile">
-              <Link href={`/chefs/${profile?.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Public Profile
-              </Link>
-            </Button>
-            <Button asChild data-testid="button-edit-profile">
-              <Link href="/chef/profile/edit">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {!stripeStatus?.onboarded && (
-          <Card className="mb-6 border-yellow-500/30 bg-yellow-500/5">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-md bg-yellow-500/10 flex items-center justify-center shrink-0">
-                    <AlertCircle className="h-6 w-6 text-yellow-600" />
+          {!stripeStatus?.onboarded && (
+            <Card className="border-yellow-500/30 bg-yellow-500/5">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-md bg-yellow-500/10 flex items-center justify-center shrink-0">
+                      <AlertCircle className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">Complete Payment Setup</p>
+                      <p className="text-sm text-muted-foreground">
+                        Set up your payment account to receive earnings from bookings
+                      </p>
+                    </div>
                   </div>
+                  <Button asChild data-testid="button-setup-payments-banner">
+                    <Link href="/chef/onboarding">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Set Up Payments
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {profileCompleteness < 100 && (
+            <Card>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
                   <div>
-                    <p className="font-semibold text-foreground">Complete Payment Setup</p>
-                    <p className="text-sm text-muted-foreground">
-                      Set up your payment account to receive earnings from bookings
-                    </p>
+                    <p className="font-semibold text-foreground">Complete Your Profile</p>
+                    <p className="text-sm text-muted-foreground">A complete profile attracts more customers</p>
                   </div>
+                  <span className="font-medium text-primary">{profileCompleteness}%</span>
                 </div>
-                <Button asChild data-testid="button-setup-payments-banner">
-                  <Link href="/chef/onboarding">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Set Up Payments
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                <Progress value={profileCompleteness} className="h-2" />
+              </CardContent>
+            </Card>
+          )}
 
-        {profileCompleteness < 100 && (
-          <Card className="mb-6">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
-                <div>
-                  <p className="font-semibold text-foreground">Complete Your Profile</p>
-                  <p className="text-sm text-muted-foreground">A complete profile attracts more customers</p>
-                </div>
-                <span className="font-medium text-primary">{profileCompleteness}%</span>
-              </div>
-              <Progress value={profileCompleteness} className="h-2" />
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -377,37 +371,11 @@ export default function ChefDashboard() {
             </CardContent>
           </Card>
         </div>
+        </section>
+      )}
 
-        <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="requests" data-testid="tab-requests">
-              <Clock className="h-4 w-4 mr-2" />
-              Requests
-              {pendingRequests.length > 0 && <Badge className="ml-2">{pendingRequests.length}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="upcoming" data-testid="tab-upcoming">
-              <Calendar className="h-4 w-4 mr-2" />
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger value="calendar" data-testid="tab-calendar">
-              <CalendarDays className="h-4 w-4 mr-2" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="earnings" data-testid="tab-earnings">
-              <Wallet className="h-4 w-4 mr-2" />
-              Earnings
-            </TabsTrigger>
-            <TabsTrigger value="reviews" data-testid="tab-reviews">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger value="menu" data-testid="tab-menu">
-              <Utensils className="h-4 w-4 mr-2" />
-              Menu
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="requests">
+      {activeSection === "requests" && (
+        <section id="requests" className="space-y-6">
             {bookingsLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-32" />
@@ -488,9 +456,11 @@ export default function ChefDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="upcoming">
+      {activeSection === "upcoming" && (
+        <section id="upcoming" className="space-y-6">
             {upcomingBookings.length > 0 ? (
               <div className="space-y-4">
                 {upcomingBookings.map((booking) => (
@@ -546,9 +516,11 @@ export default function ChefDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="calendar">
+      {activeSection === "calendar" && (
+        <section id="calendar" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Weekly Calendar</CardTitle>
@@ -622,9 +594,11 @@ export default function ChefDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="earnings">
+      {activeSection === "earnings" && (
+        <section id="earnings" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <Card>
                 <CardContent className="p-6">
@@ -725,9 +699,11 @@ export default function ChefDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="reviews">
+      {activeSection === "reviews" && (
+        <section id="reviews" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -781,9 +757,11 @@ export default function ChefDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="menu">
+      {activeSection === "menu" && (
+        <section id="menu" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -845,9 +823,54 @@ export default function ChefDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+        </section>
+      )}
+
+      {activeSection === "profile" && (
+        <section id="profile" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Settings</CardTitle>
+              <CardDescription>Manage your chef profile and preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4">
+                <Button asChild>
+                  <Link href="/chef/profile/edit">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Profile
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/chefs/${profile?.id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Public Profile
+                  </Link>
+                </Button>
+              </div>
+              {!stripeStatus?.onboarded && (
+                <div className="p-4 rounded-md bg-yellow-500/10 border border-yellow-500/30">
+                  <p className="font-semibold mb-2">Payment Setup Required</p>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Complete your payment setup to start receiving earnings
+                  </p>
+                  <Button asChild size="sm">
+                    <Link href="/chef/onboarding">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Set Up Payments
+                    </Link>
+                  </Button>
+                </div>
+              )}
+              <div className="p-4 rounded-md bg-muted">
+                <p className="font-semibold mb-2">Profile Completeness</p>
+                <Progress value={profileCompleteness} className="h-2 mb-2" />
+                <p className="text-sm text-muted-foreground">{profileCompleteness}% complete</p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+    </DashboardLayout>
   );
 }

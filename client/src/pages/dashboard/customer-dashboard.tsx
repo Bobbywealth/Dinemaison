@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +30,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import type { Booking, ChefProfile, Review } from "@shared/schema";
-import logoImage from "@assets/dinemaison-logo.png";
 import { 
   Calendar, 
   ChefHat, 
@@ -40,8 +39,6 @@ import {
   MapPin, 
   Plus, 
   Star,
-  LogOut,
-  LogIn,
   Heart,
   MessageSquare,
   Users,
@@ -52,10 +49,11 @@ import {
   CreditCard,
   Award,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  LayoutDashboard
 } from "lucide-react";
 import { format, isAfter, isBefore, addHours } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 
 const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
@@ -79,6 +77,7 @@ export default function CustomerDashboard() {
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+  const [activeSection, setActiveSection] = useState<string>("overview");
 
   const { data: bookings, isLoading: bookingsLoading, refetch: refetchBookings } = useQuery<Booking[]>({
     queryKey: ["/api/bookings"],
@@ -174,98 +173,96 @@ export default function CustomerDashboard() {
     }
   };
 
+  const customerNavItems = useMemo<DashboardNavItem[]>(
+    () => [
+      { id: "overview", title: "Overview", icon: LayoutDashboard },
+      { 
+        id: "upcoming", 
+        title: "Upcoming", 
+        icon: Calendar,
+        badge: upcomingBookings.length > 0 ? upcomingBookings.length : undefined,
+      },
+      { id: "past", title: "Past", icon: Clock },
+      { id: "favorites", title: "Favorites", icon: Heart },
+      { id: "reviews", title: "My Reviews", icon: MessageSquare },
+    ],
+    [upcomingBookings.length]
+  );
+
+  const handleSectionChange = useCallback(
+    (sectionId: string) => {
+      if (!customerNavItems.some((item) => item.id === sectionId)) {
+        return;
+      }
+      setActiveSection(sectionId);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `#${sectionId}`);
+      }
+    },
+    [customerNavItems]
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hashValue = window.location.hash.replace("#", "");
+      if (hashValue && customerNavItems.some((item) => item.id === hashValue)) {
+        setActiveSection(hashValue);
+      } else if (!hashValue) {
+        setActiveSection("overview");
+      }
+    }
+  }, [customerNavItems]);
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-[hsl(220,30%,12%)]/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-28">
-            <Link href="/">
-              <div className="flex flex-col items-center cursor-pointer">
-                <img
-                  src={logoImage}
-                  alt="Dine Maison"
-                  className="h-28 w-auto object-contain brightness-0 invert"
-                />
-                <div className="flex flex-col items-center -mt-10">
-                  <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                    The Art of
-                  </span>
-                  <span className="text-[9px] tracking-[0.3em] uppercase leading-tight text-white/70">
-                    Intimate Dining
-                  </span>
-                </div>
-              </div>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" asChild className="text-white border-white/20 hover:bg-white/10">
-                <Link href="/login">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
-                <Link href="/settings">
-                  <Settings className="h-4 w-4" />
-                </Link>
-              </Button>
-              <ThemeToggle />
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10">
-                <a href="/api/logout">
-                  <LogOut className="h-4 w-4" />
-                </a>
-              </Button>
+    <DashboardLayout
+      title="Customer Dashboard"
+      description={`Welcome back, ${user?.firstName || "Guest"}`}
+      navItems={customerNavItems}
+      activeItemId={activeSection}
+      onNavigate={handleSectionChange}
+    >
+      {activeSection === "overview" && (
+        <section id="overview" className="space-y-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-foreground">
+                Welcome back, {user?.firstName || "Guest"}
+              </h2>
+              <p className="text-muted-foreground">Manage your dining experiences</p>
             </div>
+            <Button asChild data-testid="button-new-booking">
+              <Link href="/chefs">
+                <Plus className="mr-2 h-4 w-4" />
+                Book a Chef
+              </Link>
+            </Button>
           </div>
-        </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">
-              Welcome back, {user?.firstName || "Guest"}
-            </h1>
-            <p className="text-muted-foreground">Manage your dining experiences</p>
-          </div>
-          <Button asChild data-testid="button-new-booking">
-            <Link href="/chefs">
-              <Plus className="mr-2 h-4 w-4" />
-              Book a Chef
-            </Link>
-          </Button>
-        </div>
-
-        {needsReview.length > 0 && (
-          <Card className="mb-6 border-primary/30 bg-primary/5">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <Star className="h-6 w-6 text-primary" />
+          {needsReview.length > 0 && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                      <Star className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">Share Your Experience</p>
+                      <p className="text-sm text-muted-foreground">
+                        You have {needsReview.length} experience{needsReview.length > 1 ? 's' : ''} waiting for your review
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Share Your Experience</p>
-                    <p className="text-sm text-muted-foreground">
-                      You have {needsReview.length} experience{needsReview.length > 1 ? 's' : ''} waiting for your review
-                    </p>
-                  </div>
+                  <Button variant="outline" onClick={() => setReviewBooking(needsReview[0])}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Leave Review
+                  </Button>
                 </div>
-                <Button variant="outline" onClick={() => setReviewBooking(needsReview[0])}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Leave Review
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -319,29 +316,11 @@ export default function CustomerDashboard() {
             </CardContent>
           </Card>
         </div>
+        </section>
+      )}
 
-        <Tabs defaultValue="upcoming" className="space-y-6">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="upcoming" data-testid="tab-upcoming">
-              <Calendar className="h-4 w-4 mr-2" />
-              Upcoming
-              {upcomingBookings.length > 0 && <Badge className="ml-2">{upcomingBookings.length}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="past" data-testid="tab-past">
-              <Clock className="h-4 w-4 mr-2" />
-              Past
-            </TabsTrigger>
-            <TabsTrigger value="favorites" data-testid="tab-favorites">
-              <Heart className="h-4 w-4 mr-2" />
-              Favorites
-            </TabsTrigger>
-            <TabsTrigger value="reviews" data-testid="tab-reviews">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              My Reviews
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="upcoming">
+      {activeSection === "upcoming" && (
+        <section id="upcoming" className="space-y-6">
             {bookingsLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-32" />
@@ -517,9 +496,11 @@ export default function CustomerDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="past">
+      {activeSection === "past" && (
+        <section id="past" className="space-y-6">
             {pastBookings.length > 0 ? (
               <div className="space-y-4">
                 {pastBookings.map((booking) => (
@@ -577,9 +558,11 @@ export default function CustomerDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="favorites">
+      {activeSection === "favorites" && (
+        <section id="favorites" className="space-y-6">
             {(favoriteChefs?.length || 0) > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(favoriteChefs || []).map((chef) => (
@@ -646,9 +629,11 @@ export default function CustomerDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+        </section>
+      )}
 
-          <TabsContent value="reviews">
+      {activeSection === "reviews" && (
+        <section id="reviews" className="space-y-6">
             {(myReviews?.length || 0) > 0 ? (
               <div className="space-y-4">
                 {(myReviews || []).map((review) => (
@@ -693,62 +678,61 @@ export default function CustomerDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-        </Tabs>
+        </section>
+      )}
 
-        <Dialog open={!!reviewBooking} onOpenChange={(open) => !open && setReviewBooking(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Leave a Review</DialogTitle>
-              <DialogDescription>
-                Share your experience from {reviewBooking?.eventDate && format(new Date(reviewBooking.eventDate), "MMMM d, yyyy")}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-6 py-4">
-              <div>
-                <p className="text-sm font-medium mb-3">Rating</p>
-                <div className="flex gap-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setReviewRating(i + 1)}
-                      className="focus:outline-none"
-                    >
-                      <Star
-                        className={`h-8 w-8 transition-colors ${i < reviewRating ? 'text-yellow-500 fill-yellow-500' : 'text-muted hover:text-yellow-300'}`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-3">Your Review</p>
-                <Textarea
-                  placeholder="Tell us about your dining experience..."
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  rows={4}
-                />
+      <Dialog open={!!reviewBooking} onOpenChange={(open) => !open && setReviewBooking(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Leave a Review</DialogTitle>
+            <DialogDescription>
+              Share your experience from {reviewBooking?.eventDate && format(new Date(reviewBooking.eventDate), "MMMM d, yyyy")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div>
+              <p className="text-sm font-medium mb-3">Rating</p>
+              <div className="flex gap-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setReviewRating(i + 1)}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      className={`h-8 w-8 transition-colors ${i < reviewRating ? 'text-yellow-500 fill-yellow-500' : 'text-muted hover:text-yellow-300'}`}
+                    />
+                  </button>
+                ))}
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setReviewBooking(null)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => reviewBooking && submitReview.mutate({
-                  bookingId: reviewBooking.id,
-                  rating: reviewRating,
-                  comment: reviewComment
-                })}
-                disabled={submitReview.isPending || !reviewComment.trim()}
-              >
-                {submitReview.isPending ? "Submitting..." : "Submit Review"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </main>
-    </div>
+            <div>
+              <p className="text-sm font-medium mb-3">Your Review</p>
+              <Textarea
+                placeholder="Tell us about your dining experience..."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewBooking(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => reviewBooking && submitReview.mutate({
+                bookingId: reviewBooking.id,
+                rating: reviewRating,
+                comment: reviewComment
+              })}
+              disabled={submitReview.isPending || !reviewComment.trim()}
+            >
+              {submitReview.isPending ? "Submitting..." : "Submit Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </DashboardLayout>
   );
 }
