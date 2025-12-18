@@ -263,9 +263,9 @@ export function DashboardLayout({
         activeItemId={activeItemId}
         onNavigate={onNavigate}
       />
-      <SidebarInset className="md:ml-[var(--sidebar-width)]">
+      <SidebarInset className="flex-1">
         <DashboardTopBar title={title} description={description} />
-        <div className={cn("container py-8 space-y-8", className)}>{children}</div>
+        <div className={cn("px-4 md:px-6 lg:px-8 py-6 space-y-8", className)}>{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

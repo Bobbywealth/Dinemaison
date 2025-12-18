@@ -70,15 +70,15 @@ export default function LoginPage() {
       {/* Left Panel - Video/Image Background */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Video Background */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
+        <video
+          autoPlay
+          loop
+          muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          poster="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&h=1080&fit=crop"
+          poster={mediaUrls.login.poster}
         >
-          <source src="https://videos.pexels.com/video-files/3209828/3209828-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+          <source src={mediaUrls.login.video} type="video/mp4" />
         </video>
         
         {/* Gradient Overlay */}

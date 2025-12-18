@@ -475,16 +475,16 @@ export default function AdminDashboard() {
     >
       {activeSection === "overview" ? (
         <section id="overview" className="space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
                   <Users className="h-5 w-5 text-blue-600" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <p className="text-xl font-semibold text-foreground">{stats?.totalUsers || 0}</p>
-                  <p className="text-xs text-muted-foreground truncate">Total Users</p>
+                  <p className="text-xs text-muted-foreground">Total Users</p>
                 </div>
               </div>
             </CardContent>
@@ -495,9 +495,9 @@ export default function AdminDashboard() {
                 <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
                   <ChefHat className="h-5 w-5 text-primary" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <p className="text-xl font-semibold text-foreground">{stats?.totalChefs || 0}</p>
-                  <p className="text-xs text-muted-foreground truncate">Active Chefs</p>
+                  <p className="text-xs text-muted-foreground">Active Chefs</p>
                 </div>
               </div>
             </CardContent>
@@ -508,9 +508,9 @@ export default function AdminDashboard() {
                 <div className="h-10 w-10 rounded-md bg-green-500/10 flex items-center justify-center shrink-0">
                   <Calendar className="h-5 w-5 text-green-600" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <p className="text-xl font-semibold text-foreground">{stats?.totalBookings || 0}</p>
-                  <p className="text-xs text-muted-foreground truncate">Total Bookings</p>
+                  <p className="text-xs text-muted-foreground">Total Bookings</p>
                 </div>
               </div>
             </CardContent>
@@ -521,9 +521,9 @@ export default function AdminDashboard() {
                 <div className="h-10 w-10 rounded-md bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <DollarSign className="h-5 w-5 text-emerald-600" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <p className="text-xl font-semibold text-foreground">${((stats?.totalRevenue || 0) / 100).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground truncate">GMV</p>
+                  <p className="text-xs text-muted-foreground">GMV</p>
                 </div>
               </div>
             </CardContent>
@@ -534,9 +534,9 @@ export default function AdminDashboard() {
                 <div className="h-10 w-10 rounded-md bg-yellow-500/10 flex items-center justify-center shrink-0">
                   <Shield className="h-5 w-5 text-yellow-600" />
                 </div>
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <p className="text-xl font-semibold text-foreground">{stats?.pendingVerifications || 0}</p>
-                  <p className="text-xs text-muted-foreground truncate">Pending Reviews</p>
+                  <p className="text-xs text-muted-foreground">Pending Reviews</p>
                 </div>
               </div>
             </CardContent>
