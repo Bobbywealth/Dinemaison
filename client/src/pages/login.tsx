@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/loading";
 import { ChefHat, ArrowRight, Sparkles, Mail, Lock } from "lucide-react";
 import logoImage from "@assets/dinemaison-logo.png";
 import { mediaUrls } from "@/config/media";
-import { queryClient } from "@/lib/queryClient";
+import { buildApiUrl, queryClient } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
@@ -41,19 +41,25 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(buildApiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Important: Send and receive cookies
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
+      const contentType = response.headers.get("content-type") || "";
+      const isJson = contentType.includes("application/json");
+      const result = isJson ? await response.json().catch(() => null) : null;
+      const responseMessage =
+        (result as any)?.message ||
+        (!isJson ? await response.text().catch(() => "") : "") ||
+        "Login failed";
 
       if (!response.ok) {
         // Handle rate limiting errors specifically
         if (response.status === 429) {
-          const retryAfter = result.retryAfter ? Math.ceil(result.retryAfter / 60) : 15;
+          const retryAfter = result?.retryAfter ? Math.ceil(result.retryAfter / 60) : 15;
           setError(`Too many login attempts. Please try again in ${retryAfter} minutes.`);
           toast({
             title: "Rate limit exceeded",
@@ -61,12 +67,12 @@ export default function LoginPage() {
             variant: "destructive",
           });
         } else {
-          setError(result.message || "Login failed");
+          setError(responseMessage);
         }
         return;
       }
 
-      if (!result.user) {
+      if (!result?.user) {
         setError("Login failed: No user data received");
         return;
       }
