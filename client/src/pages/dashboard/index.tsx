@@ -11,8 +11,19 @@ export default function DashboardRouter() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   const { data: userRole, isLoading: roleLoading } = useQuery<UserRole>({
-    queryKey: ["/api/user/role"],
-    enabled: isAuthenticated,
+    queryKey: ["/api/user/role", user?.id],
+    enabled: isAuthenticated && !!user?.id,
+    staleTime: 0,
+    refetchOnMount: true,
+    queryFn: async () => {
+      const res = await fetch("/api/user/role", { credentials: "include" });
+
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+
+      return res.json();
+    },
   });
 
   console.log("DashboardRouter state:", { user, authLoading, isAuthenticated, roleLoading });

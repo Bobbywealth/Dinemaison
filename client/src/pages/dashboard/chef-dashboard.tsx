@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
+import { AiChat } from "@/components/chat/ai-chat";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -1160,33 +1161,13 @@ export default function ChefDashboard() {
             </Card>
 
             {/* Support Links */}
-            <Card className="hover-elevate">
-              <CardHeader>
-                <CardTitle className="text-lg">Support & Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/faq">
-                    <MessageSquare className="mr-3 h-4 w-4" />
-                    FAQ
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/contact">
-                    <MessageSquare className="mr-3 h-4 w-4" />
-                    Contact Support
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <AiChat
+              kind="support"
+              title="Support chat"
+              description="Ask about payouts, bookings, or platform policies."
+              placeholder="Example: How do I handle a guest allergy request?"
+              className="hover-elevate"
+            />
           </div>
         </section>
       )}

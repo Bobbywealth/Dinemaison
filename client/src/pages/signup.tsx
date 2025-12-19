@@ -88,6 +88,7 @@ export default function SignupPage() {
 
       // Set user data in cache immediately to avoid race condition
       queryClient.setQueryData(["/api/auth/user"], result.user);
+      queryClient.removeQueries({ queryKey: ["/api/user/role"] });
 
       toast({
         title: "Account created!",

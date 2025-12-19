@@ -17,6 +17,11 @@ const envSchema = z.object({
   // Stripe
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+
+  // AI
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_BASE_URL: z.string().optional(),
   
   // App URLs
   APP_URL: z.string().optional(),
@@ -69,6 +74,15 @@ export const config = {
     publishableKey: env.STRIPE_PUBLISHABLE_KEY,
     currency: 'usd',
     webhookTolerance: 300, // 5 minutes
+  },
+
+  // AI
+  ai: {
+    apiKey: env.OPENAI_API_KEY,
+    model: env.OPENAI_MODEL,
+    baseUrl: env.OPENAI_BASE_URL,
+    maxTokens: 400,
+    temperature: 0.4,
   },
 
   // URLs
@@ -133,7 +147,7 @@ export function getBaseUrl(): string {
 }
 
 // Helper function to check if feature is enabled
-export function isFeatureEnabled(feature: 'auth' | 'stripe' | 'websocket'): boolean {
+export function isFeatureEnabled(feature: 'auth' | 'stripe' | 'websocket' | 'ai'): boolean {
   switch (feature) {
     case 'auth':
       return !!(env.REPL_ID && env.SESSION_SECRET && env.DATABASE_URL);
@@ -141,6 +155,8 @@ export function isFeatureEnabled(feature: 'auth' | 'stripe' | 'websocket'): bool
       return !!(env.STRIPE_SECRET_KEY);
     case 'websocket':
       return config.websocket.enabled;
+    case 'ai':
+      return Boolean(env.OPENAI_API_KEY);
     default:
       return false;
   }

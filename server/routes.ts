@@ -9,6 +9,7 @@ import { eq, sql } from "drizzle-orm";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import bcrypt from "bcryptjs";
+import { registerAiRoutes } from "./routes/ai";
 
 const chefListCache = new Map<string, { data: unknown; expires: number }>();
 const CHEF_CACHE_TTL_MS = 30_000;
@@ -42,6 +43,9 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
+  // AI concierge/support routes
+  registerAiRoutes(app);
+
   app.get("/api/user/role", isAuthenticated, async (req: Request, res: Response) => {
     const userId = getUserId(req);
     if (!userId) {

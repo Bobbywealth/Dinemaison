@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, and, sql, like, gte, lte } from "drizzle-orm";
+import { eq, desc, and, sql, like, gte, lte, asc } from "drizzle-orm";
 import {
   type User,
   users,
@@ -33,6 +33,12 @@ import {
   menuItems,
   type PlatformSetting,
   platformSettings,
+  type AiConversation,
+  type InsertAiConversation,
+  aiConversations,
+  type AiMessage as AiMessageRecord,
+  type InsertAiMessage,
+  aiMessages,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -108,6 +114,11 @@ export interface IStorage {
   getPlatformSetting(key: string): Promise<PlatformSetting | undefined>;
   setPlatformSetting(key: string, value: any): Promise<PlatformSetting>;
   getAllPlatformSettings(): Promise<PlatformSetting[]>;
+
+  createAiConversation(data: InsertAiConversation): Promise<AiConversation>;
+  getAiConversation(id: string): Promise<AiConversation | undefined>;
+  addAiMessage(data: InsertAiMessage): Promise<AiMessageRecord>;
+  getAiMessages(conversationId: string, limit?: number): Promise<AiMessageRecord[]>;
   
   getActivityFeed(limit?: number): Promise<any[]>;
   getUserGrowthAnalytics(period: string): Promise<any[]>;
@@ -663,6 +674,34 @@ export class DatabaseStorage implements IStorage {
 
   async getAllPlatformSettings(): Promise<PlatformSetting[]> {
     return db.select().from(platformSettings);
+  }
+
+  async createAiConversation(data: InsertAiConversation): Promise<AiConversation> {
+    const [conversation] = await db.insert(aiConversations).values(data).returning();
+    return conversation;
+  }
+
+  async getAiConversation(id: string): Promise<AiConversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(aiConversations)
+      .where(eq(aiConversations.id, id))
+      .limit(1);
+    return conversation;
+  }
+
+  async addAiMessage(data: InsertAiMessage): Promise<AiMessageRecord> {
+    const [message] = await db.insert(aiMessages).values(data).returning();
+    return message;
+  }
+
+  async getAiMessages(conversationId: string, limit: number = 30): Promise<AiMessageRecord[]> {
+    return db
+      .select()
+      .from(aiMessages)
+      .where(eq(aiMessages.conversationId, conversationId))
+      .orderBy(asc(aiMessages.createdAt))
+      .limit(limit);
   }
 
   async getActivityFeed(limit: number = 50): Promise<any[]> {

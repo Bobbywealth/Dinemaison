@@ -216,6 +216,48 @@ export const insertPlatformSettingSchema = createInsertSchema(platformSettings).
 export type InsertPlatformSetting = z.infer<typeof insertPlatformSettingSchema>;
 export type PlatformSetting = typeof platformSettings.$inferSelect;
 
+// ============== AI CONVERSATIONS ==============
+export const aiConversations = pgTable("ai_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  kind: varchar("kind").notNull().default("support"),
+  status: varchar("status").notNull().default("open"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("ai_conversations_user_id_idx").on(table.userId),
+  kindIdx: index("ai_conversations_kind_idx").on(table.kind),
+}));
+
+export const aiMessages = pgTable("ai_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id")
+    .notNull()
+    .references(() => aiConversations.id, { onDelete: "cascade" }),
+  role: varchar("role").notNull(), // user | assistant | system
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  conversationIdx: index("ai_messages_conversation_idx").on(table.conversationId),
+  roleIdx: index("ai_messages_role_idx").on(table.role),
+}));
+
+export const insertAiConversationSchema = createInsertSchema(aiConversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAiMessageSchema = createInsertSchema(aiMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type AiConversation = typeof aiConversations.$inferSelect;
+export type InsertAiConversation = z.infer<typeof insertAiConversationSchema>;
+export type AiMessage = typeof aiMessages.$inferSelect;
+export type InsertAiMessage = z.infer<typeof insertAiMessageSchema>;
+
 // ============== USER ROLES ==============
 export const userRoles = pgTable("user_roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -265,6 +307,17 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   booking: one(bookings, {
     fields: [reviews.bookingId],
     references: [bookings.id],
+  }),
+}));
+
+export const aiConversationsRelations = relations(aiConversations, ({ many }) => ({
+  messages: many(aiMessages),
+}));
+
+export const aiMessagesRelations = relations(aiMessages, ({ one }) => ({
+  conversation: one(aiConversations, {
+    fields: [aiMessages.conversationId],
+    references: [aiConversations.id],
   }),
 }));
 

@@ -7,6 +7,7 @@ import { FeaturedChefsSection } from "@/components/landing/featured-chefs-sectio
 import { GallerySection } from "@/components/landing/gallery-section";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { CTASection } from "@/components/landing/cta-section";
+import { ConciergeChatSection } from "@/components/landing/concierge-chat-section";
 
 export default function LandingPage() {
   return (
@@ -19,6 +20,7 @@ export default function LandingPage() {
         <FeaturedChefsSection />
         <GallerySection />
         <TestimonialsSection />
+        <ConciergeChatSection />
         <CTASection />
       </main>
       <Footer />

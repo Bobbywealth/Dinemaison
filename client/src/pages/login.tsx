@@ -73,6 +73,7 @@ export default function LoginPage() {
 
       // Set user data in cache immediately to avoid race condition
       queryClient.setQueryData(["/api/auth/user"], result.user);
+      queryClient.removeQueries({ queryKey: ["/api/user/role"] });
 
       toast({
         title: "Welcome back!",

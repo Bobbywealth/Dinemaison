@@ -3584,6 +3584,44 @@ export default function AdminDashboard() {
                           {platformSettings?.find((s: any) => s.key === 'smsNotifications')?.value ? 'Enabled' : 'Disabled'}
                         </Button>
                       </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">AI Concierge</label>
+                          <p className="text-xs text-muted-foreground">Chat that suggests chefs and gathers booking details</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'aiConciergeEnabled')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'aiConciergeEnabled', 
+                            value: !platformSettings?.find((s: any) => s.key === 'aiConciergeEnabled')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'aiConciergeEnabled')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <label className="text-sm font-medium">AI Support Assistant</label>
+                          <p className="text-xs text-muted-foreground">Short answers to customer or chef questions</p>
+                        </div>
+                        <Button 
+                          variant={platformSettings?.find((s: any) => s.key === 'aiSupportEnabled')?.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateSetting.mutate({ 
+                            key: 'aiSupportEnabled', 
+                            value: !platformSettings?.find((s: any) => s.key === 'aiSupportEnabled')?.value 
+                          })}
+                        >
+                          {platformSettings?.find((s: any) => s.key === 'aiSupportEnabled')?.value ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+
+                      <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                        AI provider: {platformSettings?.find((s: any) => s.key === 'aiProvider')?.value || 'openai'} · requires OPENAI_API_KEY set on the server.
+                      </div>
                     </CardContent>
                   </Card>
                   

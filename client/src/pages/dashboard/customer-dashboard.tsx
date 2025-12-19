@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { DashboardLayout, DashboardNavItem } from "@/components/dashboard/dashboard-layout";
 import { CustomerDesktopHeader } from "@/components/dashboard/customer-header";
+import { AiChat } from "@/components/chat/ai-chat";
 import {
   Dialog,
   DialogContent,
@@ -1087,53 +1088,13 @@ export default function CustomerDashboard() {
             </Card>
 
             {/* Support */}
-            <Card className="hover-elevate">
-              <CardHeader>
-                <CardTitle className="text-lg">Support & Help</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/faq">
-                    <MessageSquare className="mr-3 h-4 w-4" />
-                    FAQ
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/contact">
-                    <MessageSquare className="mr-3 h-4 w-4" />
-                    Contact Support
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/terms">
-                    <Settings className="mr-3 h-4 w-4" />
-                    Terms of Service
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/privacy">
-                    <Settings className="mr-3 h-4 w-4" />
-                    Privacy Policy
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <AiChat
+              kind="support"
+              title="Support chat"
+              description="Get quick answers about bookings, payments, or policies."
+              placeholder="Example: How do refunds work if a chef cancels?"
+              className="hover-elevate"
+            />
           </div>
         </section>
       )}
