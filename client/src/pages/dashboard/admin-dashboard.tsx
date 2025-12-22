@@ -2421,40 +2421,42 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 {(allMarkets?.length || 0) > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Slug</TableHead>
-                        <TableHead>Chefs</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(allMarkets || []).map((market: any) => (
-                        <TableRow key={market.id}>
-                          <TableCell className="font-medium">{market.name}</TableCell>
-                          <TableCell className="text-muted-foreground">{market.slug}</TableCell>
-                          <TableCell>{market.chefCount || 0}</TableCell>
-                          <TableCell>
-                            <Badge variant={market.isActive ? "outline" : "secondary"}>
-                              {market.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => updateMarket.mutate({ id: market.id, updates: { isActive: !market.isActive } })}
-                            >
-                              {market.isActive ? "Deactivate" : "Activate"}
-                            </Button>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Slug</TableHead>
+                          <TableHead>Chefs</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {(allMarkets || []).map((market: any) => (
+                          <TableRow key={market.id}>
+                            <TableCell className="font-medium">{market.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{market.slug}</TableCell>
+                            <TableCell>{market.chefCount || 0}</TableCell>
+                            <TableCell>
+                              <Badge variant={market.isActive ? "outline" : "secondary"}>
+                                {market.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => updateMarket.mutate({ id: market.id, updates: { isActive: !market.isActive } })}
+                              >
+                                {market.isActive ? "Deactivate" : "Activate"}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 ) : (
                   <div className="text-center py-12">
                     <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

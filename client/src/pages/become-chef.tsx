@@ -294,7 +294,7 @@ export default function BecomeChefPage() {
 
             {/* Stats */}
             <motion.div
-              className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto"
+              className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.7 }}

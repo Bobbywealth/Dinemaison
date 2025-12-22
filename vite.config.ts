@@ -15,18 +15,20 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         runtimeCaching: [
           {
-            // Cache API calls with NetworkFirst strategy
-            urlPattern: /^https?:\/\/.*\/api\/(auth|user|chefs|bookings|menu-items).*/i,
+            // Cache PUBLIC API calls only (safe to cache; avoids stale private data).
+            // Do NOT cache authenticated endpoints like /api/auth, /api/user, /api/bookings, /api/customer, /api/chef, /api/admin.
+            urlPattern: /^https?:\/\/.*\/api\/(chefs|menu-items)(\/.*)?(\?.*)?$/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-cache",
+              cacheName: "public-api-cache",
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 3,
               cacheableResponse: {
-                statuses: [0, 200],
+                // Only cache successful responses to avoid caching "offline/failed" responses.
+                statuses: [200],
               },
             },
           },

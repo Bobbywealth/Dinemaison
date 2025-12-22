@@ -583,7 +583,8 @@ export default function ChefDashboard() {
                   </TabsList>
 
                   <TabsContent value="bookings" className="space-y-6">
-                    <div className="grid grid-cols-7 gap-2 mb-6">
+                    <div className="-mx-2 overflow-x-auto px-2">
+                      <div className="grid grid-cols-7 gap-2 mb-6 min-w-[520px]">
                       {weekDays.map((day, index) => {
                         const dayBookings = getBookingsForDate(day);
                         const hasBooking = dayBookings.length > 0;
@@ -592,7 +593,7 @@ export default function ChefDashboard() {
                         return (
                           <div
                             key={index}
-                            className={`p-3 rounded-md border text-center cursor-pointer transition-colors ${
+                            className={`p-2 sm:p-3 rounded-md border text-center cursor-pointer transition-colors ${
                               isToday(day) 
                                 ? 'border-primary bg-primary/5' 
                                 : isPast 
@@ -604,7 +605,7 @@ export default function ChefDashboard() {
                             <p className="text-xs text-muted-foreground mb-1">
                               {format(day, "EEE")}
                             </p>
-                            <p className={`text-lg font-semibold ${isToday(day) ? 'text-primary' : ''}`}>
+                            <p className={`text-base sm:text-lg font-semibold ${isToday(day) ? 'text-primary' : ''}`}>
                               {format(day, "d")}
                             </p>
                             {hasBooking && (
@@ -617,6 +618,7 @@ export default function ChefDashboard() {
                           </div>
                         );
                       })}
+                      </div>
                     </div>
 
                     {selectedDate && (
@@ -679,7 +681,8 @@ export default function ChefDashboard() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="-mx-2 overflow-x-auto px-2">
+                      <div className="grid grid-cols-7 gap-2 min-w-[520px]">
                       {weekDays.map((day, index) => {
                         const dayBookings = getBookingsForDate(day);
                         const hasBooking = dayBookings.length > 0;
@@ -692,7 +695,7 @@ export default function ChefDashboard() {
                             key={index}
                             type="button"
                             disabled={isPast}
-                            className={`p-3 rounded-md border text-center transition-all ${
+                            className={`p-2 sm:p-3 rounded-md border text-center transition-all ${
                               isPast 
                                 ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
                                 : hasBooking
@@ -714,7 +717,7 @@ export default function ChefDashboard() {
                             <p className="text-xs text-muted-foreground mb-1">
                               {format(day, "EEE")}
                             </p>
-                            <p className={`text-lg font-semibold ${
+                            <p className={`text-base sm:text-lg font-semibold ${
                               hasBooking ? 'text-blue-600' : 
                               isAvailable ? 'text-green-600' : 
                               'text-red-600'
@@ -731,6 +734,7 @@ export default function ChefDashboard() {
                           </button>
                         );
                       })}
+                      </div>
                     </div>
 
                     <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
