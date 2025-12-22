@@ -254,10 +254,23 @@ function DashboardTopBar({
 
   // Mobile header with centered logo and notification icons
   if (isMobile) {
+    const drawerItems = navItems.map((item) => ({
+      id: item.id,
+      title: item.title,
+      icon: item.icon,
+      href: item.href,
+      badge: item.badge,
+    }));
+
     return (
       <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
-        {/* Top row with icons */}
-        <div className="flex items-center justify-end px-4 pt-3 pb-2">
+        {/* Top row with menu + icons */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <HamburgerDrawer
+            navItems={drawerItems}
+            activeItemId={activeItemId}
+            onNavigate={onNavigate}
+          />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <NotificationCenter />
@@ -343,13 +356,71 @@ export function DashboardLayout({
   onNavigate,
 }: DashboardLayoutProps) {
   const isMobile = useIsMobile();
-  const bottomNavItems = navItems.map((item) => ({
-    id: item.id,
-    label: item.title,
-    icon: item.icon,
-    href: item.href || `#${item.id}`,
-    badge: typeof item.badge === "number" ? item.badge : undefined,
-  }));
+
+  // Mobile bottom nav should be small (max ~5 items) to avoid label collisions.
+  // Use a priority list to choose the most important sections across roles.
+  const bottomNavItems = (() => {
+    const priorityIds = [
+      "overview",
+      "requests",
+      "upcoming",
+      "bookings",
+      "chefs",
+      "earnings",
+      "favorites",
+      "reviews",
+      "users",
+      "verifications",
+      "payouts",
+      "revenue",
+      "settings",
+    ];
+
+    const byId = new Map(navItems.map((item) => [item.id, item]));
+    const selected: DashboardNavItem[] = [];
+    const seen = new Set<string>();
+
+    const push = (item?: DashboardNavItem) => {
+      if (!item) return;
+      if (seen.has(item.id)) return;
+      seen.add(item.id);
+      selected.push(item);
+    };
+
+    // Always try to include overview first.
+    push(byId.get("overview") || navItems[0]);
+
+    for (const id of priorityIds) {
+      if (selected.length >= 4) break;
+      push(byId.get(id));
+    }
+
+    // Fill to 4 items if we still don't have enough.
+    for (const item of navItems) {
+      if (selected.length >= 4) break;
+      push(item);
+    }
+
+    // Always include "more" if present; otherwise include the last item if we had to truncate.
+    const more = byId.get("more");
+    if (more) {
+      push(more);
+    } else if (navItems.length > selected.length) {
+      // Ensure a fifth tab exists so users can always reach the full drawer.
+      push(navItems[navItems.length - 1]);
+    }
+
+    // If nav is already small, just use everything.
+    const finalItems = navItems.length <= 5 ? navItems : selected.slice(0, 5);
+
+    return finalItems.map((item) => ({
+      id: item.id,
+      label: item.title,
+      icon: item.icon,
+      href: item.href || `#${item.id}`,
+      badge: typeof item.badge === "number" ? item.badge : undefined,
+    }));
+  })();
 
   return (
     <SidebarProvider className="min-h-screen bg-background">
@@ -388,4 +459,6 @@ export function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+
 

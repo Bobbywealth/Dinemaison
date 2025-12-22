@@ -45,3 +45,5 @@ COMMENT ON TABLE tasks IS 'Admin task management with kanban board support';
 COMMENT ON COLUMN tasks.status IS 'Status: todo, in_progress, review, done';
 COMMENT ON COLUMN tasks.priority IS 'Priority: low, medium, high, urgent';
 COMMENT ON TABLE task_comments IS 'Comments and notes on tasks';
+
+

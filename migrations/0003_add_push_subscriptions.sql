@@ -15,3 +15,5 @@ CREATE INDEX IF NOT EXISTS push_subscriptions_endpoint_idx ON push_subscriptions
 -- Ensure no duplicate subscriptions per user
 CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_user_endpoint_idx ON push_subscriptions(user_id, endpoint);
 
+
+

@@ -31,3 +31,5 @@ COMMENT ON COLUMN ai_conversations.kind IS 'concierge | support';
 COMMENT ON COLUMN ai_conversations.status IS 'open | closed';
 COMMENT ON TABLE ai_messages IS 'Messages exchanged with AI';
 COMMENT ON COLUMN ai_messages.role IS 'user | assistant | system';
+
+

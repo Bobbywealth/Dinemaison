@@ -587,3 +587,5 @@ For PWA-related questions or issues:
 3. Get IARC rating if submitting to stores
 4. Replace placeholder screenshots with real ones
 5. Submit to app stores!
+
+

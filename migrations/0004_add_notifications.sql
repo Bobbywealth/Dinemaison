@@ -104,3 +104,5 @@ COMMENT ON COLUMN device_tokens.platform IS 'Platform: ios, android, web';
 COMMENT ON COLUMN notification_delivery_log.channel IS 'Channel: push, email, sms, websocket, in_app';
 COMMENT ON COLUMN notification_delivery_log.status IS 'Status: pending, sent, failed, delivered';
 
+
+

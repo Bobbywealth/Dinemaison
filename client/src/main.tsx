@@ -13,44 +13,48 @@ debug.log("App initialization started", {
   timestamp: Date.now()
 });
 
-// Register service worker for PWA functionality with auto-update
-const updateSW = registerSW({
-  immediate: true,
-  onNeedRefresh() {
-    debug.log("PWA: New content available, auto-updating...");
-    // Dispatch custom event for update notification
-    window.dispatchEvent(new CustomEvent("pwa-update-available"));
-    // Auto-reload after a short delay to apply updates
-    setTimeout(() => {
-      debug.log("PWA: Reloading to apply updates");
-      window.location.reload();
-    }, 1000);
-  },
-  onOfflineReady() {
-    debug.log("PWA: App ready for offline use");
-    // Dispatch custom event for offline notification
-    window.dispatchEvent(new CustomEvent("pwa-offline-ready"));
-  },
-  onRegistered(registration) {
-    debug.log("PWA: Service Worker registered", { scope: registration?.scope });
-    
-    // Check for updates every 60 seconds
-    if (registration) {
-      setInterval(() => {
-        debug.log("PWA: Checking for updates...");
-        registration.update().catch((error) => {
-          debug.error("PWA: Update check failed", error);
-        });
-      }, 60000); // Check every 60 seconds
-    }
-  },
-  onRegisterError(error) {
-    debug.error("PWA: Service Worker registration failed", error);
-  },
-});
+// Register service worker for PWA functionality with auto-update.
+// IMPORTANT: do not register in dev to avoid confusing offline fallbacks during local work.
+let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined;
+if (import.meta.env.PROD) {
+  updateSW = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      debug.log("PWA: New content available, auto-updating...");
+      // Dispatch custom event for update notification
+      window.dispatchEvent(new CustomEvent("pwa-update-available"));
+      // Auto-reload after a short delay to apply updates
+      setTimeout(() => {
+        debug.log("PWA: Reloading to apply updates");
+        window.location.reload();
+      }, 1000);
+    },
+    onOfflineReady() {
+      debug.log("PWA: App ready for offline use");
+      // Dispatch custom event for offline notification
+      window.dispatchEvent(new CustomEvent("pwa-offline-ready"));
+    },
+    onRegistered(registration) {
+      debug.log("PWA: Service Worker registered", { scope: registration?.scope });
 
-// Expose update function globally for manual updates if needed
-(window as any).updatePWA = updateSW;
+      // Check for updates every 60 seconds
+      if (registration) {
+        setInterval(() => {
+          debug.log("PWA: Checking for updates...");
+          registration.update().catch((error) => {
+            debug.error("PWA: Update check failed", error);
+          });
+        }, 60000); // Check every 60 seconds
+      }
+    },
+    onRegisterError(error) {
+      debug.error("PWA: Service Worker registration failed", error);
+    },
+  });
+
+  // Expose update function globally for manual updates if needed
+  (window as any).updatePWA = updateSW;
+}
 
 // Initialize protocol handler for custom URL scheme
 initProtocolHandler();

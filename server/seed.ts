@@ -97,43 +97,45 @@ async function seed() {
         .from(users)
         .where(eq(users.email, account.email));
 
+      let userId: string;
       if (existingUser) {
-        console.log(`⏭️  User ${account.email} already exists, skipping...`);
-        continue;
+        userId = existingUser.id;
+        console.log(`⏭️  User ${account.email} already exists, ensuring role/profile...`);
+      } else {
+        // Hash password
+        const hashedPassword = await bcrypt.hash(account.password, 10);
+
+        // Create user
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            email: account.email,
+            password: hashedPassword,
+            firstName: account.firstName,
+            lastName: account.lastName,
+          })
+          .returning();
+
+        userId = newUser.id;
+        console.log(`✅ Created user: ${account.email}`);
       }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(account.password, 10);
-
-      // Create user
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          email: account.email,
-          password: hashedPassword,
-          firstName: account.firstName,
-          lastName: account.lastName,
-        })
-        .returning();
-
-      console.log(`✅ Created user: ${account.email}`);
 
       // Set user role - check if exists first
       const [existingRole] = await db
         .select()
         .from(userRoles)
-        .where(eq(userRoles.userId, newUser.id));
+        .where(eq(userRoles.userId, userId));
 
       if (existingRole) {
         await db
           .update(userRoles)
           .set({ role: account.role })
-          .where(eq(userRoles.userId, newUser.id));
+          .where(eq(userRoles.userId, userId));
       } else {
         await db
           .insert(userRoles)
           .values({
-            userId: newUser.id,
+            userId,
             role: account.role,
           });
       }
@@ -142,14 +144,24 @@ async function seed() {
 
       // Create chef profile if applicable
       if (account.role === "chef" && account.chefProfile) {
-        await db
-          .insert(chefProfiles)
-          .values({
-            userId: newUser.id,
-            ...account.chefProfile,
-          });
+        const [existingChefProfile] = await db
+          .select()
+          .from(chefProfiles)
+          .where(eq(chefProfiles.userId, userId))
+          .limit(1);
 
-        console.log(`   └─ Created chef profile: ${account.chefProfile.displayName}`);
+        if (existingChefProfile) {
+          console.log(`   └─ Chef profile already exists: ${account.chefProfile.displayName}`);
+        } else {
+          await db
+            .insert(chefProfiles)
+            .values({
+              userId,
+              ...account.chefProfile,
+            });
+
+          console.log(`   └─ Created chef profile: ${account.chefProfile.displayName}`);
+        }
       }
 
       console.log("");
@@ -190,4 +202,6 @@ seed().catch((error) => {
   console.error("Seed failed:", error);
   process.exit(1);
 });
+
+
 

@@ -216,7 +216,11 @@ export default defineConfig({
         // iarc_rating_id: "your-iarc-rating-id",
       },
       devOptions: {
-        enabled: true,
+        // Keep service worker OFF in dev by default.
+        // It can cause confusing "You're Offline" pages during local development,
+        // especially when the dev server restarts or the user opens localhost vs 127.0.0.1.
+        // Enable manually with: PWA_DEV=true
+        enabled: process.env.PWA_DEV === "true",
         type: "module",
       },
     }),

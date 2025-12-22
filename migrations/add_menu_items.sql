@@ -18,3 +18,5 @@ CREATE TABLE IF NOT EXISTS menu_items (
 -- Create index on chef_id for faster lookups
 CREATE INDEX IF NOT EXISTS menu_items_chef_id_idx ON menu_items(chef_id);
 
+
+

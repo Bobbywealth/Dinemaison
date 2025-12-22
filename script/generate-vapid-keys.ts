@@ -50,3 +50,5 @@ console.log("   1. Ensure VAPID keys are in your .env file");
 console.log("   2. Restart your development server");
 console.log("   3. Test push notifications in the app\n");
 
+
+

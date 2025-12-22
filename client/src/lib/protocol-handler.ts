@@ -164,3 +164,5 @@ export function initProtocolHandler(): void {
   // Register the handler
   registerProtocolHandler();
 }
+
+

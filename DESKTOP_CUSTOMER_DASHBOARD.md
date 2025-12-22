@@ -177,3 +177,5 @@ Implemented a beautiful, modern customer dashboard design for **both desktop and
 - Add micro-interactions (e.g., confetti on booking completion)
 - Consider adding dashboard personalization options
 - Add quick stats charts/graphs for completed bookings over time
+
+

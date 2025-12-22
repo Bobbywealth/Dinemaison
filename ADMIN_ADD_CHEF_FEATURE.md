@@ -145,3 +145,5 @@ To actually add Chef Ameer Natson to your database, you have 3 options:
 - Once database is accessible, the admin can add chefs through the UI
 - All chef data is validated before insertion
 - Passwords are securely hashed before storage
+
+

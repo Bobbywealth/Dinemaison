@@ -103,3 +103,5 @@ The mobile version already had logout functionality in the sidebar via `Dashboar
 - The dropdown menu is properly aligned to the right
 - The logout button is styled in red to indicate a destructive action
 - All navigation uses hash links for dashboard sections (#upcoming, #favorites, etc.)
+
+

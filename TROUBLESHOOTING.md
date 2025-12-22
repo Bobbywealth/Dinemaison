@@ -187,3 +187,5 @@ The debug utilities added to the application will help diagnose problems:
 - Debug info endpoint shows configuration
 
 Remember to check both client-side (browser console) and server-side (Render logs) for complete error information.
+
+

@@ -127,3 +127,5 @@ export function useSplashScreen(options?: { duration?: number; skipOnRevisit?: b
   return { showSplash, handleComplete };
 }
 
+
+
