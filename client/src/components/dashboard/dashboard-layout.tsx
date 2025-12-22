@@ -263,7 +263,7 @@ function DashboardTopBar({
     }));
 
     return (
-      <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
+      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
         {/* Top row with menu + icons */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <HamburgerDrawer
@@ -310,7 +310,7 @@ function DashboardTopBar({
 
   // Desktop header
   return (
-    <div className="sticky-top-safe z-40 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
+    <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
           <Button

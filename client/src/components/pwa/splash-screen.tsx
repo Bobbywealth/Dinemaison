@@ -57,7 +57,7 @@ export function SplashScreen({ duration = 2000, onComplete }: SplashScreenProps)
               <img
                 src="/pwa-512x512.png"
                 alt="Dine Maison"
-                className="h-48 w-48 object-contain"
+                className="h-32 w-32 sm:h-48 sm:w-48 object-contain"
               />
 
               <motion.div

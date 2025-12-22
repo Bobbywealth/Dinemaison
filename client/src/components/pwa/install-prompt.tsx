@@ -90,7 +90,15 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm animate-in slide-in-from-bottom-4">
+    <div
+      className={[
+        // Leave room for iOS home indicator + our bottom nav (mobile dashboards).
+        // On non-dashboard pages this just floats slightly higher, which is fine.
+        "fixed left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm",
+        "animate-in slide-in-from-bottom-4",
+        "bottom-[calc(1rem+var(--safe-area-inset-bottom)+4rem)]",
+      ].join(" ")}
+    >
       <Card className="border-gold/20 bg-background/95 backdrop-blur-sm shadow-lg">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
@@ -108,7 +116,7 @@ export function InstallPrompt() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 -mt-1 -mr-2"
+              className="h-8 w-8 -mt-2 -mr-2 touch-target"
               onClick={handleDismiss}
             >
               <X className="h-4 w-4" />

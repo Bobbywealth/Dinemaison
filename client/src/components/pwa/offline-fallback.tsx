@@ -42,7 +42,7 @@ export function OfflineFallback({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3a5f] via-[#2d4a6f] to-[#1e3a5f] flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-[#1e3a5f] via-[#2d4a6f] to-[#1e3a5f] flex items-center justify-center p-4 safe-x safe-y">
       <Card className="max-w-lg w-full p-8 text-center space-y-6">
         <div className="flex justify-center">
           <div className="relative">

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3a5f">
   <title>Offline - Dine Maison</title>
   <style>
     * {
@@ -15,10 +16,11 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 50%, #1e3a5f 100%);
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
       color: #333;
     }
 
@@ -30,6 +32,22 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    @media (max-width: 420px) {
+      .container {
+        padding: 24px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      p {
+        font-size: 15px;
+      }
+      .icon-background {
+        width: 88px;
+        height: 88px;
+      }
     }
 
     .icon-container {
@@ -150,6 +168,12 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
+    
+    @media (max-width: 420px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
     .feature-item {
       background: #f9fafb;
@@ -178,6 +202,13 @@
 
     .hidden {
       display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>

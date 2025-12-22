@@ -178,8 +178,8 @@ export default function NotificationSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Header Row */}
-            <div className="grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 mb-4 pb-4 border-b">
+            {/* Header Row (desktop/tablet) */}
+            <div className="hidden md:grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 mb-4 pb-4 border-b">
               <div>
                 <p className="text-sm font-medium">Event Type</p>
               </div>
@@ -200,37 +200,95 @@ export default function NotificationSettingsPage() {
             {/* Notification Types */}
             <div className="space-y-6">
               {notificationTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className="grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 items-center"
-                >
-                  <div>
-                    <Label className="font-medium">{type.label}</Label>
-                    <p className="text-sm text-muted-foreground">{type.description}</p>
+                <div key={type.id}>
+                  {/* Mobile: stacked card */}
+                  <div className="md:hidden rounded-lg border border-border bg-card p-4">
+                    <div className="space-y-1">
+                      <p className="font-medium">{type.label}</p>
+                      <p className="text-sm text-muted-foreground">{type.description}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-4">
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span>Push</span>
+                        </div>
+                        <Switch
+                          checked={preferences[type.id]?.push ?? true}
+                          onCheckedChange={() => handleToggle(type.id, "push")}
+                          aria-label={`${type.label}: Push`}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span>Email</span>
+                        </div>
+                        <Switch
+                          checked={preferences[type.id]?.email ?? true}
+                          onCheckedChange={() => handleToggle(type.id, "email")}
+                          aria-label={`${type.label}: Email`}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Smartphone className="h-4 w-4 text-muted-foreground" />
+                          <span>SMS</span>
+                        </div>
+                        <Switch
+                          checked={preferences[type.id]?.sms ?? false}
+                          onCheckedChange={() => handleToggle(type.id, "sms")}
+                          aria-label={`${type.label}: SMS`}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                          <span>In-App</span>
+                        </div>
+                        <Switch
+                          checked={preferences[type.id]?.inApp ?? true}
+                          onCheckedChange={() => handleToggle(type.id, "inApp")}
+                          aria-label={`${type.label}: In-App`}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-center w-16">
-                    <Switch
-                      checked={preferences[type.id]?.push ?? true}
-                      onCheckedChange={() => handleToggle(type.id, "push")}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center w-16">
-                    <Switch
-                      checked={preferences[type.id]?.email ?? true}
-                      onCheckedChange={() => handleToggle(type.id, "email")}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center w-16">
-                    <Switch
-                      checked={preferences[type.id]?.sms ?? false}
-                      onCheckedChange={() => handleToggle(type.id, "sms")}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center w-16">
-                    <Switch
-                      checked={preferences[type.id]?.inApp ?? true}
-                      onCheckedChange={() => handleToggle(type.id, "inApp")}
-                    />
+
+                  {/* Desktop/tablet: compact table layout */}
+                  <div className="hidden md:grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 items-center">
+                    <div>
+                      <Label className="font-medium">{type.label}</Label>
+                      <p className="text-sm text-muted-foreground">{type.description}</p>
+                    </div>
+                    <div className="flex items-center justify-center w-16">
+                      <Switch
+                        checked={preferences[type.id]?.push ?? true}
+                        onCheckedChange={() => handleToggle(type.id, "push")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center w-16">
+                      <Switch
+                        checked={preferences[type.id]?.email ?? true}
+                        onCheckedChange={() => handleToggle(type.id, "email")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center w-16">
+                      <Switch
+                        checked={preferences[type.id]?.sms ?? false}
+                        onCheckedChange={() => handleToggle(type.id, "sms")}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center w-16">
+                      <Switch
+                        checked={preferences[type.id]?.inApp ?? true}
+                        onCheckedChange={() => handleToggle(type.id, "inApp")}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -259,7 +317,7 @@ export default function NotificationSettingsPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-between">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Button
                 variant="outline"
                 onClick={handleReset}

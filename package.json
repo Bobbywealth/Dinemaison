@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx --require dotenv/config server/index.ts",
     "build": "tsx script/build.ts",
-    "start": "NODE_ENV=production node dist/index.cjs",
+    "start": "NODE_ENV=production node --require dotenv/config dist/index.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx server/seed.ts",

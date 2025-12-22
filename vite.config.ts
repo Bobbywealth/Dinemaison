@@ -11,7 +11,10 @@ export default defineConfig({
       includeAssets: ["favicon.png", "*.jpg", "offline.html"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,woff,woff2}"],
-        navigateFallback: "/offline.html",
+        // SPA shell fallback for navigations (keeps client-side routing working in PWA).
+        // Offline UX should be handled by the app (and/or a dedicated offline route),
+        // not by making every navigation resolve to offline.html.
+        navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         runtimeCaching: [
           {
